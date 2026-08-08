@@ -1,0 +1,21 @@
+/*============================================================================================*/
+/* Your custom styles below */
+/*============================================================================================*/
+.grid_item {
+    background-color: lavender !important;
+    border: 1px solid lavender !important;
+}
+
+.wish_btn {
+    background: white !important;
+    color: #004dda !important;
+    border: 1px solid #004dda !important;
+}
+
+@media (max-width: 767px) {
+    .btn_add_to_cart a.action_btn {
+        display: inline-block;
+        width: 100% !important;
+        margin-top: 30px;
+    }
+}
