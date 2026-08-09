@@ -6,6 +6,7 @@ use App\Http\Controllers\HomeController;
 use App\Http\Controllers\FrontController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\InstaController;
+use App\Http\Controllers\PriceController;
 use Illuminate\Support\Facades\Auth;
 
 /*
@@ -40,6 +41,13 @@ Route::group(['prefix' => 'admin', 'middleware' => 'auth'], function () {
     Route::get('/home', [AdminController::class, 'index'])->name('admin_home');
 
     Route::get('/setting', [AdminController::class, 'setting'])->name('admin_setting');
+
+    Route::get('/price', [PriceController::class, 'index'])->name('admin.price');
+    Route::get('/get_price', [PriceController::class, 'get_price'])->name('admin.get_price');
+    Route::get('/add_price', [PriceController::class, 'add_price'])->name('admin.add_price');
+    Route::post('/save_price', [PriceController::class, 'save_price'])->name('admin.save_price');
+    Route::get('/edit_price/{price_id}', [PriceController::class, 'edit_price'])->name('admin.edit_price');
+    Route::post('/update_price', [PriceController::class, 'update_price'])->name('admin.update_price');
 
     Route::get('/category', [AdminController::class, 'category'])->name('admin.category');
     Route::get('/get_category', [AdminController::class, 'get_category'])->name('admin.get_category');

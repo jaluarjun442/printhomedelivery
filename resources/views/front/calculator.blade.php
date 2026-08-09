@@ -904,7 +904,246 @@
         </div>
 
     </section>
-    <div id="stick_here"></div>
+    <div class="text-center container margin_50_35">
+        <section class="py-5">
+
+            <div class="container">
+
+                <!-- Heading -->
+
+                <div class="mb-5">
+
+                    <h2 class="display-6 fw-bold mb-3">
+                        Wholesale
+                        <span class="fst-italic text-primary px-2 highlight-text">
+                            without the bulk order.
+                        </span>
+                    </h2>
+
+                    <p class="fs-5 text-secondary mb-0">
+                        Choose the paper that fits your work. Transparent pricing,
+                        premium quality, and no hidden charges.
+                    </p>
+
+                </div>
+
+                <!-- Cards -->
+
+                <div class="row g-4">
+
+                    <!-- Card 1 -->
+
+                    <div class="col-lg-4">
+
+                        <div class="card shadow-sm border-primary border-2 h-100 position-relative">
+
+                            <div class="card-body p-4 d-flex flex-column">
+
+                                <small class="text-uppercase text-muted fw-bold mb-4">
+                                    Standard B&amp;W
+                                </small>
+
+                                <div class="mb-3">
+
+                                    <div class="d-flex align-items-end mb-3">
+
+                                        <span class="display-2 fw-bold text-primary lh-1">
+                                            ₹0.50
+                                        </span>
+
+                                        <span class="fs-3 text-secondary ms-2 mb-2">
+                                            /page
+                                        </span>
+
+                                    </div>
+
+                                </div>
+
+                                <div class="mb-3">
+
+                                    <small class="text-decoration-line-through text-secondary">
+                                        MRP ₹1.00
+                                    </small>
+
+                                    <span class="badge bg-primary rounded-0 position-absolute top-0 end-0 px-3 py-2">
+                                        MOST POPULAR
+                                    </span>
+
+                                </div>
+
+                                <p class="text-secondary">
+                                    Ideal for notes, assignments,
+                                    study material and everyday printing.
+                                </p>
+
+                                <ul class="list-unstyled mb-4">
+
+                                    <li class="mb-2">
+                                        ✔ 75 GSM Bright White Paper
+                                    </li>
+                                    <li class="mb-2">
+                                        ✔ Crisp & Sharp Text
+                                    </li>
+
+                                    <li class="mb-2">
+                                        ✔ No Ink Bleeding
+                                    </li>
+
+                                    <li>
+                                        ✔ All Binding Supported
+                                    </li>
+
+                                </ul>
+
+                                <div class="mt-auto">
+
+                                    <a href="#" class="btn btn-primary rounded-0 py-3 fw-semibold">
+                                        Order Standard Print
+                                    </a>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                    <!-- Card 2 -->
+
+                    <div class="col-lg-4">
+
+                        <div class="card h-100">
+
+                            <div class="card-body p-4 d-flex flex-column">
+
+                                <small class="text-uppercase text-muted fw-bold mb-4">
+                                    Premium Color
+                                </small>
+
+                                <div class="mb-3">
+
+                                    <span class="display-2 fw-bold fw-bold">
+                                        ₹1
+                                    </span>
+
+                                    <span class="text-secondary fs-5">
+                                        /page
+                                    </span>
+
+                                </div>
+
+                                <div class="mb-3">
+
+                                    <span class="badge border border-warning text-warning rounded-0">
+                                        MARKET ₹10–₹20
+                                    </span>
+
+                                </div>
+
+                                <p class="text-secondary">
+                                    Bright, vibrant colors for projects,
+                                    presentations and thesis printing.
+                                </p>
+
+
+                                <ul class="list-unstyled mb-4">
+
+                                    <li class="mb-2">✔ 75 GSM Paper</li>
+
+                                    <li class="mb-2">✔ Rich Color Output</li>
+
+                                    <li class="mb-2">✔ Binding Available</li>
+
+                                    <li class="mb-2">✔ Fast Printing</li>
+
+                                    <li>✔ Secure Packaging</li>
+
+                                </ul>
+
+                                <div class="mt-auto">
+
+                                    <a href="#" class="btn btn-outline-dark rounded-0 py-3 fw-semibold">
+                                        Print in Color
+                                    </a>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                    <!-- Card 3 -->
+
+                    <div class="col-lg-4">
+
+                        <div class="card h-100">
+
+                            <div class="card-body p-4 d-flex flex-column">
+
+                                <small class="text-uppercase text-muted fw-bold mb-4">
+                                    Archival 100 GSM
+                                </small>
+
+                                <div class="mb-3">
+
+                                    <span class="display-2 fw-bold fw-bold">
+                                        ₹1.9
+                                    </span>
+
+                                    <span class="text-secondary fs-5">
+                                        /page
+                                    </span>
+
+                                </div>
+
+                                <p class="text-secondary">
+                                    Premium paper for thesis,
+                                    dissertations and professional documents.
+                                </p>
+
+                                <ul class="list-unstyled mb-4">
+
+                                    <li class="mb-2">
+                                        ✔ 100 GSM Premium Bond
+                                    </li>
+
+                                    <li class="mb-2">
+                                        ✔ University Grade
+                                    </li>
+
+                                    <li class="mb-2">
+                                        ✔ Best for Hard Binding
+                                    </li>
+
+                                    <li>
+                                        ✔ Gold Emboss Ready
+                                    </li>
+
+                                </ul>
+
+                                <div class="mt-auto">
+
+                                    <a href="#" class="btn btn-outline-dark rounded-0 py-3 fw-semibold">
+                                        Print on Premium
+                                    </a>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+    </div>
 
 </main>
 <!-- /main -->

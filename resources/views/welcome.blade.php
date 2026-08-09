@@ -510,7 +510,7 @@
 
                     <div class="d-grid gap-3 d-md-flex">
 
-                        <a href="#"
+                        <a href="{{ route('upload') }}"
                             class="btn btn-primary btn-lg px-5 py-3">
 
                             Start Printing Now
@@ -519,7 +519,7 @@
 
                         </a>
 
-                        <a href="#"
+                        <a href="{{ route('calculator') }}"
                             class="btn btn-outline-dark btn-lg px-5 py-3">
 
                             View Pricing

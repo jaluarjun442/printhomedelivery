@@ -57,6 +57,7 @@
                     <ul class="navbar-nav mr-auto">
                         <a class="nav-link" href="{{ route('admin_home') }}">Home</a>
                         <a class="nav-link" href="{{ route('admin.store') }}">Store</a>
+                        <a class="nav-link" href="{{ route('admin.price') }}">Price</a>
                         <a class="nav-link" href="{{ route('admin.category') }}">Category</a>
                         <a class="nav-link" href="{{ route('admin.product') }}">Product</a>
                         <a class="nav-link" href="{{ route('admin_setting') }}">Settigns</a>
