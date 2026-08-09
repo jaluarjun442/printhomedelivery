@@ -52,11 +52,7 @@ class FrontController extends Controller
         $data = [];
         return view('front.calculator', compact('data'));
     }
-    public function upload(Request $request)
-    {
-        $data = [];
-        return view('front.upload', compact('data'));
-    }
+ 
     public function category(Request $request, $slug)
     {
         $data = Products::with('categories.category')

@@ -225,7 +225,6 @@ class AdminController extends Controller
         $parent_category_id = $request->post('parent_category_id') ?? null;
         $file = $request->file('image');
         $image = $name . "." . $file->getClientOriginalExtension();
-        // $image = $name . rand(1111111111, 9999999999) . "." . $file->getClientOriginalExtension();
         $file->move("uploads/category/", $image);
         $slug = Str::slug($request->post('name'));
 

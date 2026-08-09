@@ -7,6 +7,7 @@ use App\Http\Controllers\FrontController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\InstaController;
 use App\Http\Controllers\PriceController;
+use App\Http\Controllers\UploadController;
 use Illuminate\Support\Facades\Auth;
 
 /*
@@ -25,8 +26,14 @@ Auth::routes();
 
 Route::get('/', [FrontController::class, 'index'])->name('home');
 Route::get('/calculator', [FrontController::class, 'calculator'])->name('calculator');
-Route::get('/upload', [FrontController::class, 'upload'])->name('upload');
 
+Route::get('/upload', [UploadController::class, 'upload'])->name('upload');
+Route::get('/upload/verification-status', [UploadController::class, 'status'])->name('upload.status');
+Route::post('/upload/send-otp', [UploadController::class, 'sendOtp'])->name('upload.sendOtp');
+Route::post('/upload/verify-otp', [UploadController::class, 'verifyOtp'])->name('upload.verifyOtp');
+Route::post('/upload/documents', [UploadController::class, 'upload_documents'])->name('upload.upload_documents');
+Route::get('/upload/previous-files', [UploadController::class, 'previousFiles'])->name('upload.previousFiles');
+Route::post('/upload/save-selected-files', [UploadController::class, 'saveSelectedFiles'])->name('upload.saveSelectedFiles');
 // Route::get('/about_us', [FrontController::class, 'about_us'])->name('about_us');
 // Route::get('/contact_us', [FrontController::class, 'contact_us'])->name('contact_us');
 Route::get('/categories', [FrontController::class, 'categories'])->name('categories');
