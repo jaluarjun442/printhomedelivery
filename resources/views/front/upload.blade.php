@@ -551,7 +551,7 @@
 
             <!-- Upload Area -->
             <div class="row justify-content-center mt-4">
-                <div class="col-lg-10">
+                <div class="col-lg-8">
 
                     <div id="uploadBox" class="upload-box">
 
@@ -1046,6 +1046,7 @@
                 ),
 
                 name: document.original_name,
+                pages: parseInt(document.pages, 10) || 1,
 
                 size: parseInt(
                     document.file_size,
@@ -1225,21 +1226,13 @@
 
                 <div class="previous-file-details">
 
-                    <div class="previous-file-name">
-
-                        ${escapeHtml(file.name)}
-
+                    <div class="file-name">
+                        ${file.name}
                     </div>
 
-                    <div class="previous-file-meta">
-
-                        ${formatFileSize(
-                            parseInt(file.size, 10) || 0
-                        )}
-
-                        ${file.created_at
-                            ? ' • ' + escapeHtml(file.created_at)
-                            : ''}
+                    <div class="file-meta">
+                        ${parseInt(file.pages, 10)}
+                        ${parseInt(file.pages, 10) === 1 ? 'page' : 'pages'}
 
                     </div>
 
@@ -1357,6 +1350,8 @@
                     name: oldFile.name,
 
                     size: parseInt(oldFile.size, 10) || 0,
+
+                    pages: parseInt(oldFile.pages, 10) || 1,
 
                     type: oldFile.mime_type || '',
 
@@ -1726,9 +1721,18 @@
                             ${escapeHtml(file.name)}
                         </div>
 
-                        <div class="file-size">
-                            ${formatFileSize(file.size)}
-                        </div>
+                        ${
+                            file.pages !== undefined &&
+                            file.pages !== null &&
+                            file.pages !== ''
+                                ? `
+                                    <div class="file-size">
+                                        <strong>${parseInt(file.pages, 10)}</strong>
+                                        ${parseInt(file.pages, 10) === 1 ? 'page' : 'pages'}
+                                    </div>
+                                  `
+                                : ''
+                        }
 
                         ${
                             file.isPrevious || uploadedFileKeys[getFileKey(file)]
@@ -1768,6 +1772,10 @@
            REMOVE FILE
         ===================================================== */
 
+        /* =====================================================
+   REMOVE FILE
+===================================================== */
+
         $(document).on('click', '.remove-file', function(e) {
 
             e.preventDefault();
@@ -1782,24 +1790,79 @@
                 return;
             }
 
-            if (!selectedFiles[index]) {
+            const file = selectedFiles[index];
+
+            if (!file) {
                 return;
             }
 
             /*
             |--------------------------------------------------------------------------
-            | Remove only from the CURRENT order.
+            | IMPORTANT
+            |--------------------------------------------------------------------------
+            | If this file was previously uploaded in the current order,
+            | remove its ID from the frontend duplicate tracker.
             |
-            | The database file is NOT deleted. If it was a previous upload, it
-            | remains available in Previous Uploaded Files. We only remove its
-            | document ID from the current-order session selection.
+            | This DOES NOT delete the file from database/server.
+            |
+            | It simply allows the user to select the same file again
+            | from "Previous Uploaded Files".
             |--------------------------------------------------------------------------
             */
+
+            if (file.uploaded_document_id) {
+
+                const documentId = parseInt(
+                    file.uploaded_document_id,
+                    10
+                );
+
+                if (documentId) {
+                    delete uploadedDocumentIds[documentId];
+                }
+            }
+
+            /*
+            |--------------------------------------------------------------------------
+            | Remove its upload key too.
+            |
+            | This is important if it was a newly uploaded physical file.
+            | If the user adds it again, it should be allowed to upload again.
+            |--------------------------------------------------------------------------
+            */
+
+            const fileKey = getFileKey(file);
+
+            if (fileKey) {
+                delete uploadedFileKeys[fileKey];
+            }
+
+            /*
+            |--------------------------------------------------------------------------
+            | Remove from current order only.
+            |
+            | Database record/file remains safe.
+            |--------------------------------------------------------------------------
+            */
+
             selectedFiles.splice(index, 1);
+
+            /*
+            |--------------------------------------------------------------------------
+            | Update Laravel session with the new current selection.
+            |--------------------------------------------------------------------------
+            */
 
             syncCurrentSelectionToSession();
 
+            /*
+            |--------------------------------------------------------------------------
+            | Re-render UI.
+            |--------------------------------------------------------------------------
+            */
+
             renderFiles(true);
+
             updateContinueButton();
 
         });
@@ -2302,13 +2365,30 @@
                     const uploadedDocuments =
                         Array.isArray(response.documents) ? response.documents : [];
 
+                    /*
+                     * Mark ONLY the files sent in this request as uploaded.
+                     * Do not include `pages` in the key because the backend
+                     * calculates pages only after the file is uploaded.
+                     */
                     $.each(pendingFiles, function(index, file) {
-                        uploadedFileKeys[getFileKey(file)] = true;
+
+                        uploadedFileKeys[
+                            [
+                                file.name,
+                                file.size,
+                                file.lastModified,
+                                file.type || ''
+                            ].join('|')
+                        ] = true;
+
                     });
 
                     /*
-                     * Store the database ID against the matching selected file.
-                     * Do not use an undefined `document` variable here.
+                     * Store the database ID AND backend-calculated page count
+                     * against the exact pending file.
+                     *
+                     * The backend returns one document record per uploaded
+                     * file in the same order as the `documents[]` request.
                      */
                     $.each(uploadedDocuments, function(index, uploadedDocument) {
 
@@ -2320,17 +2400,25 @@
 
                         uploadedDocumentIds[documentId] = true;
 
-                        $.each(selectedFiles, function(fileIndex, file) {
+                        const uploadedFile = pendingFiles[index];
 
-                            if (
-                                !file.isPrevious &&
-                                !file.uploaded_document_id &&
-                                file.name === uploadedDocument.name
-                            ) {
-                                file.uploaded_document_id = documentId;
-                                return false;
-                            }
-                        });
+                        if (!uploadedFile) {
+                            return;
+                        }
+
+                        uploadedFile.uploaded_document_id = documentId;
+
+                        /* Use the actual page count returned by Laravel. */
+                        if (
+                            uploadedDocument.pages !== undefined &&
+                            uploadedDocument.pages !== null
+                        ) {
+                            uploadedFile.pages = parseInt(
+                                uploadedDocument.pages,
+                                10
+                            );
+                        }
+
                     });
 
                     /* Save newly uploaded document IDs as the current order selection. */
@@ -2450,9 +2538,14 @@
                     return false;
                 }
 
-                return !uploadedFileKeys[
-                    getFileKey(file)
-                ];
+                const stableKey = [
+                    file.name,
+                    file.size,
+                    file.lastModified,
+                    file.type || ''
+                ].join('|');
+
+                return !uploadedFileKeys[stableKey];
 
             });
 
@@ -2493,7 +2586,28 @@
                     'Continue to Print ' +
                     '<i class="bi bi-arrow-right ms-2"></i>'
                 );
+
             }
+
+
+            // =====================================================
+            // CONTINUE BUTTON CLICK
+            // =====================================================
+
+            $continueUpload.off('click.printOptions');
+
+            $continueUpload.on(
+                'click.printOptions',
+                function(e) {
+
+                    e.preventDefault();
+
+                    window.location.href =
+                        "{{ route('print.options', []) }}";
+
+                }
+            );
+
         }
 
 

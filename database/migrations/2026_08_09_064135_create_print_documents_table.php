@@ -28,6 +28,7 @@ class CreatePrintDocumentsTable extends Migration
             $table->string('mime_type')->nullable();
             $table->unsignedBigInteger('file_size')->default(0);
 
+            $table->unsignedBigInteger('pages')->default(0);
             // Future use:
             // uploaded / printing / completed / failed
             $table->string('status')->default('uploaded');

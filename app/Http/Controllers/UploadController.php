@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Category;
+use App\Models\Price;
 use App\Models\Products;
 use App\Models\Store;
 use Illuminate\Http\Request;
@@ -11,6 +12,7 @@ use Illuminate\Support\Facades\Hash;
 use App\Models\PrintDocument;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Smalot\PdfParser\Parser;
 
 class UploadController extends Controller
 {
@@ -50,15 +52,11 @@ class UploadController extends Controller
                     'id',
                     'original_name',
                     'file_size',
+                    'pages',
                     'mime_type',
                     'status'
                 ]);
 
-            /*
-        |--------------------------------------------------------------------------
-        | Remove IDs that no longer exist / don't belong to this mobile
-        |--------------------------------------------------------------------------
-        */
 
             $validIds = $selectedDocuments
                 ->pluck('id')
@@ -81,9 +79,6 @@ class UploadController extends Controller
     }
 
 
-    /**
-     * Check whether the current browser has a verified mobile cookie.
-     */
     public function status(Request $request)
     {
         $mobile = $request->cookie('loggedin_number');
@@ -94,13 +89,6 @@ class UploadController extends Controller
         ]);
     }
 
-
-    /**
-     * Send OTP.
-     *
-     * Temporary testing OTP is 000000.
-     * Replace it with random_int() when WhatsApp OTP is connected.
-     */
     public function sendOtp(Request $request)
     {
         $request->validate([
@@ -186,15 +174,7 @@ class UploadController extends Controller
             'upload_otp_' . $mobile
         );
 
-        /*
-        =====================================================
-        Create the cookie on the SERVER.
 
-        HttpOnly = JavaScript cannot modify/read it.
-        SameSite=Lax = normal same-site browser requests work.
-        30 days = user remains verified for future visits.
-        =====================================================
-        */
         $cookie = cookie(
             'loggedin_number',
             $mobile,
@@ -223,11 +203,7 @@ class UploadController extends Controller
      */
     public function upload_documents(Request $request)
     {
-        /*
-    =====================================================
-    Get verified mobile from server-side cookie
-    =====================================================
-    */
+
         $mobile = $request->cookie('loggedin_number');
 
         if (!$mobile) {
@@ -239,11 +215,8 @@ class UploadController extends Controller
         }
 
 
-        /*
-    =====================================================
-    Validate files
-    =====================================================
-    */
+
+
         $request->validate([
 
             'documents' => [
@@ -256,31 +229,21 @@ class UploadController extends Controller
             'documents.*' => [
                 'required',
                 'file',
-                'mimes:pdf,doc,docx,xls,xlsx,ppt,pptx,jpg,jpeg,png,gif,webp',
+                'mimes:pdf,jpg,jpeg,png,gif,webp',
                 'max:2097152'
             ]
 
         ]);
 
 
-        /*
-    =====================================================
-    Upload directory
 
-    D:\xampp\htdocs\printhomedelivery\
-    uploads\print_documents\
-    =====================================================
-    */
         $uploadDirectory = base_path(
             'uploads/print_documents'
         );
 
 
-        /*
-    =====================================================
-    Create directory if it doesn't exist
-    =====================================================
-    */
+
+
         if (!is_dir($uploadDirectory)) {
 
             mkdir(
@@ -294,51 +257,30 @@ class UploadController extends Controller
         $uploadedDocuments = [];
 
 
-        /*
-    =====================================================
-    Upload each file
-    =====================================================
-    */
+
+        $pdfParser = new Parser();
+
+
+
         foreach ($request->file('documents') as $file) {
 
 
-            /*
-        =================================================
-        Get file information BEFORE move()
-        =================================================
-        */
 
             $originalName =
                 $file->getClientOriginalName();
-
 
             $extension =
                 strtolower(
                     $file->getClientOriginalExtension()
                 );
 
-
             $mimeType =
                 $file->getMimeType();
-
 
             $fileSize =
                 $file->getSize();
 
 
-            /*
-        =================================================
-        Remove extension from original filename
-
-        Example:
-
-        arjun_aadhar_card.pdf
-
-        becomes:
-
-        arjun_aadhar_card
-        =================================================
-        */
 
             $nameWithoutExtension = pathinfo(
                 $originalName,
@@ -346,23 +288,12 @@ class UploadController extends Controller
             );
 
 
-            /*
-        =================================================
-        Generate unique filename
-
-        Example:
-
-        arjun_aadhar_card_5832.pdf
-        =================================================
-        */
-
             do {
 
                 $randomNumber = random_int(
                     1000,
                     9999
                 );
-
 
                 $filename =
                     $nameWithoutExtension .
@@ -379,16 +310,6 @@ class UploadController extends Controller
             );
 
 
-            /*
-        =================================================
-        Move uploaded file
-
-        Example:
-
-        uploads/print_documents/
-        arjun_aadhar_card_5832.pdf
-        =================================================
-        */
 
             $file->move(
                 $uploadDirectory,
@@ -396,67 +317,80 @@ class UploadController extends Controller
             );
 
 
+
+            $pages = 1;
+
+
+
+            if ($extension === 'pdf') {
+
+                try {
+
+                    $pdf = $pdfParser->parseFile(
+                        $uploadDirectory .
+                            DIRECTORY_SEPARATOR .
+                            $filename
+                    );
+
+                    $pages = count(
+                        $pdf->getPages()
+                    );
+                } catch (\Throwable $e) {
+
+                    /*
+                If page counting fails,
+                keep 1 as fallback.
+                */
+
+                    $pages = 1;
+                }
+            }
+
+
             /*
         =================================================
-        Database path
+        Images
+
+        JPG / JPEG / PNG / GIF / WEBP
+        = 1 page
         =================================================
-        */
+        */ else {
+
+                $pages = 1;
+            }
+
+
 
             $storedPath = $filename;
 
 
-            /*
-        =================================================
-        Save database record
-        =================================================
-        */
 
             $document = PrintDocument::create([
 
-                /*
-            | Mobile stays in DB.
-            */
                 'mobile' =>
                 $mobile,
 
-                /*
-            | Original filename shown to user.
-            */
                 'original_name' =>
                 $originalName,
 
-                /*
-            | Actual stored filename/path.
-            */
                 'stored_path' =>
                 $storedPath,
 
-                /*
-            | MIME type.
-            */
                 'mime_type' =>
                 $mimeType,
 
-                /*
-            | File size.
-            */
                 'file_size' =>
                 $fileSize,
 
-                /*
-            | Upload status.
-            */
+                'pages' =>
+                $pages,
+
                 'status' =>
                 'uploaded'
 
             ]);
 
 
-            /*
-        =================================================
-        Response data
-        =================================================
-        */
 
             $uploadedDocuments[] = [
 
@@ -469,18 +403,15 @@ class UploadController extends Controller
                 'size' =>
                 $document->file_size,
 
+                'pages' =>
+                $document->pages,
+
                 'status' =>
                 $document->status
 
             ];
         }
 
-
-        /*
-    =====================================================
-    Add uploaded document IDs to current session
-    =====================================================
-    */
 
         $currentIds = session(
             'upload_selected_document_ids',
@@ -495,11 +426,6 @@ class UploadController extends Controller
         }
 
 
-        /*
-    =====================================================
-    Remove duplicate IDs
-    =====================================================
-    */
 
         $currentIds = array_values(
             array_unique(
@@ -508,23 +434,12 @@ class UploadController extends Controller
         );
 
 
-        /*
-    =====================================================
-    Save current selected document IDs
-    =====================================================
-    */
 
         session([
             'upload_selected_document_ids' =>
             $currentIds
         ]);
 
-
-        /*
-    =====================================================
-    Final response
-    =====================================================
-    */
 
         return response()->json([
 
@@ -544,11 +459,7 @@ class UploadController extends Controller
     }
     public function saveSelectedFiles(Request $request)
     {
-        /*
-    |--------------------------------------------------------------------------
-    | Get verified mobile
-    |--------------------------------------------------------------------------
-    */
+
         $mobile = $request->cookie('loggedin_number');
 
         if (!$mobile) {
@@ -559,13 +470,6 @@ class UploadController extends Controller
         }
 
 
-        /*
-    |--------------------------------------------------------------------------
-    | document_ids is allowed to be empty
-    |
-    | This is important for "Clear All".
-    |--------------------------------------------------------------------------
-    */
         $request->validate([
             'document_ids' => [
                 'nullable',
@@ -681,6 +585,7 @@ class UploadController extends Controller
                 'id',
                 'original_name',
                 'file_size',
+                'pages',
                 'mime_type',
                 'status',
                 'created_at'
@@ -695,11 +600,578 @@ class UploadController extends Controller
                     'id' => $document->id,
                     'name' => $document->original_name,
                     'size' => $document->file_size,
+                    'pages' => $document->pages,
                     'mime_type' => $document->mime_type,
                     'status' => $document->status,
                     'created_at' => optional($document->created_at)->format('d M Y')
                 ];
             })->values()
+        ]);
+    }
+    public function printOptions(Request $request)
+    {
+        /*
+    =====================================================
+    Get selected document IDs from current upload session
+    =====================================================
+    */
+
+        $selectedIds = session(
+            'upload_selected_document_ids',
+            []
+        );
+
+
+        /*
+    =====================================================
+    If no files are selected, send user back to upload
+    =====================================================
+    */
+
+        if (empty($selectedIds)) {
+
+            return redirect()
+                ->route('upload')
+                ->with(
+                    'error',
+                    'Please select at least one document.'
+                );
+        }
+
+
+        /*
+    =====================================================
+    Get selected documents
+
+    IMPORTANT:
+    Keep the same database IDs.
+    =====================================================
+    */
+
+        $documents = PrintDocument::whereIn(
+            'id',
+            $selectedIds
+        )
+            ->get([
+                'id',
+                'original_name',
+                'file_size',
+                'pages',
+                'mime_type',
+                'status'
+            ]);
+
+
+        /*
+    =====================================================
+    Return Print Options page
+    =====================================================
+    */
+
+        return view(
+            'front.print-options',
+            compact('documents')
+        );
+    }
+    public function printOptionPrices(Request $request)
+    {
+        /*
+    |--------------------------------------------------------------------------
+    | COLOR MODE
+    |--------------------------------------------------------------------------
+    | Parent:
+    | 1 = Color Mode
+    |
+    | Children:
+    | black_and_white
+    | color
+    |--------------------------------------------------------------------------
+    */
+
+        $colorMode = Price::where('slug', 'color_mode')
+            ->where('status', 1)
+            ->with([
+                'childPrice' => function ($query) {
+                    $query->where('status', 1)
+                        ->orderBy('id');
+                }
+            ])
+            ->first();
+
+
+        /*
+    |--------------------------------------------------------------------------
+    | BINDING
+    |--------------------------------------------------------------------------
+    */
+
+        $binding = Price::where('slug', 'bindings')
+            ->where('status', 1)
+            ->with([
+                'childPrice' => function ($query) {
+                    $query->where('status', 1)
+                        ->orderBy('id');
+                }
+            ])
+            ->first();
+
+
+        /*
+    |--------------------------------------------------------------------------
+    | PRINT SIDE PRICES
+    |--------------------------------------------------------------------------
+    */
+
+        $printPrices = Price::whereIn('slug', [
+            'black_white_single',
+            'black_white_double',
+            'color_single',
+            'color_double',
+        ])
+            ->where('status', 1)
+            ->pluck('amount', 'slug');
+
+
+        /*
+    |--------------------------------------------------------------------------
+    | COLOR OPTIONS
+    |--------------------------------------------------------------------------
+    */
+
+        $colorOptions = [];
+
+        if ($colorMode) {
+
+            foreach ($colorMode->childPrice as $item) {
+
+                $colorOptions[] = [
+                    'id'     => $item->id,
+                    'name'   => $item->name,
+                    'slug'   => $item->slug,
+                    'amount' => (float) $item->amount,
+                ];
+            }
+        }
+
+
+        /*
+    |--------------------------------------------------------------------------
+    | BINDING OPTIONS
+    |--------------------------------------------------------------------------
+    */
+
+        $bindingOptions = [];
+
+        if ($binding) {
+
+            foreach ($binding->childPrice as $item) {
+
+                $bindingOptions[] = [
+                    'id'     => $item->id,
+                    'name'   => $item->name,
+                    'slug'   => $item->slug,
+                    'amount' => (float) $item->amount,
+                ];
+            }
+        }
+
+
+        return response()->json([
+
+            'success' => true,
+
+            /*
+        |--------------------------------------------------------------------------
+        | PRINT SIDE
+        |--------------------------------------------------------------------------
+        */
+
+            'prices' => [
+
+                'black_white_single' =>
+                (float) ($printPrices['black_white_single'] ?? 0),
+
+                'black_white_double' =>
+                (float) ($printPrices['black_white_double'] ?? 0),
+
+                'color_single' =>
+                (float) ($printPrices['color_single'] ?? 0),
+
+                'color_double' =>
+                (float) ($printPrices['color_double'] ?? 0),
+
+            ],
+
+
+            /*
+        |--------------------------------------------------------------------------
+        | COLOR MODE OPTIONS
+        |--------------------------------------------------------------------------
+        */
+
+            'color_options' => $colorOptions,
+
+
+            /*
+        |--------------------------------------------------------------------------
+        | BINDING OPTIONS
+        |--------------------------------------------------------------------------
+        */
+
+            'binding_options' => $bindingOptions,
+
+        ]);
+    }
+    public function removePrintOptionFile(Request $request)
+    {
+        $request->validate([
+            'document_id' => 'required|integer'
+        ]);
+
+
+        /*
+    =====================================================
+    Get currently selected document IDs
+    =====================================================
+    */
+
+        $selectedIds = session(
+            'upload_selected_document_ids',
+            []
+        );
+
+
+        /*
+    =====================================================
+    Remove requested document ID
+    =====================================================
+    */
+
+        $documentId = (int) $request->document_id;
+
+        $selectedIds = array_values(
+            array_filter(
+                $selectedIds,
+                function ($id) use ($documentId) {
+
+                    return (int) $id !== $documentId;
+                }
+            )
+        );
+
+
+        /*
+    =====================================================
+    Save updated selected IDs back to session
+    =====================================================
+    */
+
+        session()->put(
+            'upload_selected_document_ids',
+            $selectedIds
+        );
+        /*
+=====================================================
+REMOVE PRINT SETTINGS FOR DELETED FILE
+=====================================================
+*/
+
+        $printOptions = session(
+            'print_options',
+            []
+        );
+
+        unset(
+            $printOptions[$documentId]
+        );
+
+        session()->put(
+            'print_options',
+            $printOptions
+        );
+
+        /*
+    =====================================================
+    Response
+    =====================================================
+    */
+
+        return response()->json([
+            'success' => true,
+            'document_ids' => $selectedIds
+        ]);
+    }
+    public function previousPrintFiles(Request $request)
+    {
+        $mobile = $request->cookie('loggedin_number');
+
+        if (!$mobile) {
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Mobile verification required.'
+            ], 401);
+        }
+
+
+        /*
+    =====================================================
+    CURRENTLY SELECTED FILES
+    =====================================================
+    */
+
+        $selectedIds = session(
+            'upload_selected_document_ids',
+            []
+        );
+
+
+        /*
+    =====================================================
+    GET PREVIOUS UPLOADED FILES
+    =====================================================
+    */
+
+        $documents = PrintDocument::where(
+            'mobile',
+            $mobile
+        )
+            ->where(
+                'status',
+                'uploaded'
+            )
+            ->orderBy(
+                'id',
+                'desc'
+            )
+            ->get([
+                'id',
+                'original_name',
+                'file_size',
+                'pages',
+                'mime_type',
+                'status'
+            ]);
+
+
+        return response()->json([
+
+            'success' => true,
+
+            'documents' => $documents,
+
+            'selected_ids' => array_map(
+                'intval',
+                $selectedIds
+            )
+
+        ]);
+    }
+    public function addPreviousPrintFiles(Request $request)
+    {
+        $request->validate([
+            'document_ids' => [
+                'required',
+                'array',
+                'min:1'
+            ],
+
+            'document_ids.*' => [
+                'integer'
+            ]
+        ]);
+
+
+        /*
+    =====================================================
+    CURRENT SESSION FILES
+    =====================================================
+    */
+
+        $selectedIds = session(
+            'upload_selected_document_ids',
+            []
+        );
+
+
+        $selectedIds = array_map(
+            'intval',
+            $selectedIds
+        );
+
+
+        /*
+    =====================================================
+    REQUESTED FILE IDS
+    =====================================================
+    */
+
+        $newIds = array_map(
+            'intval',
+            $request->document_ids
+        );
+
+
+        /*
+    =====================================================
+    REMOVE DUPLICATES
+    =====================================================
+    */
+
+        $newIds = array_unique(
+            $newIds
+        );
+
+
+        /*
+    =====================================================
+    ONLY ADD FILES NOT ALREADY SELECTED
+    =====================================================
+    */
+
+        foreach ($newIds as $id) {
+
+            if (
+                !in_array(
+                    $id,
+                    $selectedIds,
+                    true
+                )
+            ) {
+
+                $selectedIds[] = $id;
+            }
+        }
+
+
+        /*
+    =====================================================
+    MAX 50 FILES
+    =====================================================
+    */
+
+        $selectedIds = array_slice(
+            $selectedIds,
+            0,
+            50
+        );
+
+
+        /*
+    =====================================================
+    SAVE SESSION
+    =====================================================
+    */
+
+        session()->put(
+            'upload_selected_document_ids',
+            $selectedIds
+        );
+
+
+        /*
+    =====================================================
+    RETURN ADDED FILE DETAILS
+    =====================================================
+    */
+
+        $documents = PrintDocument::whereIn(
+            'id',
+            $newIds
+        )
+            ->get([
+                'id',
+                'original_name',
+                'file_size',
+                'pages',
+                'mime_type',
+                'status'
+            ]);
+
+
+        return response()->json([
+
+            'success' => true,
+
+            'document_ids' => $selectedIds,
+
+            'documents' => $documents
+
+        ]);
+    }
+    public function savePrintOptions(Request $request)
+    {
+        $printOptions = $request->input(
+            'print_options',
+            []
+        );
+
+        if (!is_array($printOptions)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Invalid print options.'
+            ], 422);
+        }
+
+        /*
+     * Clean + normalize options
+     */
+        $cleanOptions = [];
+
+        foreach ($printOptions as $documentId => $options) {
+
+            $documentId = (int) $documentId;
+
+            if (!$documentId || !is_array($options)) {
+                continue;
+            }
+
+            $cleanOptions[$documentId] = [
+
+                'color_mode' =>
+                $options['color_mode']
+                    ?? 'black_white',
+
+                'print_side' =>
+                $options['print_side']
+                    ?? 'double',
+
+                'binding' =>
+                $options['binding']
+                    ?? '',
+
+                'page_size' =>
+                $options['page_size']
+                    ?? 'a4_75',
+
+                'orientation' =>
+                $options['orientation']
+                    ?? 'portrait',
+
+                'copies' =>
+                max(
+                    1,
+                    (int) (
+                        $options['copies']
+                        ?? 1
+                    )
+                ),
+            ];
+        }
+
+
+        /*
+     * Save in Laravel session
+     */
+        session()->put(
+            'print_options',
+            $cleanOptions
+        );
+
+
+        return response()->json([
+            'success' => true,
+            'print_options' => $cleanOptions
         ]);
     }
 }

@@ -99,7 +99,7 @@
 ========================================== */
 
     .copies-box {
-        height: 77px;
+        /* height: 77px; */
         border: 1px solid #d5d5d5;
 
         display: flex;
@@ -354,7 +354,7 @@
         /* Copies */
 
         .copies-box {
-            height: 68px;
+            /* height: 68px; */
             padding: 8px;
         }
 

@@ -32,7 +32,8 @@
 
         use App\Models\Category;
 
-        echo store_data()['header_script']; ?>
+        // echo store_data()['header_script']; 
+        ?>
     </style>
     @yield('custom_header')
 </head>
@@ -179,7 +180,9 @@
 
     @yield('custom_footer')
     <script>
-        <?php echo store_data()['footer_script']; ?>
+        <?php
+        // echo store_data()['footer_script']; 
+        ?>
     </script>
     <!-- <br /> -->
 </body>

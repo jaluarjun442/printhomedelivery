@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\FrontController;
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\InstaController;
 use App\Http\Controllers\PriceController;
 use App\Http\Controllers\UploadController;
@@ -34,6 +35,16 @@ Route::post('/upload/verify-otp', [UploadController::class, 'verifyOtp'])->name(
 Route::post('/upload/documents', [UploadController::class, 'upload_documents'])->name('upload.upload_documents');
 Route::get('/upload/previous-files', [UploadController::class, 'previousFiles'])->name('upload.previousFiles');
 Route::post('/upload/save-selected-files', [UploadController::class, 'saveSelectedFiles'])->name('upload.saveSelectedFiles');
+Route::get('/print-options', [UploadController::class, 'printOptions'])->name('print.options');
+Route::get('/print-options/prices', [UploadController::class, 'printOptionPrices'])->name('print-options.prices');
+Route::post('/print-options/remove-file', [UploadController::class, 'removePrintOptionFile'])->name('print-options.remove-file');
+Route::get('/print-options/previous-files', [UploadController::class, 'previousPrintFiles'])->name('print-options.previous-files');
+Route::post('/print-options/add-files', [UploadController::class, 'addPreviousPrintFiles'])->name('print-options.add-files');
+Route::post('/print-options/save', [UploadController::class, 'savePrintOptions'])->name('print-options.save');
+
+
+Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout');
+
 // Route::get('/about_us', [FrontController::class, 'about_us'])->name('about_us');
 // Route::get('/contact_us', [FrontController::class, 'contact_us'])->name('contact_us');
 Route::get('/categories', [FrontController::class, 'categories'])->name('categories');
