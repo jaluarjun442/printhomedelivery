@@ -35,24 +35,120 @@
         // echo store_data()['header_script']; 
         ?>
     </style>
+    <style>
+        /* =========================================
+   PRINT NOW CTA
+========================================= */
+
+        .print-now-menu {
+            margin-left: 8px;
+        }
+
+        .print-now-btn {
+            position: relative;
+            display: inline-flex !important;
+            align-items: center;
+            gap: 7px;
+
+            padding: 9px 17px !important;
+
+            background: #ff7a00 !important;
+            color: #fff !important;
+
+            border-radius: 5px;
+
+            font-weight: 700 !important;
+
+            box-shadow:
+                0 3px 10px rgba(255, 122, 0, 0.30);
+
+            transition:
+                all 0.2s ease;
+        }
+
+        .print-now-btn:hover {
+            background: #e96800 !important;
+            color: #fff !important;
+
+            transform: translateY(-1px);
+
+            box-shadow:
+                0 5px 14px rgba(255, 122, 0, 0.40);
+        }
+
+
+        /* Small blinking dot */
+
+        .print-now-dot {
+            width: 7px;
+            height: 7px;
+
+            background: #fff;
+
+            border-radius: 50%;
+
+            display: inline-block;
+
+            animation: printNowBlink 1.2s infinite;
+        }
+
+
+        @keyframes printNowBlink {
+
+            0%,
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+
+            50% {
+                opacity: 0.35;
+                transform: scale(0.75);
+            }
+        }
+
+
+        /* =========================================
+   MOBILE
+========================================= */
+
+        @media (max-width: 991px) {
+
+            .print-now-menu {
+                margin-left: 0;
+                margin-top: 8px;
+            }
+
+            .print-now-btn {
+                display: inline-flex !important;
+
+                padding: 10px 18px !important;
+
+                width: auto;
+            }
+
+            .print-now-menu {
+                display: none !important;
+            }
+        }
+    </style>
     @yield('custom_header')
 </head>
 
 <body>
 
     <div id="page">
-
         <header class="version_1">
             <div class="layer"></div><!-- Mobile menu overlay mask -->
             <div class="main_header Sticky">
                 <div class="container">
                     <div class="row small-gutters">
-                        <div class="col-xl-3 col-lg-3 d-lg-flex align-items-center">
+                        <div class="col-xl-2 col-lg-2 d-lg-flex align-items-center">
                             <div id="logo">
                                 <a href="{{ route('home') }}"><img src="{{ asset('uploads/logo') . '/' . store_data()['logo'] }}" alt="" width="100" height="35"></a>
                             </div>
                         </div>
-                        <nav class="col-xl-6 col-lg-7">
+                        <nav class="col-xl-8 col-lg-8">
                             <a class="open_close" href="javascript:void(0);">
                                 <div class="hamburger hamburger--spin">
                                     <div class="hamburger-box">
@@ -60,42 +156,149 @@
                                     </div>
                                 </div>
                             </a>
-                            <!-- Mobile menu button -->
+
+
                             <div class="main-menu">
+
                                 <div id="header_menu">
-                                    <a href="{{ route('home') }}"><img src="{{ asset('uploads/logo') . '/' . store_data()['logo'] }}" alt="" width="100" height="35"></a>
-                                    <a href="#" class="open_close" id="close_in"><i class="ti-close"></i></a>
+
+                                    <a href="{{ route('home') }}">
+                                        <img
+                                            src="{{ asset('uploads/logo') . '/' . store_data()['logo'] }}"
+                                            alt=""
+                                            width="100"
+                                            height="35">
+                                    </a>
+
+                                    <a
+                                        href="#"
+                                        class="open_close"
+                                        id="close_in">
+                                        <i class="ti-close"></i>
+                                    </a>
+
                                 </div>
+
+
                                 <ul>
-                                    <li>
-                                        <a href="{{ route('home') }}">Home</a>
-                                    </li>
-                                    <li>
-                                        <a href="{{ route('calculator') }}">Pricing Calculator</a>
-                                    </li>
-                                    <li>
-                                        <a href="{{ route('upload') }}">Print Now</a>
-                                    </li>
 
                                     <li>
-                                        <a href="<?php echo route('page', ['about_us']); ?>">About Us</a>
+                                        <a href="{{ route('home') }}">
+                                            Home
+                                        </a>
                                     </li>
+
+
                                     <li>
-                                        <a href="<?php echo route('page', ['contact_us']); ?>">Contact Us</a>
+                                        <a href="{{ route('calculator') }}">
+                                            Pricing Calculator
+                                        </a>
                                     </li>
+
+
+                                    <li>
+                                        <a href="{{ route('upload') }}">
+                                            Print Now
+                                        </a>
+                                    </li>
+
+
+                                    <li>
+                                        <a href="<?php echo route('page', ['about_us']); ?>">
+                                            About Us
+                                        </a>
+                                    </li>
+
+
+                                    <li>
+                                        <a href="<?php echo route('page', ['contact_us']); ?>">
+                                            Contact Us
+                                        </a>
+                                    </li>
+
+
+                                    {{-- LOGOUT --}}
+
+                                    @if(request()->cookie('loggedin_number'))
+
+                                    <li>
+                                        <a
+                                            href="{{ route('logout') }}"
+                                            onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+                                            <i class="ti-power-off"></i>
+                                            Logout
+                                        </a>
+                                    </li>
+
+                                    @endif
+
                                 </ul>
-                            </div>
-                            <!--/main-menu -->
-                        </nav>
 
+                            </div>
+
+                        </nav>
+                        <div class="col-xl-2 col-lg-2 d-lg-flex align-items-center">
+
+                            <span class="print-now-menu">
+                                <a href="{{ route('upload') }}" class="print-now-btn">
+                                    <span class="print-now-dot"></span>
+                                    Print Now
+                                </a>
+                            </span>
+                        </div>
                     </div>
-                    <!-- /row -->
                 </div>
             </div>
-            <!-- /main_header -->
         </header>
-        <!-- /header -->
 
+
+        {{-- LOGOUT FORM --}}
+
+        @if(request()->cookie('loggedin_number'))
+
+        <form
+            id="logout-form"
+            action="{{ route('logout') }}"
+            method="POST"
+            style="display:none;">
+            @csrf
+        </form>
+
+        @endif
+
+
+        {{-- CLEAR LOCAL DATA AFTER LOGOUT --}}
+
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+
+                const logoutForm =
+                    document.getElementById('logout-form');
+
+                if (!logoutForm) {
+                    return;
+                }
+
+
+                logoutForm.addEventListener('submit', function() {
+
+                    try {
+
+                        localStorage.clear();
+
+                    } catch (e) {}
+
+
+                    try {
+
+                        sessionStorage.clear();
+
+                    } catch (e) {}
+
+                });
+
+            });
+        </script>
         <div class="top_panel">
             <div class="container header_panel">
                 <a href="#0" class="btn_close_top_panel"><i class="ti-close"></i></a>

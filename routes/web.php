@@ -26,6 +26,8 @@ Auth::routes();
 // Auth::routes(['register' => false]);
 
 Route::get('/', [FrontController::class, 'index'])->name('home');
+Route::post('/logout', [FrontController::class, 'logout'])
+    ->name('logout');
 Route::get('/calculator', [FrontController::class, 'calculator'])->name('calculator');
 Route::post('/calculator/calculate', [FrontController::class, 'calculateCalculatorPrice'])
     ->name('calculator.calculate');

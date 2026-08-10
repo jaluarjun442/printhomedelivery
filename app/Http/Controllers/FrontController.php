@@ -26,6 +26,50 @@ class FrontController extends Controller
      *
      * @return \Illuminate\Contracts\Support\Renderable
      */
+    public function logout(Request $request)
+    {
+        /*
+    |--------------------------------------------------------------------------
+    | Clear Laravel session
+    |--------------------------------------------------------------------------
+    */
+
+        $request->session()->forget([
+            'upload_selected_document_ids',
+            'print_options',
+            'checkout',
+            'shipping',
+            'selected_courier',
+        ]);
+
+
+        /*
+    |--------------------------------------------------------------------------
+    | Completely invalidate session
+    |--------------------------------------------------------------------------
+    */
+
+        $request->session()->invalidate();
+
+        $request->session()->regenerateToken();
+
+
+        /*
+    |--------------------------------------------------------------------------
+    | Redirect to home
+    |--------------------------------------------------------------------------
+    */
+
+        return redirect()
+            ->route('home')
+            ->with(
+                'success',
+                'You have been logged out successfully.'
+            )
+            ->withCookie(
+                cookie()->forget('loggedin_number')
+            );
+    }
     public function index(Request $request)
     {
         $data = Products::orderBy('id', 'desc')

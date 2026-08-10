@@ -13,6 +13,16 @@ class CheckoutController extends Controller
     {
 
 
+        if (!$request->cookie('loggedin_number')) {
+
+            return redirect()
+                ->route('upload')
+                ->with(
+                    'error',
+                    'Please login before accessing checkout.'
+                );
+        }
+
         $selectedIds = session(
             'upload_selected_document_ids',
             []
