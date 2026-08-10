@@ -1833,9 +1833,10 @@
                         </div>
 
 
-                        <div class="file-size">
-                            ${formatFileSize(file.size)}
-                        </div>
+                     <div class="file-size">
+                        ${formatFileSize(file.size)}
+                        ${file.pages ? ' • ' + file.pages + (file.pages == 1 ? ' page' : ' pages') : ''}
+                    </div>
 
 
                         ${statusHtml}
