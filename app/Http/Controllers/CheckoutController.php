@@ -217,19 +217,7 @@ class CheckoutController extends Controller
 
 
 
-            if (
-                $printSide === 'double'
-            ) {
-
-                $billableSheets =
-                    (int) ceil(
-                        $pages / 2
-                    );
-            } else {
-
-                $billableSheets =
-                    $pages;
-            }
+            $billableSheets = $pages;
 
 
 

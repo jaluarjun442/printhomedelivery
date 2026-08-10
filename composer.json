@@ -15,7 +15,7 @@
         "laravel/framework": "^8.0",
         "laravel/tinker": "^2.0",
         "laravel/ui": "^2.3",
-        "smalot/pdfparser": "^2.12",
+        "tecnickcom/tc-lib-pdf": "^8.68",
         "yajra/laravel-datatables-oracle": "*"
     },
     "require-dev": {

@@ -517,6 +517,25 @@
         }
 
     }
+
+    .processing-spinner {
+        display: inline-block;
+        animation: processingSpin 1s linear infinite;
+    }
+
+    .processing-spinner i {
+        display: inline-block;
+    }
+
+    @keyframes processingSpin {
+        from {
+            transform: rotate(0deg);
+        }
+
+        to {
+            transform: rotate(360deg);
+        }
+    }
 </style>
 @endsection
 
@@ -777,13 +796,6 @@
                         <i class="bi bi-arrow-right ms-2"></i>
                     </button>
 
-
-
-                    <!-- Success -->
-                    <!-- <div id="uploadSuccess" class="alert alert-success mt-3 d-none">
-                        <i class="bi bi-check-circle-fill me-2"></i>
-                        <span id="uploadSuccessText">Files uploaded successfully.</span>
-                    </div> -->
 
                 </div>
             </div>
@@ -1680,7 +1692,6 @@
             }
         }
 
-
         /* =====================================================
            RENDER FILES
         ===================================================== */
@@ -1689,84 +1700,192 @@
 
             $fileList.empty();
 
+
             if (selectedFiles.length === 0) {
+
                 $fileListContainer.addClass('d-none');
+
                 $continueUpload.addClass('d-none');
+
                 updateSummary();
+
                 return;
             }
 
+
             $fileListContainer.removeClass('d-none');
+
 
             if (!isUploading) {
                 updateContinueButton();
             }
 
-            $.each(selectedFiles, function(index, file) {
 
-                const extension = getExtension(file.name);
-                const icon = getFileIcon(extension);
+            $.each(
+                selectedFiles,
+                function(index, file) {
 
-                const fileHtml = `
-                <div class="upload-file-item" data-index="${index}">
+                    const extension =
+                        getExtension(file.name);
+
+                    const icon =
+                        getFileIcon(extension);
+
+
+                    /*
+                    =================================================
+                    FILE STATUS
+                    =================================================
+                    */
+
+                    let statusHtml = '';
+
+
+                    /*
+                    Already uploaded
+                    */
+
+                    if (
+                        file.isPrevious ||
+                        file.uploaded_document_id ||
+                        uploadedFileKeys[
+                            getFileKey(file)
+                        ]
+                    ) {
+
+                        statusHtml = `
+                    <span class="file-uploaded-badge">
+                        <i class="bi bi-check-circle-fill me-1"></i>
+                        Uploaded
+                    </span>
+                `;
+
+                    }
+
+
+                    /*
+                    Currently processing
+                    */
+                    else if (
+                        file.uploadStatus ===
+                        'processing'
+                    ) {
+
+                        statusHtml = `
+                    <span
+                        class="file-uploaded-badge file-processing-badge"
+                    >
+						<span class="processing-spinner me-1">
+    					<i class="bi bi-arrow-repeat"></i>
+						</span>
+						Processing...
+                    </span>
+                `;
+
+                    }
+
+
+                    /*
+                    Currently uploading
+                    */
+                    else if (
+                        file.uploadStatus ===
+                        'uploading'
+                    ) {
+
+                        statusHtml = `
+                    <span
+                        class="file-uploaded-badge file-uploading-badge"
+                    >
+                        <i class="bi bi-cloud-arrow-up-fill me-1"></i>
+                        Uploading...
+                    </span>
+                `;
+
+                    }
+
+
+                    /*
+                    =================================================
+                    FILE HTML
+                    =================================================
+                    */
+
+                    const fileHtml = `
+
+                <div
+                    class="upload-file-item"
+                    data-index="${index}"
+                >
 
                     <div class="file-icon">
                         <i class="bi ${icon}"></i>
                     </div>
 
+
                     <div class="file-details">
+
                         <div
                             class="file-name"
-                            title="${escapeHtml(file.name)}">
+                            title="${escapeHtml(file.name)}"
+                        >
                             ${escapeHtml(file.name)}
                         </div>
 
-                        ${
-                            file.pages !== undefined &&
-                            file.pages !== null &&
-                            file.pages !== ''
-                                ? `
-                                    <div class="file-size">
-                                        <strong>${parseInt(file.pages, 10)}</strong>
-                                        ${parseInt(file.pages, 10) === 1 ? 'page' : 'pages'}
-                                    </div>
-                                  `
-                                : ''
-                        }
 
-                        ${
-                            file.isPrevious || uploadedFileKeys[getFileKey(file)]
-                                ? '<span class="file-uploaded-badge"><i class="bi bi-check-circle-fill me-1"></i>Uploaded</span>'
-                                : ''
-                        }
+                        <div class="file-size">
+                            ${formatFileSize(file.size)}
+                        </div>
+
+
+                        ${statusHtml}
+
                     </div>
+
 
                     <button
                         type="button"
                         class="remove-file"
-                        data-index="${index}">
+                        data-index="${index}"
+                    >
                         <i class="bi bi-x-lg"></i>
                     </button>
 
                 </div>
+
             `;
 
-                $fileList.append(fileHtml);
-            });
+
+                    $fileList.append(fileHtml);
+
+                }
+            );
+
 
             updateSummary();
 
+
             if (scrollToList) {
-                setTimeout(function() {
-                    if ($fileListContainer.length) {
-                        $('html, body').animate({
-                            scrollTop: $fileListContainer.offset().top - 80
-                        }, 400);
-                    }
-                }, 100);
+
+                setTimeout(
+                    function() {
+
+                        if ($fileListContainer.length) {
+
+                            $('html, body').animate({
+                                    scrollTop: $fileListContainer.offset().top -
+                                        80
+                                },
+                                400
+                            );
+
+                        }
+
+                    },
+                    100
+                );
             }
         }
-
 
         /* =====================================================
            REMOVE FILE
@@ -2269,236 +2388,693 @@
         /* =====================================================
            START UPLOAD
         ===================================================== */
-
         function startDocumentUpload() {
 
             if (isUploading) {
                 return;
             }
 
-            const pendingFiles = getPendingFiles();
+
+            /*
+            =====================================================
+            GET ONLY PENDING FILES
+            =====================================================
+            */
+
+            const pendingFiles =
+                getPendingFiles();
+
 
             if (!pendingFiles.length) {
+
                 updateContinueButton();
+
                 return;
             }
 
+
             clearError();
-            $('#uploadSuccess').addClass('d-none');
+
+            $('#uploadSuccess')
+                .addClass('d-none');
+
 
             isUploading = true;
+
 
             $continueUpload
                 .prop('disabled', true)
                 .addClass('d-none');
 
-            $('#uploadProgressContainer').removeClass('d-none');
 
-            updateUploadProgress(
-                0,
-                'Preparing your files...',
-                'Preparing upload...'
+            $('#uploadProgressContainer')
+                .removeClass('d-none');
+
+
+            /*
+            =====================================================
+            MARK ALL PENDING FILES AS UPLOADING
+            =====================================================
+            */
+
+            $.each(
+                pendingFiles,
+                function(index, file) {
+
+                    file.uploadStatus =
+                        'uploading';
+
+                }
             );
 
-            let formData = new FormData();
 
-            $.each(pendingFiles, function(index, file) {
-                formData.append('documents[]', file);
-            });
+            renderFiles(false);
+
+
+            /*
+            =====================================================
+            INITIAL PROGRESS
+            =====================================================
+            */
+
+            updateUploadProgress(
+
+                0,
+
+                'Preparing your files...',
+
+                'Getting your documents ready for upload...'
+
+            );
+
+
+            /*
+            =====================================================
+            FORM DATA
+            =====================================================
+            */
+
+            let formData =
+                new FormData();
+
+
+            $.each(
+                pendingFiles,
+                function(index, file) {
+
+                    formData.append(
+                        'documents[]',
+                        file
+                    );
+
+                }
+            );
+
+
+            /*
+            =====================================================
+            AJAX UPLOAD
+            =====================================================
+            */
 
             $.ajax({
+
                 url: UPLOAD_URL,
+
                 type: 'POST',
+
                 data: formData,
+
                 processData: false,
+
                 contentType: false,
+
                 cache: false,
+
+
                 headers: {
-                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content'),
+
+                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]')
+                        .attr('content'),
+
                     'Accept': 'application/json'
+
                 },
+
+
+                /*
+                =================================================
+                UPLOAD PROGRESS
+                =================================================
+                */
+
                 xhr: function() {
 
-                    let xhr = new window.XMLHttpRequest();
+                    let xhr =
+                        new window.XMLHttpRequest();
 
-                    xhr.upload.addEventListener('progress', function(e) {
 
-                        if (!e.lengthComputable) {
-                            return;
-                        }
+                    xhr.upload.addEventListener(
 
-                        let percent = Math.round((e.loaded / e.total) * 100);
+                        'progress',
 
-                        updateUploadProgress(
-                            percent,
-                            percent < 100 ? 'Uploading your files...' : 'Finishing upload...',
-                            percent < 100 ? 'Uploading...' : 'Processing your documents...'
-                        );
+                        function(e) {
 
-                    }, false);
+                            if (
+                                !e.lengthComputable
+                            ) {
+
+                                return;
+
+                            }
+
+
+                            let percent =
+                                Math.round(
+                                    (
+                                        e.loaded /
+                                        e.total
+                                    ) * 100
+                                );
+
+
+                            /*
+                            =========================================
+                            FILE IS STILL UPLOADING
+                            =========================================
+                            */
+
+                            if (
+                                percent < 100
+                            ) {
+
+                                updateUploadProgress(
+
+                                    percent,
+
+                                    'Uploading your files...',
+
+                                    'Please wait while your files are being uploaded.'
+
+                                );
+
+
+                                /*
+                                Keep individual files
+                                in Uploading state.
+                                */
+
+                                $.each(
+                                    pendingFiles,
+                                    function(
+                                        index,
+                                        file
+                                    ) {
+
+                                        file.uploadStatus =
+                                            'uploading';
+
+                                    }
+                                );
+
+
+                                renderFiles(false);
+
+                            }
+
+
+                            /*
+                            =========================================
+                            FILE UPLOAD REACHED 100%
+
+                            IMPORTANT:
+                            Backend processing may still take time.
+                            =========================================
+                            */
+                            else {
+
+                                /*
+                                Mark all files as processing.
+                                */
+
+                                $.each(
+                                    pendingFiles,
+                                    function(
+                                        index,
+                                        file
+                                    ) {
+
+                                        file.uploadStatus =
+                                            'processing';
+
+                                    }
+                                );
+
+
+                                renderFiles(false);
+
+
+                                updateUploadProgress(
+
+                                    100,
+
+                                    'Upload complete',
+
+                                    'Processing your documents... Please wait.'
+
+                                );
+
+                            }
+
+                        },
+
+                        false
+
+                    );
+
 
                     return xhr;
+
                 },
+
+
+                /*
+                =================================================
+                SUCCESS
+                =================================================
+                */
+
                 success: function(response) {
 
                     isUploading = false;
 
-                    if (!response || !response.success) {
 
-                        $('#uploadProgressContainer').addClass('d-none');
-                        $continueUpload
-                            .removeClass('d-none')
-                            .prop('disabled', false)
-                            .html('Upload &amp; Continue <i class="bi bi-arrow-right ms-2"></i>');
+                    /*
+                    =============================================
+                    INVALID RESPONSE
+                    =============================================
+                    */
 
-                        showError(
-                            (response && response.message) || 'Upload failed.'
+                    if (
+                        !response ||
+                        !response.success
+                    ) {
+
+                        /*
+                        Reset status back to waiting.
+                        */
+
+                        $.each(
+                            pendingFiles,
+                            function(
+                                index,
+                                file
+                            ) {
+
+                                file.uploadStatus =
+                                    null;
+
+                            }
                         );
 
-                        return;
-                    }
 
-                    /*
-                     * Mark ONLY the files sent in this request as uploaded.
-                     * The backend returns one document record per uploaded file.
-                     */
-                    const uploadedDocuments =
-                        Array.isArray(response.documents) ? response.documents : [];
+                        renderFiles(false);
 
-                    /*
-                     * Mark ONLY the files sent in this request as uploaded.
-                     * Do not include `pages` in the key because the backend
-                     * calculates pages only after the file is uploaded.
-                     */
-                    $.each(pendingFiles, function(index, file) {
 
-                        uploadedFileKeys[
-                            [
-                                file.name,
-                                file.size,
-                                file.lastModified,
-                                file.type || ''
-                            ].join('|')
-                        ] = true;
+                        $('#uploadProgressContainer')
+                            .addClass('d-none');
 
-                    });
-
-                    /*
-                     * Store the database ID AND backend-calculated page count
-                     * against the exact pending file.
-                     *
-                     * The backend returns one document record per uploaded
-                     * file in the same order as the `documents[]` request.
-                     */
-                    $.each(uploadedDocuments, function(index, uploadedDocument) {
-
-                        const documentId = parseInt(uploadedDocument.id, 10);
-
-                        if (!documentId) {
-                            return;
-                        }
-
-                        uploadedDocumentIds[documentId] = true;
-
-                        const uploadedFile = pendingFiles[index];
-
-                        if (!uploadedFile) {
-                            return;
-                        }
-
-                        uploadedFile.uploaded_document_id = documentId;
-
-                        /* Use the actual page count returned by Laravel. */
-                        if (
-                            uploadedDocument.pages !== undefined &&
-                            uploadedDocument.pages !== null
-                        ) {
-                            uploadedFile.pages = parseInt(
-                                uploadedDocument.pages,
-                                10
-                            );
-                        }
-
-                    });
-
-                    /* Save newly uploaded document IDs as the current order selection. */
-                    syncCurrentSelectionToSession();
-
-                    renderFiles(false);
-                    updateUploadProgress(
-                        100,
-                        'Upload complete!',
-                        'Your documents are ready.'
-                    );
-
-                    $('#uploadSuccess')
-                        .removeClass('d-none');
-
-                    // $('#uploadSuccessText')
-                    //     .text(
-                    //         response.count +
-                    //         ' file(s) uploaded successfully.'
-                    //     );
-
-                    /*
-                     * IMPORTANT:
-                     * Upload is finished. Bring Continue button back.
-                     */
-
-                    updateContinueButton();
-                },
-                error: function(xhr) {
-
-                    isUploading = false;
-
-                    /*
-                     * IMPORTANT:
-                     * If backend says mobile verification is required,
-                     * DON'T show the red "Mobile verification required"
-                     * error. Open verification popup instead.
-                     */
-
-                    if (xhr.status === 401) {
-
-                        $('#uploadProgressContainer').addClass('d-none');
 
                         $continueUpload
                             .removeClass('d-none')
-                            .prop('disabled', false)
-                            .attr('data-uploaded', '0')
+                            .prop(
+                                'disabled',
+                                false
+                            )
                             .html(
                                 'Upload &amp; Continue ' +
                                 '<i class="bi bi-arrow-right ms-2"></i>'
                             );
 
-                        clearError();
-                        openVerificationModal();
+
+                        showError(
+
+                            (
+                                response &&
+                                response.message
+                            ) ||
+                            'Upload failed.'
+
+                        );
+
+
                         return;
                     }
 
-                    let message = 'Something went wrong while uploading your files.';
 
-                    if (xhr.responseJSON && xhr.responseJSON.message) {
-                        message = xhr.responseJSON.message;
+                    /*
+                    =============================================
+                    BACKEND RETURNED DOCUMENTS
+                    =============================================
+                    */
+
+                    const uploadedDocuments =
+                        Array.isArray(
+                            response.documents
+                        ) ?
+                        response.documents : [];
+
+
+                    /*
+                    =============================================
+                    MARK FILES AS UPLOADED
+                    =============================================
+                    */
+
+                    $.each(
+                        pendingFiles,
+                        function(
+                            index,
+                            file
+                        ) {
+
+                            uploadedFileKeys[
+                                getFileKey(file)
+                            ] = true;
+
+
+                            /*
+                            Final state
+                            */
+
+                            file.uploadStatus =
+                                'uploaded';
+
+                        }
+                    );
+
+
+                    /*
+                    =============================================
+                    STORE DATABASE IDS
+                    =============================================
+                    */
+
+                    $.each(
+
+                        uploadedDocuments,
+
+                        function(
+                            index,
+                            uploadedDocument
+                        ) {
+
+                            const documentId =
+                                parseInt(
+                                    uploadedDocument.id,
+                                    10
+                                );
+
+
+                            if (!documentId) {
+
+                                return;
+
+                            }
+
+
+                            uploadedDocumentIds[
+                                documentId
+                            ] = true;
+
+
+                            /*
+                            Find matching selected file.
+                            */
+
+                            $.each(
+
+                                selectedFiles,
+
+                                function(
+                                    fileIndex,
+                                    file
+                                ) {
+
+                                    if (
+
+                                        !file.isPrevious &&
+
+                                        !file.uploaded_document_id &&
+
+                                        file.name ===
+                                        uploadedDocument.name
+
+                                    ) {
+
+                                        /*
+                                        Save DB ID
+                                        */
+
+                                        file.uploaded_document_id =
+                                            documentId;
+
+
+                                        /*
+                                        Save page count
+                                        */
+
+                                        if (
+
+                                            uploadedDocument.pages !==
+                                            undefined &&
+
+                                            uploadedDocument.pages !==
+                                            null
+
+                                        ) {
+
+                                            file.pages =
+                                                parseInt(
+                                                    uploadedDocument.pages,
+                                                    10
+                                                );
+
+                                        }
+
+
+                                        /*
+                                        Final uploaded state
+                                        */
+
+                                        file.uploadStatus =
+                                            'uploaded';
+
+
+                                        return false;
+
+                                    }
+
+                                }
+
+                            );
+
+                        }
+
+                    );
+
+
+                    /*
+                    =============================================
+                    RENDER FINAL FILE STATUS
+                    =============================================
+                    */
+
+                    renderFiles(false);
+
+
+                    /*
+                    =============================================
+                    FINAL PROGRESS
+                    =============================================
+                    */
+
+                    updateUploadProgress(
+
+                        100,
+
+                        'Upload completed successfully',
+
+                        'All documents have been processed and are ready.'
+
+                    );
+
+
+                    /*
+                    =============================================
+                    SUCCESS MESSAGE
+                    =============================================
+                    */
+
+                    $('#uploadSuccess')
+                        .removeClass('d-none');
+
+
+                    /*
+                    =============================================
+                    BRING CONTINUE BUTTON BACK
+                    =============================================
+                    */
+
+                    updateContinueButton();
+
+                },
+
+
+                /*
+                =================================================
+                ERROR
+                =================================================
+                */
+
+                error: function(xhr) {
+
+                    isUploading = false;
+
+
+                    /*
+                    =============================================
+                    MOBILE VERIFICATION REQUIRED
+                    =============================================
+                    */
+
+                    if (
+                        xhr.status === 401
+                    ) {
+
+                        /*
+                        Reset file status.
+                        */
+
+                        $.each(
+                            pendingFiles,
+                            function(
+                                index,
+                                file
+                            ) {
+
+                                file.uploadStatus =
+                                    null;
+
+                            }
+                        );
+
+
+                        renderFiles(false);
+
+
+                        $('#uploadProgressContainer')
+                            .addClass('d-none');
+
+
+                        $continueUpload
+                            .removeClass('d-none')
+                            .prop(
+                                'disabled',
+                                false
+                            )
+                            .attr(
+                                'data-uploaded',
+                                '0'
+                            )
+                            .html(
+
+                                'Upload &amp; Continue ' +
+
+                                '<i class="bi bi-arrow-right ms-2"></i>'
+
+                            );
+
+
+                        clearError();
+
+                        openVerificationModal();
+
+                        return;
+
                     }
 
-                    $('#uploadProgressContainer').addClass('d-none');
+
+                    /*
+                    =============================================
+                    OTHER ERROR
+                    =============================================
+                    */
+
+                    $.each(
+                        pendingFiles,
+                        function(
+                            index,
+                            file
+                        ) {
+
+                            file.uploadStatus =
+                                null;
+
+                        }
+                    );
+
+
+                    renderFiles(false);
+
+
+                    let message =
+                        'Something went wrong while uploading your files.';
+
+
+                    if (
+
+                        xhr.responseJSON &&
+
+                        xhr.responseJSON.message
+
+                    ) {
+
+                        message =
+                            xhr.responseJSON.message;
+
+                    }
+
+
+                    $('#uploadProgressContainer')
+                        .addClass('d-none');
+
 
                     $continueUpload
                         .removeClass('d-none')
-                        .prop('disabled', false)
-                        .attr('data-uploaded', '0')
+                        .prop(
+                            'disabled',
+                            false
+                        )
+                        .attr(
+                            'data-uploaded',
+                            '0'
+                        )
                         .html(
+
                             'Upload &amp; Continue ' +
+
                             '<i class="bi bi-arrow-right ms-2"></i>'
+
                         );
 
+
                     showError(message);
+
                 }
+
             });
         }
-
-
         /* =====================================================
            PROGRESS UI
         ===================================================== */
@@ -2577,61 +3153,45 @@
                 .prop('disabled', false);
 
             if (pending.length > 0) {
+
                 $continueUpload.html(
                     'Upload &amp; Continue ' +
                     '<i class="bi bi-arrow-right ms-2"></i>'
                 );
+
             } else {
+
                 $continueUpload.html(
                     'Continue to Print ' +
                     '<i class="bi bi-arrow-right ms-2"></i>'
                 );
-
             }
-
-
-            // =====================================================
-            // CONTINUE BUTTON CLICK
-            // =====================================================
-
-            $continueUpload.off('click.printOptions');
-
-            $continueUpload.on(
-                'click.printOptions',
-                function(e) {
-
-                    e.preventDefault();
-
-                    window.location.href =
-                        "{{ route('print.options', []) }}";
-
-                }
-            );
-
         }
 
 
         function continueToPrint() {
+
             const previousIds = getSelectedPreviousIds();
 
             /*
-             * All newly selected physical files are uploaded at this point.
-             * Previous files are already stored on the server, so only their
-             * database IDs are needed for the next print/order step.
-             *
-             * Keep the actual print/order route unchanged here because the
-             * route was not present in the supplied file. The IDs are exposed
-             * on the button for the next-step code to consume.
-             */
+            |--------------------------------------------------------------------------
+            | Save selected previous IDs on button
+            |--------------------------------------------------------------------------
+            */
+
             $continueUpload.attr(
                 'data-previous-file-ids',
                 JSON.stringify(previousIds)
             );
 
-            console.log(
-                'All selected files are uploaded. Previous document IDs:',
-                previousIds
-            );
+            /*
+            |--------------------------------------------------------------------------
+            | Go to Print Options
+            |--------------------------------------------------------------------------
+            */
+
+            window.location.href =
+                "{{ route('print.options', []) }}";
         }
 
 

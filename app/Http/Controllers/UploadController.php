@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Hash;
 use App\Models\PrintDocument;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
-use Smalot\PdfParser\Parser;
+
 
 class UploadController extends Controller
 {
@@ -77,7 +77,6 @@ class UploadController extends Controller
             )
         );
     }
-
 
     public function status(Request $request)
     {
@@ -215,7 +214,8 @@ class UploadController extends Controller
         }
 
 
-
+        set_time_limit(600);
+        ini_set('max_execution_time', '600');
 
         $request->validate([
 
@@ -258,7 +258,7 @@ class UploadController extends Controller
 
 
 
-        $pdfParser = new Parser();
+        // $pdfParser = new Parser();
 
 
 
@@ -321,44 +321,17 @@ class UploadController extends Controller
             $pages = 1;
 
 
-
             if ($extension === 'pdf') {
 
-                try {
-
-                    $pdf = $pdfParser->parseFile(
-                        $uploadDirectory .
-                            DIRECTORY_SEPARATOR .
-                            $filename
-                    );
-
-                    $pages = count(
-                        $pdf->getPages()
-                    );
-                } catch (\Throwable $e) {
-
-                    /*
-                If page counting fails,
-                keep 1 as fallback.
-                */
-
-                    $pages = 1;
-                }
-            }
-
-
-            /*
-        =================================================
-        Images
-
-        JPG / JPEG / PNG / GIF / WEBP
-        = 1 page
-        =================================================
-        */ else {
+                $pages = $this->getPdfPageCount(
+                    $uploadDirectory .
+                        DIRECTORY_SEPARATOR .
+                        $filename
+                );
+            } else {
 
                 $pages = 1;
             }
-
 
 
             $storedPath = $filename;
@@ -456,6 +429,54 @@ class UploadController extends Controller
             $uploadedDocuments
 
         ]);
+    }
+    private function getPdfPageCount($filePath)
+    {
+        try {
+
+            $pdf = new \Com\Tecnick\Pdf\Tcpdf();
+
+            $sourceId = $pdf->setImportSourceFile(
+                $filePath
+            );
+
+            $pageCount = $pdf->getSourcePageCount(
+                $sourceId
+            );
+
+            /*
+        |--------------------------------------------------------------------------
+        | Release parser resources
+        |--------------------------------------------------------------------------
+        */
+
+            if (
+                isset($pdf->importer) &&
+                $pdf->importer
+            ) {
+
+                $pdf->importer->cleanUp();
+            }
+
+            return max(
+                1,
+                (int) $pageCount
+            );
+        } catch (\Throwable $e) {
+
+            \Log::error(
+                'PDF page count failed',
+                [
+                    'file' =>
+                    $filePath,
+
+                    'error' =>
+                    $e->getMessage()
+                ]
+            );
+
+            return 1;
+        }
     }
     public function saveSelectedFiles(Request $request)
     {

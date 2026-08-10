@@ -966,6 +966,20 @@
             margin-left: 0 !important;
         }
     }
+
+    .previous-file-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px;
+        border-bottom: 1px solid #e5e5e5;
+        background: #fff;
+        cursor: pointer;
+    }
+
+    .previous-file-item:hover {
+        background: #f7f9ff;
+    }
 </style>
 
 @endsection
@@ -1594,7 +1608,149 @@
                 );
 
         }
+        /* =====================================================
+           RESTORE SAVED PRINT OPTIONS
+        ===================================================== */
 
+        var savedPrintOptions =
+            @json(session('print_options', []));
+
+
+        function restoreSavedPrintOptions() {
+
+            if (
+                !savedPrintOptions ||
+                typeof savedPrintOptions !== 'object'
+            ) {
+                return;
+            }
+
+
+            $('.print-file-card').each(function() {
+
+                var $card = $(this);
+
+                var documentId = parseInt(
+                    $card.data('document-id'),
+                    10
+                );
+
+                if (!documentId) {
+                    return;
+                }
+
+
+                var saved =
+                    savedPrintOptions[documentId];
+
+                if (!saved) {
+                    return;
+                }
+
+
+                /*
+                =================================================
+                BUTTON OPTIONS
+                =================================================
+                */
+
+                [
+                    'color_mode',
+                    'print_side',
+                    'page_size',
+                    'orientation'
+                ].forEach(function(optionName) {
+
+                    var savedValue =
+                        saved[optionName];
+
+                    if (!savedValue) {
+                        return;
+                    }
+
+
+                    var $buttons =
+                        $card.find(
+                            '.print-option-btn[data-option="' +
+                            optionName +
+                            '"]'
+                        );
+
+
+                    if (!$buttons.length) {
+                        return;
+                    }
+
+
+                    $buttons.removeClass('active');
+
+
+                    $buttons
+                        .filter(
+                            '[data-value="' +
+                            savedValue +
+                            '"]'
+                        )
+                        .first()
+                        .addClass('active');
+
+                });
+
+
+                /*
+                =================================================
+                BINDING
+                =================================================
+                */
+
+                if (
+                    saved.binding !== undefined &&
+                    saved.binding !== null
+                ) {
+
+                    $card
+                        .find(
+                            '.dynamic-binding-options'
+                        )
+                        .val(
+                            saved.binding
+                        );
+
+                }
+
+
+                /*
+                =================================================
+                COPIES
+                =================================================
+                */
+
+                var savedCopies =
+                    parseInt(
+                        saved.copies,
+                        10
+                    ) || 1;
+
+
+                $card
+                    .find(
+                        '.print-copies-value'
+                    )
+                    .text(
+                        savedCopies
+                    );
+
+            });
+
+
+            /*
+            =====================================================
+            RECALCULATE AFTER RESTORE
+            =====================================================
+            */
+
+            // updateEstimatedTotal();
+        }
 
         /* =====================================================
            FILE ACCORDION
@@ -1776,7 +1932,7 @@
                     renderColorOptions();
 
                     renderBindingOptions();
-
+                    restoreSavedPrintOptions();
 
                     /*
                      * Calculate prices.
@@ -2350,18 +2506,7 @@
              * Printable sides
              */
 
-            var printableSides;
-
-            if (printSide === 'double') {
-
-                printableSides =
-                    Math.ceil(pages / 2);
-
-            } else {
-
-                printableSides =
-                    pages;
-            }
+            var printableSides = pages;
 
 
             /*
@@ -3472,6 +3617,62 @@
                 .html(html);
 
         }
+        /* =====================================================
+   CLICK ANYWHERE ON PREVIOUS FILE ROW
+   ===================================================== */
+
+        $(document).on(
+            'click',
+            '.previous-file-item',
+            function(e) {
+
+                /*
+                If user clicked directly on checkbox,
+                let normal checkbox behaviour handle it.
+                */
+                if (
+                    $(e.target).is(
+                        '.previous-file-checkbox'
+                    )
+                ) {
+                    return;
+                }
+
+
+                var $checkbox =
+                    $(this).find(
+                        '.previous-file-checkbox:not(:disabled)'
+                    );
+
+
+                /*
+                Already added / disabled file
+                */
+                if (
+                    !$checkbox.length
+                ) {
+                    return;
+                }
+
+
+                /*
+                Toggle checkbox
+                */
+                $checkbox.prop(
+                    'checked',
+                    !$checkbox.prop('checked')
+                );
+
+
+                /*
+                Trigger existing change handler
+                so selected count + Add button
+                update automatically.
+                */
+                $checkbox.trigger('change');
+
+            }
+        );
         $(document).on(
             'change',
             '.previous-file-checkbox:not(:disabled)',

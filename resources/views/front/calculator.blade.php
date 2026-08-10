@@ -421,6 +421,7 @@
 @endsection
 
 @section('content')
+<div class="elemento_stick" id="stick_here"></div>
 <main>
     <section class="print-calculator-section py-4">
 

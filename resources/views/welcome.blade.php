@@ -603,6 +603,25 @@
 
                                 <tr>
                                     <td class="service-cell">
+                                        <h5>Standard B&amp;W</h5>
+                                        <p>75 GSM bright white paper</p>
+                                        <span class="popular-tag">
+                                            MOST POPULAR
+                                        </span>
+                                    </td>
+
+                                    <td class="text-center local-price">
+                                        <del>₹2–₹3</del>
+                                    </td>
+
+                                    <td class="text-center online-price">
+                                        <span class="price">₹0.50</span>
+                                        <span class="unit">/page</span>
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td class="service-cell">
                                         <h5>Premium Digital Color</h5>
                                         <p>High-saturation laser printing</p>
 
@@ -632,25 +651,6 @@
                                     <td class="text-center online-price">
                                         <span class="price">₹100 - ₹350</span>
                                         <span class="unit">/copy</span>
-                                    </td>
-                                </tr>
-
-                                <tr>
-                                    <td class="service-cell">
-                                        <h5>Standard B&amp;W</h5>
-                                        <p>75 GSM bright white paper</p>
-                                        <span class="popular-tag">
-                                            MOST POPULAR
-                                        </span>
-                                    </td>
-
-                                    <td class="text-center local-price">
-                                        <del>₹2–₹3</del>
-                                    </td>
-
-                                    <td class="text-center online-price">
-                                        <span class="price">₹0.50</span>
-                                        <span class="unit">/page</span>
                                     </td>
                                 </tr>
 
@@ -868,7 +868,7 @@
 
                                 <div class="mt-auto">
 
-                                    <a href="#" class="btn btn-primary rounded-0 py-3 fw-semibold">
+                                    <a href="{{ route('upload') }}" class="btn btn-primary rounded-0 py-3 fw-semibold">
                                         Order Standard Print
                                     </a>
 
@@ -934,7 +934,7 @@
 
                                 <div class="mt-auto">
 
-                                    <a href="#" class="btn btn-outline-dark rounded-0 py-3 fw-semibold">
+                                    <a href="{{ route('upload') }}" class="btn btn-outline-dark rounded-0 py-3 fw-semibold">
                                         Print in Color
                                     </a>
 
@@ -997,7 +997,7 @@
 
                                 <div class="mt-auto">
 
-                                    <a href="#" class="btn btn-outline-dark rounded-0 py-3 fw-semibold">
+                                    <a href="{{ route('upload') }}" class="btn btn-outline-dark rounded-0 py-3 fw-semibold">
                                         Print on Premium
                                     </a>
 
