@@ -291,6 +291,228 @@ MOBILE RESPONSIVE
         color: #fff !important;
         text-decoration: none;
     }
+
+    .shipping-options-list {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+
+    .shipping-option {
+        position: relative;
+
+        display: flex;
+        align-items: center;
+
+        min-height: 105px;
+
+        padding: 16px 18px;
+
+        border: 1px solid #ddd;
+
+        background: #fff;
+
+        cursor: pointer;
+
+        transition: all 0.15s ease;
+
+        text-align: left;
+    }
+
+
+    .shipping-option:hover {
+        border-color: #2856db;
+    }
+
+
+    .shipping-option.selected {
+        border-color: #2856db;
+
+        background: #f4f7ff;
+
+        box-shadow: 0 0 0 1px #2856db;
+    }
+
+
+    .shipping-option-radio {
+        width: 19px;
+        height: 19px;
+
+        margin-right: 12px;
+
+        flex-shrink: 0;
+
+        accent-color: #2856db;
+
+        cursor: pointer;
+    }
+
+
+    .shipping-option-main {
+        flex: 1;
+
+        min-width: 0;
+
+        text-align: left;
+    }
+
+
+    .shipping-option-header {
+        display: flex;
+
+        align-items: center;
+
+        justify-content: flex-start;
+
+        gap: 8px;
+
+        flex-wrap: wrap;
+
+        text-align: left;
+    }
+
+
+    .shipping-option-name {
+        font-size: 14px;
+
+        font-weight: 700;
+
+        color: #222;
+
+        line-height: 1.3;
+    }
+
+
+    .shipping-badge {
+        display: inline-flex;
+
+        align-items: center;
+
+        padding: 4px 8px;
+
+        font-size: 9px;
+
+        line-height: 1;
+
+        font-weight: 700;
+
+        letter-spacing: 1px;
+
+        color: #2856db;
+
+        background: #eaf0ff;
+
+        border: 1px solid #c9d7ff;
+    }
+
+
+    .shipping-option-delivery {
+        margin-top: 8px;
+
+        font-size: 13px;
+
+        font-weight: 500;
+
+        color: #555;
+
+        text-align: left;
+    }
+
+
+    .shipping-option-delivery-sub {
+        margin-top: 3px;
+
+        font-size: 11px;
+
+        color: #777;
+
+        text-align: left;
+    }
+
+
+    .shipping-option-price {
+        width: 110px;
+
+        flex-shrink: 0;
+
+        margin-left: 15px;
+
+        text-align: right;
+
+        font-size: 17px;
+
+        font-weight: 800;
+
+        color: #2856db;
+    }
+
+
+    .shipping-option-price small {
+        display: block;
+
+        margin-top: 4px;
+
+        font-size: 10px;
+
+        font-weight: 400;
+
+        color: #777;
+    }
+
+
+    .shipping-note {
+        display: flex;
+
+        align-items: center;
+
+        justify-content: center;
+
+        gap: 3px;
+
+        margin-top: 4px;
+
+        padding-top: 2px;
+
+        font-size: 12px;
+
+        font-weight: 600;
+
+        color: #2856db;
+    }
+
+
+    @media (max-width: 576px) {
+
+        .shipping-option {
+            min-height: 95px;
+
+            padding: 13px 12px;
+        }
+
+
+        .shipping-option-radio {
+            margin-right: 9px;
+        }
+
+
+        .shipping-option-name {
+            font-size: 13px;
+        }
+
+
+        .shipping-option-price {
+            width: 85px;
+
+            font-size: 15px;
+        }
+
+
+        .shipping-option-price small {
+            font-size: 9px;
+        }
+
+    }
 </style>
 
 @endsection
@@ -767,6 +989,24 @@ MOBILE RESPONSIVE
 
         /*
         =====================================================
+        SELECTED SHIPPING COURIER
+        =====================================================
+        */
+
+        let selectedShippingCourier = null;
+
+
+        /*
+        =====================================================
+        SHIPPING TIMER
+        =====================================================
+        */
+
+        let shippingTimer = null;
+
+
+        /*
+        =====================================================
         PAYMENT METHOD UI
         =====================================================
         */
@@ -785,6 +1025,845 @@ MOBILE RESPONSIVE
 
             }
         );
+
+
+        /*
+        =====================================================
+        PINCODE INPUT
+        =====================================================
+        */
+
+        $('#pincode').on(
+            'input',
+            function() {
+
+                let pincode =
+                    $(this)
+                    .val()
+                    .replace(/\D/g, '')
+                    .substring(0, 6);
+
+
+                $(this).val(pincode);
+
+
+                /*
+                -------------------------------------------------
+                RESET SHIPPING
+                -------------------------------------------------
+                */
+
+                if (
+                    pincode.length !== 6
+                ) {
+
+                    selectedShippingCourier =
+                        null;
+
+
+                    $('#shippingOptions')
+                        .html(
+                            'Enter your pincode to calculate ' +
+                            'delivery charges.'
+                        );
+
+
+                    $('#deliveryCharge')
+                        .text('₹0.00');
+
+
+                    updateCheckoutTotal();
+
+
+                    return;
+                }
+
+
+                /*
+                -------------------------------------------------
+                DEBOUNCE
+                -------------------------------------------------
+                */
+
+                clearTimeout(
+                    shippingTimer
+                );
+
+
+                shippingTimer =
+                    setTimeout(
+                        function() {
+
+                            calculateShipping(
+                                pincode
+                            );
+
+                        },
+                        500
+                    );
+
+            }
+        );
+
+
+        /*
+        =====================================================
+        CALCULATE SHIPPING
+        =====================================================
+        */
+
+        function calculateShipping(
+            pincode
+        ) {
+
+            selectedShippingCourier =
+                null;
+
+
+            $('#shippingOptions')
+                .html(`
+
+                <div class="shipping-loading">
+
+                    <div>
+
+                        <div
+                            class="spinner-border spinner-border-sm text-primary"
+                            role="status">
+                        </div>
+
+                    </div>
+
+                    <div class="mt-2">
+                        Calculating delivery charges...
+                    </div>
+
+                </div>
+
+            `);
+
+
+            $.ajax({
+
+                url: "{{ route('checkout.calculate.shipping') }}",
+
+                type: 'POST',
+
+                dataType: 'json',
+
+                data: {
+
+                    delivery_pincode: pincode,
+
+                    _token: "{{ csrf_token() }}"
+
+                },
+
+
+                success: function(response) {
+
+                    console.log(
+                        'Shipmozo Rate Response:',
+                        response
+                    );
+
+
+                    /*
+                    =========================================
+                    API FAILURE
+                    =========================================
+                    */
+
+                    if (
+                        !response ||
+                        !response.success ||
+                        !Array.isArray(
+                            response.couriers
+                        ) ||
+                        !response.couriers.length
+                    ) {
+
+                        $('#shippingOptions')
+                            .html(`
+
+                                <div class="text-danger small">
+
+                                    ${
+                                        response &&
+                                        response.message
+                                        ?
+                                        response.message
+                                        :
+                                        'No courier available for this pincode.'
+                                    }
+
+                                </div>
+
+                            `);
+
+
+                        $('#deliveryCharge')
+                            .text('₹0.00');
+
+
+                        updateCheckoutTotal();
+
+
+                        return;
+                    }
+
+
+                    /*
+                    =========================================
+                    RENDER COURIERS
+                    =========================================
+                    */
+
+                    renderShippingOptions(
+                        response.couriers
+                    );
+
+                },
+
+
+                error: function(xhr) {
+
+                    console.error(
+                        'Shipmozo Rate Error:',
+                        xhr.responseText
+                    );
+
+
+                    let message =
+                        'Unable to calculate delivery charges.';
+
+
+                    if (
+                        xhr.responseJSON &&
+                        xhr.responseJSON.message
+                    ) {
+
+                        message =
+                            xhr.responseJSON.message;
+                    }
+
+
+                    $('#shippingOptions')
+                        .html(`
+
+                            <div class="text-danger small">
+
+                                ${escapeHtml(message)}
+
+                            </div>
+
+                        `);
+
+
+                    $('#deliveryCharge')
+                        .text('₹0.00');
+
+
+                    updateCheckoutTotal();
+
+                }
+
+            });
+
+        }
+
+
+        /*
+        =====================================================
+        RENDER SHIPPING OPTIONS
+        =====================================================
+        */
+
+        function renderShippingOptions(
+            couriers
+        ) {
+            /*
+             =====================================================
+             REMOVE DUPLICATE DISPLAY COURIER NAMES
+             =====================================================
+
+             Backendમાં courier/service અલગ હોઈ શકે,
+             પરંતુ frontendમાં same company name દેખાય છે.
+
+             Same displayed courier name માંથી CHEAPEST રાખીશું.
+             =====================================================
+             */
+
+            const uniqueCouriers = new Map();
+
+
+            couriers.forEach(function(courier) {
+
+                let displayName =
+                    String(
+                        courier.courier_name ||
+                        courier.name ||
+                        'Courier'
+                    )
+                    .replace(
+                        /\s+\d+(?:\.\d+)?\s*kg\s*$/i,
+                        ''
+                    )
+                    .trim();
+
+
+                /*
+                -----------------------------------------------
+                Normalize name
+
+                XpressBees
+                xpressbees
+                XPRESSBEES
+
+                બધું એક જ ગણાશે.
+                -----------------------------------------------
+                */
+
+                let key =
+                    displayName
+                    .toLowerCase()
+                    .replace(
+                        /\s+/g,
+                        ' '
+                    );
+
+
+                let currentPrice =
+                    parseFloat(
+                        courier.total_charges || 0
+                    );
+
+
+                /*
+                -----------------------------------------------
+                First courier
+                -----------------------------------------------
+                */
+
+                if (
+                    !uniqueCouriers.has(key)
+                ) {
+
+                    courier._displayName =
+                        displayName;
+
+                    uniqueCouriers.set(
+                        key,
+                        courier
+                    );
+
+                    return;
+                }
+
+
+                /*
+                -----------------------------------------------
+                Same company already exists.
+
+                Keep CHEAPEST one.
+                -----------------------------------------------
+                */
+
+                let existing =
+                    uniqueCouriers.get(key);
+
+
+                let existingPrice =
+                    parseFloat(
+                        existing.total_charges || 0
+                    );
+
+
+                if (
+                    currentPrice <
+                    existingPrice
+                ) {
+
+                    courier._displayName =
+                        displayName;
+
+                    uniqueCouriers.set(
+                        key,
+                        courier
+                    );
+                }
+
+            });
+
+
+            /*
+            =====================================================
+            FINAL UNIQUE COURIER LIST
+            =====================================================
+            */
+
+            couriers =
+                Array.from(
+                    uniqueCouriers.values()
+                );
+
+
+            /*
+            =====================================================
+            NOW YOUR EXISTING RENDER CODE CONTINUES
+            =====================================================
+            */
+
+            let html =
+                '<div class="shipping-options-list">';
+
+
+            $.each(
+                couriers,
+                function(
+                    index,
+                    courier
+                ) {
+
+                    /*
+                    ---------------------------------------------
+                    FIRST OPTION SELECTED BY DEFAULT
+                    ---------------------------------------------
+                    */
+
+                    let selected =
+                        index === 0;
+
+
+                    if (selected) {
+
+                        selectedShippingCourier =
+                            courier;
+
+                    }
+
+
+                    /*
+                    ---------------------------------------------
+                    BADGES
+                    ---------------------------------------------
+                    */
+
+                    let badges = '';
+
+
+                    if (
+                        courier.is_cheapest
+                    ) {
+
+                        badges += `
+
+                        <span class="shipping-badge">
+                            CHEAPEST
+                        </span>
+
+                    `;
+                    }
+
+
+                    if (
+                        courier.is_fastest
+                    ) {
+
+                        badges += `
+
+                        <span class="shipping-badge">
+                            FASTEST
+                        </span>
+
+                    `;
+                    }
+
+
+                    /*
+                    ---------------------------------------------
+                    DELIVERY TEXT
+                    ---------------------------------------------
+                    */
+
+                    let deliveryText =
+                        courier.estimated_delivery ||
+                        'Delivery estimate unavailable';
+
+
+                    /*
+                    ---------------------------------------------
+                    SELECTED CLASS
+                    ---------------------------------------------
+                    */
+
+                    let selectedClass =
+                        selected ?
+                        'selected' :
+                        '';
+
+
+                    /*
+                    ---------------------------------------------
+                    CARD
+                    ---------------------------------------------
+                    */
+
+                    html += `
+
+                    <label
+                        class="shipping-option ${selectedClass}"
+                        data-courier-id="${escapeHtml(courier.courier_id)}">
+
+                        <input
+                            type="radio"
+                            name="shipping_courier"
+                            class="shipping-option-radio"
+                            value="${escapeHtml(courier.courier_id)}"
+                            ${selected ? 'checked' : ''}>
+
+
+                        <div class="shipping-option-main">
+
+                            <div class="shipping-option-header">
+
+                                <span class="shipping-option-name">
+                                ${escapeHtml(
+                                    String(
+                                        courier.courier_name || 'Courier'
+                                    ).replace(
+                                        /\s+\d+(?:\.\d+)?\s*kg\s*$/i,
+                                        ''
+                                    ).trim()
+                                )}
+                                </span>
+
+                                ${badges}
+
+                            </div>
+
+
+                            <div class="shipping-option-delivery">
+
+                                ${escapeHtml(
+                                    courier.estimated_delivery || 'Delivery estimate unavailable'
+                                )}
+
+                            </div>
+
+
+                            <div class="shipping-option-delivery-sub">
+                                Excludes Sundays
+                            </div>
+
+                        </div>
+
+
+                        <div class="shipping-option-price">
+
+                            ₹${formatMoney(courier.total_charges)}
+
+                            <small>
+                                including GST
+                            </small>
+
+                        </div>
+
+                    </label>
+
+                `;
+
+                }
+            );
+
+
+            html += `
+
+            <div class="shipping-note">
+
+                <i class="bi bi-shield-check me-1"></i>
+
+                We pass courier charges as-is with no markup.
+
+            </div>
+
+        `;
+
+
+            html +=
+                '</div>';
+
+
+            $('#shippingOptions')
+                .html(html);
+
+
+            /*
+            -----------------------------------------------------
+            APPLY DEFAULT FIRST COURIER
+            -----------------------------------------------------
+            */
+
+            if (
+                selectedShippingCourier
+            ) {
+
+                setSelectedShippingCourier(
+                    selectedShippingCourier
+                );
+
+            }
+
+
+            /*
+            -----------------------------------------------------
+            COURIER CLICK
+            -----------------------------------------------------
+            */
+
+            $('.shipping-option').on(
+                'click',
+                function() {
+
+                    let courierId =
+                        String(
+                            $(this)
+                            .data('courier-id')
+                        );
+
+
+                    let courier =
+                        couriers.find(
+                            function(item) {
+
+                                return String(
+                                        item.courier_id
+                                    ) ===
+                                    courierId;
+
+                            }
+                        );
+
+
+                    if (!courier) {
+
+                        return;
+                    }
+
+
+                    setSelectedShippingCourier(
+                        courier
+                    );
+
+                }
+            );
+
+        }
+
+
+        /*
+        =====================================================
+        SET SELECTED COURIER
+        =====================================================
+        */
+
+        function setSelectedShippingCourier(
+            courier
+        ) {
+
+            selectedShippingCourier =
+                courier;
+
+
+            /*
+            -------------------------------------------------
+            RADIO
+            -------------------------------------------------
+            */
+
+            $('input[name="shipping_courier"]')
+                .prop(
+                    'checked',
+                    false
+                );
+
+
+            $('input[name="shipping_courier"][value="' +
+                    escapeSelectorValue(
+                        courier.courier_id
+                    ) +
+                    '"]')
+                .prop(
+                    'checked',
+                    true
+                );
+
+
+            /*
+            -------------------------------------------------
+            CARD
+            -------------------------------------------------
+            */
+
+            $('.shipping-option')
+                .removeClass('selected');
+
+
+            $('.shipping-option[data-courier-id="' +
+                    escapeHtml(
+                        courier.courier_id
+                    ) +
+                    '"]')
+                .addClass('selected');
+
+
+            /*
+            -------------------------------------------------
+            UPDATE DELIVERY CHARGE
+            -------------------------------------------------
+            */
+
+            $('#deliveryCharge')
+                .text(
+                    '₹' +
+                    formatMoney(
+                        courier.total_charges
+                    )
+                );
+
+
+            /*
+            -------------------------------------------------
+            UPDATE GRAND TOTAL
+            -------------------------------------------------
+            */
+
+            updateCheckoutTotal();
+
+
+            /*
+            -------------------------------------------------
+            DEBUG
+
+            Later payment/backend stepમાં આ જ object
+            use કરીશું.
+            -------------------------------------------------
+            */
+
+            console.log(
+                'Selected Courier:',
+                selectedShippingCourier
+            );
+
+        }
+
+
+        /*
+        =====================================================
+        UPDATE TOTAL
+        =====================================================
+        */
+
+        function updateCheckoutTotal() {
+
+            let printSubtotal =
+                parseFloat(
+                    "{{ $printSubtotal }}"
+                ) || 0;
+
+
+            let handlingCharge =
+                parseFloat(
+                    "{{ $handlingCharge }}"
+                ) || 0;
+
+
+            let deliveryCharge = 0;
+
+
+            if (
+                selectedShippingCourier &&
+                selectedShippingCourier.total_charges
+            ) {
+
+                deliveryCharge =
+                    parseFloat(
+                        selectedShippingCourier.total_charges
+                    ) || 0;
+
+            }
+
+
+            let total =
+                printSubtotal +
+                handlingCharge +
+                deliveryCharge;
+
+
+            $('#checkoutTotal')
+                .text(
+                    '₹' +
+                    formatMoney(total)
+                );
+
+        }
+
+
+        /*
+        =====================================================
+        MONEY FORMAT
+        =====================================================
+        */
+
+        function formatMoney(
+            value
+        ) {
+
+            let number =
+                parseFloat(value) || 0;
+
+
+            return number.toFixed(2);
+
+        }
+
+
+        /*
+        =====================================================
+        HTML ESCAPE
+        =====================================================
+        */
+
+        function escapeHtml(
+            value
+        ) {
+
+            return $('<div>')
+                .text(
+                    value ?? ''
+                )
+                .html();
+
+        }
+
+
+        /*
+        =====================================================
+        SELECTOR ESCAPE
+        =====================================================
+        */
+
+        function escapeSelectorValue(
+            value
+        ) {
+
+            return String(value)
+                .replace(
+                    /([!"#$%&'()*+,./:;<=>?@[\\\]^`{|}~])/g,
+                    '\\$1'
+                );
+
+        }
 
 
     });

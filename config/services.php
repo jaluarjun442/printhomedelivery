@@ -29,5 +29,18 @@ return [
         'secret' => env('AWS_SECRET_ACCESS_KEY'),
         'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
     ],
-
+    'shipmozo' => [
+        'base_url' =>
+        env(
+            'SHIPMOZO_BASE_URL',
+            'https://shipping-api.com/app/api/v1'
+        ),
+        'public_key' => env('SHIPMOZO_PUBLIC_KEY'),
+        'private_key' => env('SHIPMOZO_PRIVATE_KEY'),
+        'pickup_pincode' =>
+        env(
+            'SHIPMOZO_PICKUP_PINCODE',
+            '360022'
+        ),
+    ],
 ];

@@ -749,7 +749,14 @@
                  RIGHT : QUOTATION
             ====================================== -->
 
-                <div class="col-lg-5">
+                <!-- =====================================
+     RIGHT : QUOTATION
+====================================== -->
+
+                <div
+                    class="col-lg-5"
+                    id="quotationPanel"
+                    style="display:none;">
 
                     <div class="card calculator-card quotation-card h-100">
 
@@ -775,8 +782,8 @@
 
 
                             <!-- =================================
-                             PRINTING
-                        ================================== -->
+                 PRINTING
+            ================================== -->
 
                             <div class="quotation-row">
 
@@ -786,15 +793,15 @@
                                 </span>
 
                                 <strong id="printingSubtotal">
-                                    ₹96
+                                    —
                                 </strong>
 
                             </div>
 
 
                             <!-- =================================
-                             SHIPPING
-                        ================================== -->
+                 SHIPPING
+            ================================== -->
 
                             <div class="quotation-row">
 
@@ -803,25 +810,23 @@
                                     Shipping Delivery
 
                                     <span
+                                        id="packageWeight"
                                         class="weight-badge"
-                                        id="packageWeight">
-
-                                        0.618 KG
-
+                                        style="display:none;">
                                     </span>
 
                                 </span>
 
                                 <strong id="shippingAmount">
-                                    ₹71
+                                    —
                                 </strong>
 
                             </div>
 
 
                             <!-- =================================
-                             HANDLING
-                        ================================== -->
+                 HANDLING
+            ================================== -->
 
                             <div class="quotation-row">
 
@@ -830,15 +835,15 @@
                                 </span>
 
                                 <strong id="handlingAmount">
-                                    ₹5
+                                    —
                                 </strong>
 
                             </div>
 
 
                             <!-- =================================
-                             TOTAL
-                        ================================== -->
+                 TOTAL
+            ================================== -->
 
                             <div class="estimated-total">
 
@@ -847,42 +852,31 @@
                                 </span>
 
                                 <strong id="estimatedTotal">
-                                    ₹172
+                                    —
                                 </strong>
 
                             </div>
 
 
                             <!-- =================================
-                             DELIVERY
-                        ================================== -->
+                 DELIVERY
+            ================================== -->
 
-                            <div class="delivery-info">
+                            <div
+                                id="deliveryRouteBox"
+                                class="delivery-info"
+                                style="display:none;">
 
-                                <div class="fw-bold small mb-1">
-
-                                    <i class="bi bi-box-seam me-2"></i>
-
-                                    CHEAPEST ROUTE
-
-                                </div>
-
-                                <div
-                                    class="text-muted small"
-                                    id="deliveryMessage">
-
-                                    via Amazon
-
-                                </div>
+                                <div id="deliveryMessage"></div>
 
                             </div>
 
 
                             <!-- =================================
-                             ORDER
-                        ================================== -->
+                 ORDER NOW
+            ================================== -->
 
-                            <button
+                            <a href="{{ route('upload') }}"
                                 type="button"
                                 class="btn btn-primary w-100 order-btn"
                                 id="orderNow">
@@ -891,7 +885,8 @@
 
                                 <i class="bi bi-arrow-right ms-2"></i>
 
-                            </button>
+                            </a>
+
 
                         </div>
 
@@ -899,10 +894,7 @@
 
                 </div>
 
-
             </div>
-
-        </div>
 
     </section>
     <div class="text-center container margin_50_35">
@@ -1152,188 +1144,498 @@
 @section('custom_footer')
 <script src="{{ asset('web_assets/js/sticky_sidebar.min.js') }}"></script>
 <script src="{{ asset('web_assets/js/specific_listing.js') }}"></script>
-<script type="text/javascript">
+
+<script>
     $(document).ready(function() {
-        let copies = 1;
 
-        $('#increaseCopies').on('click', function() {
+        $('#quotationPanel')
+            .hide();
+        /*
+        =====================================================
+        INITIAL STATE
+        =====================================================
+        */
 
-            copies++;
+        $('#printingSubtotal')
+            .text('—');
 
-            $('#copiesValue').text(copies);
-            $('#copiesInput').val(copies);
+        $('#shippingAmount')
+            .text('—');
 
-        });
+        $('#handlingAmount')
+            .text('—');
 
-
-        $('#decreaseCopies').on('click', function() {
-
-            if (copies > 1) {
-
-                copies--;
-
-                $('#copiesValue').text(copies);
-                $('#copiesInput').val(copies);
-
-            }
-
-        });
+        $('#estimatedTotal')
+            .text('—');
 
 
-        // ==============================
-        // CALCULATE PRICE
-        // ==============================
-        $('#calculatePrice').on('click', function() {
+        /*
+        -----------------------------------------------------
+        HIDE COMPLETE QUOTATION RESULT
+        -----------------------------------------------------
+        */
 
-            let $button = $(this);
+        $('#quotationResult')
+            .hide();
 
-            // Prevent multiple clicks
-            if ($button.hasClass('loading')) {
-                return;
-            }
+        /*
+        -----------------------------------------------------
+        HIDE WEIGHT BADGE
+        -----------------------------------------------------
+        */
 
-            // ==============================
-            // GET CALCULATOR VALUES
-            // ==============================
-
-            let data = {
-
-                total_pages: $('#totalPages').val(),
-
-                delivery_pincode: $('#deliveryPincode').val(),
-
-                print_type: $('#printType').val(),
-
-                paper_gsm: $('#paperGsm').val(),
-
-                binding_type: $('#bindingType').val(),
-
-                copies: $('#copiesInput').val(),
-
-                two_sided: $('#twoSided').is(':checked') ? 1 : 0
-
-            };
+        $('#packageWeight')
+            .hide()
+            .text('');
 
 
-            // ==============================
-            // LOADING STATE
-            // ==============================
+        /*
+        -----------------------------------------------------
+        HIDE COURIER / ROUTE BOX
+        -----------------------------------------------------
+        */
 
-            $button
-                .addClass('loading')
-                .prop('disabled', true)
-                .html(
-                    '<span class="calculate-spinner"></span>' +
-                    '<span>Calculating...</span>'
-                );
+        $('#deliveryRouteBox')
+            .hide();
 
 
-            // ==============================
-            // TEMPORARY TEST
-            // Remove this later when API is connected
-            // ==============================
+        /*
+        =====================================================
+        CALCULATE PRICE BUTTON
+        =====================================================
+        */
 
-            setTimeout(function() {
+        $('#calculatePrice').on(
+            'click',
+            function() {
 
-                console.log(data);
+                let $button =
+                    $(this);
 
-                // Restore button
-                $button
-                    .removeClass('loading')
-                    .prop('disabled', false)
-                    .html(
-                        '<i class="bi bi-calculator me-2"></i>' +
-                        '<span>Calculate Price</span>'
+
+                /*
+                -------------------------------------------------
+                PREVENT DOUBLE CLICK
+                -------------------------------------------------
+                */
+
+                if (
+                    $button.hasClass('loading')
+                ) {
+
+                    return;
+                }
+
+
+                /*
+                =================================================
+                GET VALUES
+                =================================================
+                */
+
+                let data = {
+
+                    total_pages: $('#totalPages').val(),
+
+                    delivery_pincode: $('#deliveryPincode').val(),
+
+                    print_type: $('#printType').val(),
+
+                    paper_gsm: $('#paperGsm').val(),
+
+                    binding_type: $('#bindingType').val(),
+
+                    copies: $('#copiesInput').val(),
+
+                    two_sided: $('#twoSided').is(':checked') ?
+                        1 : 0,
+
+                    _token: $('meta[name="csrf-token"]')
+                        .attr('content')
+
+                };
+
+
+                /*
+                =================================================
+                VALIDATE PAGES
+                =================================================
+                */
+
+                if (
+                    !data.total_pages ||
+                    parseInt(
+                        data.total_pages
+                    ) < 1
+                ) {
+
+                    alert(
+                        'Please enter valid total pages.'
                     );
 
-            }, 2000);
-
-
-            /*
-            ==========================================
-            ACTUAL API VERSION
-            ==========================================
-
-            $.ajax({
-
-                url: '/api/calculate-price',
-
-                type: 'POST',
-
-                data: data,
-
-                success: function (response) {
-
-                    $('#printingSubtotal')
-                        .text('₹' + response.printing_subtotal);
-
-                    $('#shippingAmount')
-                        .text('₹' + response.shipping);
-
-                    $('#handlingAmount')
-                        .text('₹' + response.handling_fee);
-
-                    $('#estimatedTotal')
-                        .text('₹' + response.total);
-
-                    $('#packageWeight')
-                        .text(response.weight + ' KG');
-
-                    $('#deliveryMessage')
-                        .text(
-                            'Delivery in ' +
-                            response.delivery_days +
-                            ' days via ' +
-                            response.courier
-                        );
-
-                },
-
-                error: function (xhr) {
-
-                    console.log(xhr.responseText);
-
-                },
-
-                complete: function () {
-
-                    // Runs after success OR error
-
-                    $button
-                        .removeClass('loading')
-                        .prop('disabled', false)
-                        .html(
-                            '<i class="bi bi-calculator me-2"></i>' +
-                            '<span>Calculate Price</span>'
-                        );
-
+                    return;
                 }
 
-            });
-            */
 
-        });
+                /*
+                =================================================
+                VALIDATE PINCODE
+                =================================================
+                */
 
-        $(document).on('click', '.pagination a', function(event) {
-            event.preventDefault();
-            var page = $(this).attr('href').split('page=')[1];
-            fetch_data(page);
-        });
+                if (
+                    !/^\d{6}$/.test(
+                        data.delivery_pincode
+                    )
+                ) {
 
-        function fetch_data(page) {
-            var slug = "{{ route('category', ['slug' => 'a']) }}";
-            $.ajax({
-                url: slug + "?page=" + page,
-                success: function(data) {
-                    $('#product_main_container').html(data);
-                    var newUrl = slug + "?page=" + page;
-                    history.pushState(null, '', newUrl);
-                    $([document.documentElement, document.body]).animate({
-                        scrollTop: $("#product_main_container").offset().top
-                    }, 150);
+                    alert(
+                        'Please enter a valid 6 digit pincode.'
+                    );
+
+                    return;
                 }
-            });
+
+
+                /*
+                =================================================
+                SHOW LOADING
+                =================================================
+                */
+
+                $button
+                    .addClass('loading')
+                    .prop(
+                        'disabled',
+                        true
+                    )
+                    .html(`
+
+                    <span
+                        class="spinner-border spinner-border-sm me-2"
+                        role="status">
+                    </span>
+
+                    <span>
+                        Calculating...
+                    </span>
+
+                `);
+
+
+                /*
+                =================================================
+                HIDE OLD CALCULATION RESULT
+                =================================================
+                */
+                $('#quotationPanel')
+                    .hide();
+                $('#quotationResult')
+                    .hide();
+
+                $('#deliveryRouteBox')
+                    .hide();
+
+
+                /*
+                =================================================
+                API REQUEST
+                =================================================
+                */
+
+                $.ajax({
+
+                    url: "{{ route('calculator.calculate') }}",
+
+                    type: 'POST',
+
+                    dataType: 'json',
+
+                    data: data,
+
+
+                    /*
+                    =============================================
+                    SUCCESS
+                    =============================================
+                    */
+
+                    success: function(response) {
+
+                        console.log(
+                            'Calculator Response:',
+                            response
+                        );
+
+
+                        /*
+                        -------------------------------------
+                        API FAILURE
+                        -------------------------------------
+                        */
+
+                        if (
+                            !response ||
+                            !response.success
+                        ) {
+
+                            alert(
+                                response.message ||
+                                'Unable to calculate price.'
+                            );
+
+                            return;
+                        }
+                        $('#quotationPanel')
+                            .fadeIn(200, function() {
+
+                                /*
+                                =============================================
+                                MOBILE ONLY
+                                Scroll to quotation result after calculation
+                                =============================================
+                                */
+
+                                if (window.innerWidth <= 767) {
+
+                                    $('html, body').animate({
+
+                                        scrollTop: $('#quotationPanel').offset().top - 250
+
+                                    }, 200);
+
+                                }
+
+                            });
+                        // Show the complete quotation only after a successful calculation.
+                        $('#quotationResult').show();
+
+                        /*
+                        =====================================
+                        PRINTING SUBTOTAL
+                        =====================================
+                        */
+
+                        $('#printingSubtotal')
+                            .text(
+                                '₹' +
+                                Number(
+                                    response.printing_subtotal
+                                ).toFixed(2)
+                            );
+
+
+                        /*
+                        =====================================
+                        SHIPPING
+                        =====================================
+                        */
+
+                        $('#shippingAmount')
+                            .text(
+                                '₹' +
+                                Number(
+                                    response.shipping
+                                ).toFixed(2)
+                            );
+
+
+                        /*
+                        =====================================
+                        WEIGHT
+                        =====================================
+                        */
+
+                        if (
+                            response.weight
+                        ) {
+
+                            $('#packageWeight')
+                                .text(
+                                    response.weight +
+                                    ' KG'
+                                )
+                                .show();
+
+                        } else {
+
+                            $('#packageWeight')
+                                .hide();
+
+                        }
+
+
+                        /*
+                        =====================================
+                        HANDLING
+                        
+                        ALWAYS ₹0
+                        =====================================
+                        */
+
+                        $('#handlingAmount')
+                            .text(
+                                '₹0.00'
+                            );
+
+
+                        /*
+                        =====================================
+                        TOTAL
+                        =====================================
+                        */
+
+                        $('#estimatedTotal')
+                            .text(
+                                '₹' +
+                                Number(
+                                    response.total
+                                ).toFixed(2)
+                            );
+
+
+                        /*
+                        =====================================
+                        COURIER / DELIVERY
+                        =====================================
+                        */
+
+                        if (response.courier) {
+
+                            let courierHtml = `
+
+        <div class="fw-bold">
+
+            <i class="bi bi-box-seam me-2"></i>
+
+            CHEAPEST ROUTE
+
+        </div>
+
+        <span>
+            via
+            ${escapeHtml(response.courier)}
+    `;
+
+                            if (response.delivery_days) {
+
+                                courierHtml += `
+            ·
+            ${escapeHtml(response.delivery_days)}
+        `;
+
+                            }
+
+                            courierHtml += `
+        </span>
+    `;
+
+                            $('#deliveryMessage')
+                                .html(courierHtml);
+
+                            $('#deliveryRouteBox')
+                                .show();
+
+                        } else {
+
+                            $('#deliveryRouteBox')
+                                .hide();
+
+                        }
+
+                    },
+
+
+                    /*
+                    =============================================
+                    ERROR
+                    =============================================
+                    */
+
+                    error: function(xhr) {
+
+                        console.error(
+                            'Calculator Error:',
+                            xhr.responseText
+                        );
+
+
+                        let message =
+                            'Unable to calculate price.';
+
+
+                        if (
+                            xhr.responseJSON &&
+                            xhr.responseJSON.message
+                        ) {
+
+                            message =
+                                xhr.responseJSON.message;
+
+                        }
+
+
+                        alert(
+                            message
+                        );
+
+                    },
+
+
+                    /*
+                    =============================================
+                    COMPLETE
+                    =============================================
+                    */
+
+                    complete: function() {
+
+                        $button
+                            .removeClass('loading')
+                            .prop(
+                                'disabled',
+                                false
+                            )
+                            .html(`
+
+                                <i
+                                    class="bi bi-calculator me-2">
+                                </i>
+
+                                <span>
+                                    Calculate Price
+                                </span>
+
+                            `);
+
+                    }
+
+                });
+
+            }
+        );
+
+
+        /*
+        =====================================================
+        HTML ESCAPE
+        =====================================================
+        */
+
+        function escapeHtml(
+            value
+        ) {
+
+            return $('<div>')
+                .text(
+                    value ?? ''
+                )
+                .html();
+
         }
+
+
     });
 </script>
+
 @endsection

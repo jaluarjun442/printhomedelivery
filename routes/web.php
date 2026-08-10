@@ -27,6 +27,8 @@ Auth::routes();
 
 Route::get('/', [FrontController::class, 'index'])->name('home');
 Route::get('/calculator', [FrontController::class, 'calculator'])->name('calculator');
+Route::post('/calculator/calculate', [FrontController::class, 'calculateCalculatorPrice'])
+    ->name('calculator.calculate');
 
 Route::get('/upload', [UploadController::class, 'upload'])->name('upload');
 Route::get('/upload/verification-status', [UploadController::class, 'status'])->name('upload.status');
@@ -44,6 +46,8 @@ Route::post('/print-options/save', [UploadController::class, 'savePrintOptions']
 
 
 Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout');
+Route::post('/checkout/calculate-shipping', [CheckoutController::class, 'calculateShipping'])
+    ->name('checkout.calculate.shipping');
 
 // Route::get('/about_us', [FrontController::class, 'about_us'])->name('about_us');
 // Route::get('/contact_us', [FrontController::class, 'contact_us'])->name('contact_us');
