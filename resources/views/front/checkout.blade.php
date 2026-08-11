@@ -513,6 +513,19 @@ MOBILE RESPONSIVE
         }
 
     }
+
+    .checkout-options-section {
+        background: #fbf9f4;
+        min-height: 100vh;
+    }
+
+    @media (max-width: 767px) {
+
+        .checkout-options-section {
+            padding-top: 15px !important;
+            padding-bottom: 20px !important;
+        }
+    }
 </style>
 
 @endsection
@@ -522,458 +535,461 @@ MOBILE RESPONSIVE
 
 <main>
 
-    <section class="py-4">
+    <section class="checkout-options-section py-4">
 
         <div class="container">
+            <div class="row justify-content-center mt-4">
+                <div class="col-lg-8">
+                    <div class="checkout-wrapper">
 
-            <div class="checkout-wrapper">
 
-
-                {{-- =================================================
+                        {{-- =================================================
          HEADER
     ================================================== --}}
 
-                <div class="checkout-title">
+                        <div class="checkout-title">
 
-                    <h1>
-                        <i class="bi bi-cart-check text-primary"></i>
-                        Checkout
-                    </h1>
+                            <h1>
+                                <i class="bi bi-cart-check text-primary"></i>
+                                Checkout
+                            </h1>
 
-                    <p class="text-muted small">
-                        Enter your delivery details and review your order.
-                    </p>
+                            <p class="text-muted small">
+                                Enter your delivery details and review your order.
+                            </p>
 
-                </div>
+                        </div>
 
-                <div class="mb-3">
-                    <a
-                        href="{{ route('print.options', []) }}"
-                        class="checkout-back-btn">
-                        <i class="bi bi-arrow-left me-1"></i>
-                        Back
-                    </a>
-                </div>
-                {{-- =================================================
+                        <div class="mb-3">
+                            <a
+                                href="{{ route('print.options', []) }}"
+                                class="checkout-back-btn">
+                                <i class="bi bi-arrow-left me-1"></i>
+                                Back
+                            </a>
+                        </div>
+                        {{-- =================================================
          CONTACT DETAILS
     ================================================== --}}
 
-                <div class="checkout-card">
+                        <div class="checkout-card">
 
-                    <div class="checkout-section-title">
+                            <div class="checkout-section-title">
 
-                        <i class="bi bi-person"></i>
+                                <i class="bi bi-person"></i>
 
-                        Contact Details
+                                Contact Details
 
-                    </div>
-
-
-                    <div class="row g-3">
+                            </div>
 
 
-                        {{-- NAME --}}
-
-                        <div class="col-md-6">
-
-                            <label class="checkout-label">
-
-                                Full Name
-                                <span class="required">*</span>
-
-                            </label>
-
-                            <input
-                                type="text"
-                                id="fullName"
-                                class="checkout-input"
-                                placeholder="Full Name">
-
-                        </div>
+                            <div class="row g-3">
 
 
-                        {{-- MOBILE --}}
+                                {{-- NAME --}}
 
-                        <div class="col-md-6">
+                                <div class="col-md-6">
 
-                            <label class="checkout-label">
-                                Mobile
-                            </label>
+                                    <label class="checkout-label">
 
-                            <div class="mobile-input-wrapper">
+                                        Full Name
+                                        <span class="required">*</span>
 
-                                <div class="mobile-country-code">
-                                    +91
+                                    </label>
+
+                                    <input
+                                        type="text"
+                                        id="fullName"
+                                        class="checkout-input"
+                                        placeholder="Full Name">
+
                                 </div>
 
-                                <input
-                                    type="text"
-                                    id="mobile"
-                                    class="checkout-mobile-input"
-                                    value="{{ $mobile }}"
-                                    readonly>
+
+                                {{-- MOBILE --}}
+
+                                <div class="col-md-6">
+
+                                    <label class="checkout-label">
+                                        Mobile
+                                    </label>
+
+                                    <div class="mobile-input-wrapper">
+
+                                        <div class="mobile-country-code">
+                                            +91
+                                        </div>
+
+                                        <input
+                                            type="text"
+                                            id="mobile"
+                                            class="checkout-mobile-input"
+                                            value="{{ $mobile }}"
+                                            readonly>
+
+                                    </div>
+
+                                </div>
+
+
+                                {{-- EMAIL --}}
+
+                                <div class="col-12">
+
+                                    <label class="checkout-label">
+
+                                        Email Address
+                                        <span class="required">*</span>
+
+                                    </label>
+
+                                    <input
+                                        type="email"
+                                        id="email"
+                                        class="checkout-input"
+                                        placeholder="Email Address">
+
+                                </div>
 
                             </div>
 
                         </div>
 
 
-                        {{-- EMAIL --}}
-
-                        <div class="col-12">
-
-                            <label class="checkout-label">
-
-                                Email Address
-                                <span class="required">*</span>
-
-                            </label>
-
-                            <input
-                                type="email"
-                                id="email"
-                                class="checkout-input"
-                                placeholder="Email Address">
-
-                        </div>
-
-                    </div>
-
-                </div>
-
-
-                {{-- =================================================
+                        {{-- =================================================
          DELIVERY ADDRESS
     ================================================== --}}
 
-                <div class="checkout-card">
+                        <div class="checkout-card">
 
-                    <div class="checkout-section-title">
+                            <div class="checkout-section-title">
 
-                        <i class="bi bi-geo-alt"></i>
+                                <i class="bi bi-geo-alt"></i>
 
-                        Delivery Address
+                                Delivery Address
 
-                    </div>
-
-
-                    {{-- PINCODE --}}
-
-                    <div class="mb-3">
-
-                        <label class="checkout-label">
-
-                            Pincode
-                            <span class="required">*</span>
-
-                        </label>
-
-                        <input
-                            type="text"
-                            id="pincode"
-                            class="checkout-input"
-                            maxlength="6"
-                            inputmode="numeric"
-                            placeholder="Pincode (e.g. 110001)">
-
-                    </div>
+                            </div>
 
 
-                    {{-- CITY / STATE --}}
+                            {{-- PINCODE --}}
 
-                    <div class="row g-3 mb-3">
+                            <div class="mb-3">
 
-                        <div class="col-md-6">
+                                <label class="checkout-label">
 
-                            <label class="checkout-label">
+                                    Pincode
+                                    <span class="required">*</span>
 
-                                City
-                                <span class="required">*</span>
+                                </label>
 
-                            </label>
+                                <input
+                                    type="text"
+                                    id="pincode"
+                                    class="checkout-input"
+                                    maxlength="6"
+                                    inputmode="numeric"
+                                    placeholder="Pincode (e.g. 110001)">
 
-                            <input
-                                type="text"
-                                id="city"
-                                class="checkout-input"
-                                placeholder="City">
+                            </div>
+
+
+                            {{-- CITY / STATE --}}
+
+                            <div class="row g-3 mb-3">
+
+                                <div class="col-md-6">
+
+                                    <label class="checkout-label">
+
+                                        City
+                                        <span class="required">*</span>
+
+                                    </label>
+
+                                    <input
+                                        type="text"
+                                        id="city"
+                                        class="checkout-input"
+                                        placeholder="City">
+
+                                </div>
+
+
+                                <div class="col-md-6">
+
+                                    <label class="checkout-label">
+
+                                        State
+                                        <span class="required">*</span>
+
+                                    </label>
+
+                                    <input
+                                        type="text"
+                                        id="state"
+                                        class="checkout-input"
+                                        placeholder="State">
+
+                                </div>
+
+                            </div>
+
+
+                            {{-- HOUSE --}}
+
+                            <div class="mb-3">
+
+                                <label class="checkout-label">
+
+                                    House No. / Building / Apartment
+                                    <span class="required">*</span>
+
+                                </label>
+
+                                <input
+                                    type="text"
+                                    id="house"
+                                    class="checkout-input"
+                                    placeholder="House No. / Building / Apartment">
+
+                            </div>
+
+
+                            {{-- ROAD --}}
+
+                            <div class="mb-3">
+
+                                <label class="checkout-label">
+
+                                    Road / Area / Colony
+                                    <span class="required">*</span>
+
+                                </label>
+
+                                <input
+                                    type="text"
+                                    id="road"
+                                    class="checkout-input"
+                                    placeholder="e.g. MG Road, Indiranagar">
+
+                            </div>
+
+
+                            {{-- LANDMARK --}}
+
+                            <div>
+
+                                <label class="checkout-label">
+
+                                    Landmark
+                                    <span class="text-muted">
+                                        (Optional)
+                                    </span>
+
+                                </label>
+
+                                <input
+                                    type="text"
+                                    id="landmark"
+                                    class="checkout-input"
+                                    placeholder="e.g. Near HDFC Bank">
+
+                            </div>
 
                         </div>
 
 
-                        <div class="col-md-6">
-
-                            <label class="checkout-label">
-
-                                State
-                                <span class="required">*</span>
-
-                            </label>
-
-                            <input
-                                type="text"
-                                id="state"
-                                class="checkout-input"
-                                placeholder="State">
-
-                        </div>
-
-                    </div>
-
-
-                    {{-- HOUSE --}}
-
-                    <div class="mb-3">
-
-                        <label class="checkout-label">
-
-                            House No. / Building / Apartment
-                            <span class="required">*</span>
-
-                        </label>
-
-                        <input
-                            type="text"
-                            id="house"
-                            class="checkout-input"
-                            placeholder="House No. / Building / Apartment">
-
-                    </div>
-
-
-                    {{-- ROAD --}}
-
-                    <div class="mb-3">
-
-                        <label class="checkout-label">
-
-                            Road / Area / Colony
-                            <span class="required">*</span>
-
-                        </label>
-
-                        <input
-                            type="text"
-                            id="road"
-                            class="checkout-input"
-                            placeholder="e.g. MG Road, Indiranagar">
-
-                    </div>
-
-
-                    {{-- LANDMARK --}}
-
-                    <div>
-
-                        <label class="checkout-label">
-
-                            Landmark
-                            <span class="text-muted">
-                                (Optional)
-                            </span>
-
-                        </label>
-
-                        <input
-                            type="text"
-                            id="landmark"
-                            class="checkout-input"
-                            placeholder="e.g. Near HDFC Bank">
-
-                    </div>
-
-                </div>
-
-
-                {{-- =================================================
+                        {{-- =================================================
          SHIPPING
     ================================================== --}}
 
-                <div class="checkout-card">
+                        <div class="checkout-card">
 
-                    <div class="checkout-section-title">
+                            <div class="checkout-section-title">
 
-                        <i class="bi bi-truck"></i>
+                                <i class="bi bi-truck"></i>
 
-                        Shipping
+                                Shipping
 
-                    </div>
-
-
-                    <div
-                        id="shippingOptions"
-                        class="shipping-placeholder">
-
-                        Enter your pincode to calculate
-                        delivery charges.
-
-                    </div>
-
-                </div>
+                            </div>
 
 
-                {{-- =================================================
+                            <div
+                                id="shippingOptions"
+                                class="shipping-placeholder">
+
+                                Enter your pincode to calculate
+                                delivery charges.
+
+                            </div>
+
+                        </div>
+
+
+                        {{-- =================================================
          PAYMENT METHOD
     ================================================== --}}
 
-                <div class="checkout-card">
+                        <div class="checkout-card">
 
-                    <div class="checkout-section-title">
+                            <div class="checkout-section-title">
 
-                        <i class="bi bi-credit-card"></i>
+                                <i class="bi bi-credit-card"></i>
 
-                        Payment Method
-
-                    </div>
-
-
-                    {{-- COD --}}
-
-                    <label
-                        class="payment-option selected"
-                        id="codOption">
-
-                        <input
-                            type="radio"
-                            name="payment_method"
-                            value="cod"
-                            checked>
-
-                        <div>
-
-                            <div class="payment-option-name">
-
-                                Cash on Delivery
+                                Payment Method
 
                             </div>
 
-                            <div class="payment-option-info">
 
-                                Pay when your order is delivered.
+                            {{-- COD --}}
 
-                            </div>
+                            <label
+                                class="payment-option selected"
+                                id="codOption">
+
+                                <input
+                                    type="radio"
+                                    name="payment_method"
+                                    value="cod"
+                                    checked>
+
+                                <div>
+
+                                    <div class="payment-option-name">
+
+                                        Cash on Delivery
+
+                                    </div>
+
+                                    <div class="payment-option-info">
+
+                                        Pay when your order is delivered.
+
+                                    </div>
+
+                                </div>
+
+                            </label>
+
+
+                            {{-- RAZORPAY --}}
+
+                            <label
+                                class="payment-option"
+                                id="razorpayOption">
+
+                                <input
+                                    type="radio"
+                                    name="payment_method"
+                                    value="razorpay">
+
+                                <div>
+
+                                    <div class="payment-option-name">
+
+                                        Razorpay
+
+                                    </div>
+
+                                    <div class="payment-option-info">
+
+                                        Pay securely using UPI, Card,
+                                        Net Banking or Wallet.
+
+                                    </div>
+
+                                </div>
+
+                            </label>
 
                         </div>
 
-                    </label>
 
-
-                    {{-- RAZORPAY --}}
-
-                    <label
-                        class="payment-option"
-                        id="razorpayOption">
-
-                        <input
-                            type="radio"
-                            name="payment_method"
-                            value="razorpay">
-
-                        <div>
-
-                            <div class="payment-option-name">
-
-                                Razorpay
-
-                            </div>
-
-                            <div class="payment-option-info">
-
-                                Pay securely using UPI, Card,
-                                Net Banking or Wallet.
-
-                            </div>
-
-                        </div>
-
-                    </label>
-
-                </div>
-
-
-                {{-- =================================================
+                        {{-- =================================================
          PRICE SUMMARY
     ================================================== --}}
 
-                <div class="checkout-card">
+                        <div class="checkout-card">
 
-                    <h4 class="fw-bold mb-3">
-                        Price Summary
-                    </h4>
-
-
-                    <div class="summary-row">
-
-                        <span>
-                            Print subtotal
-                        </span>
-
-                        <strong id="printSubtotal">
-                            ₹{{ number_format($printSubtotal, 2) }}
-                        </strong>
-
-                    </div>
+                            <h4 class="fw-bold mb-3">
+                                Price Summary
+                            </h4>
 
 
-                    <div class="summary-row">
+                            <div class="summary-row">
 
-                        <span>
-                            Delivery Charge
-                        </span>
+                                <span>
+                                    Print subtotal
+                                </span>
 
-                        <strong id="deliveryCharge">
-                            ₹{{ number_format($deliveryCharge, 2) }}
-                        </strong>
+                                <strong id="printSubtotal">
+                                    ₹{{ number_format($printSubtotal, 2) }}
+                                </strong>
 
-                    </div>
-
-
-                    <div class="summary-row">
-
-                        <span>
-                            Handling &amp; Packaging
-                        </span>
-
-                        <strong id="handlingCharge">
-                            ₹{{ number_format($handlingCharge, 2) }}
-                        </strong>
-
-                    </div>
+                            </div>
 
 
-                    <div class="summary-total">
+                            <div class="summary-row">
 
-                        <span>
-                            TOTAL
-                        </span>
+                                <span>
+                                    Delivery Charge
+                                </span>
 
-                        <strong id="checkoutTotal">
-                            ₹{{ number_format($grandTotal, 2) }}
-                        </strong>
+                                <strong id="deliveryCharge">
+                                    ₹{{ number_format($deliveryCharge, 2) }}
+                                </strong>
+
+                            </div>
+
+
+                            <div class="summary-row">
+
+                                <span>
+                                    Handling &amp; Packaging
+                                </span>
+
+                                <strong id="handlingCharge">
+                                    ₹{{ number_format($handlingCharge, 2) }}
+                                </strong>
+
+                            </div>
+
+
+                            <div class="summary-total">
+
+                                <span>
+                                    TOTAL
+                                </span>
+
+                                <strong id="checkoutTotal">
+                                    ₹{{ number_format($grandTotal, 2) }}
+                                </strong>
+
+                            </div>
+
+                        </div>
+
+
+                        {{-- =================================================
+         PROCEED
+    ================================================== --}}
+
+                        <button
+                            type="button"
+                            id="proceedToPay"
+                            class="proceed-payment-btn">
+
+                            Proceed to Pay
+
+                            <i class="bi bi-arrow-right ms-1"></i>
+
+                        </button>
+
 
                     </div>
 
                 </div>
-
-
-                {{-- =================================================
-         PROCEED
-    ================================================== --}}
-
-                <button
-                    type="button"
-                    id="proceedToPay"
-                    class="proceed-payment-btn">
-
-                    Proceed to Pay
-
-                    <i class="bi bi-arrow-right ms-1"></i>
-
-                </button>
-
-
             </div>
-
         </div>
 
     </section>

@@ -161,6 +161,20 @@
         color: #fff;
     }
 
+    /* Upload success message */
+    .upload-success-message {
+        border: 1px solid #b7e4c7;
+        background: #effaf3;
+        color: #198754;
+        padding: 12px 15px;
+        margin-top: 12px;
+        font-size: 14px;
+    }
+
+    .upload-success-message i {
+        font-size: 16px;
+    }
+
     .upload-progress-container {
         background: #fff;
         border: 1px solid #ddd;
@@ -197,14 +211,24 @@
        VERIFICATION MODAL
     ========================= */
     .upload-verification-overlay {
-        position: fixed;
-        inset: 0;
-        z-index: 99999;
+        position: fixed !important;
+        top: 0 !important;
+        right: 0 !important;
+        bottom: 0 !important;
+        left: 0 !important;
+        width: 100vw !important;
+        height: 100vh !important;
+        z-index: 2147483647 !important;
         background: rgba(0, 0, 0, .55);
         display: flex;
         align-items: center;
         justify-content: center;
         padding: 20px;
+        box-sizing: border-box;
+    }
+
+    .upload-verification-overlay.d-none {
+        display: none !important;
     }
 
     .upload-verification-modal {
@@ -763,6 +787,13 @@
 
                     <!-- Error -->
                     <div id="uploadError" class="alert alert-danger mt-3 d-none"></div>
+
+                    <!-- Upload Success -->
+                    <div id="uploadSuccess" class="upload-success-message d-none">
+                        <i class="bi bi-check-circle-fill me-2"></i>
+                        <strong>Upload successful!</strong>
+                        All documents have been uploaded successfully and are ready.
+                    </div>
                     <!-- Progress -->
                     <div id="uploadProgressContainer" class="upload-progress-container mt-3 d-none">
 
@@ -986,6 +1017,24 @@
     $(document).ready(function() {
 
         /* =====================================================
+           MODAL LAYER FIX
+           Move modals directly under <body> so sticky header /
+           transformed parent containers can never appear above them.
+        ===================================================== */
+        $('#previousFilesModal, #verificationModal').appendTo('body');
+
+        function lockModalScroll() {
+            $('body').css('overflow', 'hidden');
+        }
+
+        function unlockModalScroll() {
+            if ($('#previousFilesModal').hasClass('d-none') &&
+                $('#verificationModal').hasClass('d-none')) {
+                $('body').css('overflow', '');
+            }
+        }
+
+        /* =====================================================
            URLS
            Keep these URLs matching your Laravel routes.
         ===================================================== */
@@ -1115,6 +1164,7 @@
         function openPreviousFilesModal() {
 
             $('#previousFilesModal').removeClass('d-none');
+            lockModalScroll();
 
             $('#previousFilesLoading').removeClass('d-none');
             $('#previousFilesError').addClass('d-none');
@@ -1185,6 +1235,7 @@
 
                         $('#previousFilesModal')
                             .addClass('d-none');
+                        unlockModalScroll();
 
                         openVerificationModal();
 
@@ -1388,6 +1439,7 @@
             syncCurrentSelectionToSession(function() {
 
                 $('#previousFilesModal').addClass('d-none');
+                unlockModalScroll();
 
                 renderFiles(true);
 
@@ -2083,6 +2135,7 @@
             clearVerificationErrors();
 
             $('#verificationModal').removeClass('d-none');
+            lockModalScroll();
             showMobileStep();
 
             $('#verificationMobile').trigger('focus');
@@ -2092,6 +2145,7 @@
         function closeVerificationModal() {
             $('#verificationModal').addClass('d-none');
             clearVerificationErrors();
+            unlockModalScroll();
         }
 
 
@@ -3355,15 +3409,28 @@
         function escapeHtml(text) {
             return $('<div>').text(text).html();
         }
+        /* Close Previous Files modal by X or clicking outside the box. */
         $(document).on('click', '#closePreviousFiles', function(e) {
-
             e.preventDefault();
             e.stopPropagation();
 
-            $('#previousFilesModal')
-                .addClass('d-none');
-
+            $('#previousFilesModal').addClass('d-none');
+            unlockModalScroll();
         });
+
+        $(document).on('click', '#previousFilesModal', function(e) {
+            if (e.target === this) {
+                $('#previousFilesModal').addClass('d-none');
+                unlockModalScroll();
+            }
+        });
+
+        /* Also allow outside click for the OTP modal. */
+        // $(document).on('click', '#verificationModal', function(e) {
+        //     if (e.target === this) {
+        //         closeVerificationModal();
+        //     }
+        // });
     });
 </script>
 @endsection

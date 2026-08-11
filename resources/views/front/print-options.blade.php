@@ -14,141 +14,309 @@
 ===================================================== */
 
     .print-add-previous-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
 
-        border: 1px solid #222;
-        background: #fff;
+        padding: 8px 12px;
 
-        color: #222;
-
-        padding: 7px 11px;
+        border: 1px solid #2856db;
+        background: #edf3ff;
+        color: #2856db;
 
         font-size: 12px;
+        font-weight: 700;
 
         cursor: pointer;
+        transition: .18s ease;
     }
 
     .print-add-previous-btn:hover {
+        background: #2856db;
+        color: #fff;
+    }
 
-        background: #f5f5f5;
-
+    .print-add-previous-btn i {
+        font-size: 14px;
     }
 
 
     /* =====================================================
-   PREVIOUS FILE LIST
-===================================================== */
+       PREVIOUS FILES MODAL
+       SAME DESIGN AS UPLOAD PAGE
+    ===================================================== */
 
-    .previous-files-list {
+    .upload-verification-overlay {
+        position: fixed;
+        inset: 0;
+        z-index: 99999;
 
-        max-height: 430px;
+        background: rgba(0, 0, 0, .55);
+
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        padding: 20px;
+    }
+
+    .upload-verification-modal {
+        width: 100%;
+        max-width: 650px;
+
+        background: #fff;
+
+        box-shadow:
+            0 20px 60px rgba(0, 0, 0, .25);
+
+        flex-shrink: 0;
+
+        max-height: calc(100vh - 30px);
+
+        display: flex;
+        flex-direction: column;
+    }
+
+    .verification-header {
+        padding: 22px 28px;
+
+        border-bottom: 1px solid #e8e8e8;
+
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+
+        flex-shrink: 0;
+    }
+
+    .verification-header h4 {
+        font-size: 18px;
+        margin: 0;
+        font-weight: 700;
+        color: #111;
+    }
+
+    .verification-close {
+        width: 34px;
+        height: 34px;
+
+        border: 1px solid #ddd;
+        background: #fff;
+
+        font-size: 22px;
+        color: #555;
+
+        line-height: 1;
+        cursor: pointer;
+
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        flex-shrink: 0;
+    }
+
+    .verification-close:hover {
+        background: #f5f5f5;
+        color: #111;
+    }
+
+    .verification-body {
+        padding: 16px 20px 14px;
+
+        min-height: 0;
+        flex: 1 1 auto;
+
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    #previousFilesModal .verification-body>p {
+        margin-bottom: 12px !important;
+        line-height: 1.45;
+    }
+
+    #previousFilesList {
+        max-height: 52vh;
 
         overflow-y: auto;
 
-        border: 1px solid #ddd;
+        padding-right: 2px;
+        margin-top: 8px;
     }
-
-
-    /* =====================================================
-   PREVIOUS FILE ITEM
-===================================================== */
 
     .previous-file-item {
-
-        display: flex;
-
-        align-items: center;
-
-        gap: 10px;
-
-        padding: 10px;
-
-        border-bottom: 1px solid #e5e5e5;
+        border: 1px solid #e1e1e1;
 
         background: #fff;
+
+        padding: 8px 10px;
+
+        min-height: 54px;
+
+        display: flex;
+        align-items: center;
+
+        gap: 9px;
+
+        cursor: pointer;
+
+        transition: .15s ease;
     }
 
-    .previous-file-item:last-child {
-        border-bottom: 0;
+    .previous-file-item+.previous-file-item {
+        border-top: 0;
     }
 
-    .previous-file-checkbox {
+    .previous-file-item:hover {
+        background: #f7f9ff;
+    }
 
-        width: 19px;
-        height: 19px;
+    .previous-file-item.selected {
+        border-color: #2860e8;
+        background: #f2f6ff;
+    }
+
+    .previous-file-check {
+        width: 20px;
+        height: 20px;
 
         flex-shrink: 0;
     }
 
     .previous-file-icon {
-
-        width: 38px;
-        height: 38px;
-
-        display: flex;
-
-        align-items: center;
-        justify-content: center;
+        width: 34px;
+        height: 34px;
 
         background: #edf3ff;
+        color: #2860e8;
 
-        color: #2856db;
+        display: flex;
+        align-items: center;
+        justify-content: center;
 
         flex-shrink: 0;
     }
 
-    .previous-file-info {
-
+    .previous-file-details {
         min-width: 0;
-
         flex: 1;
     }
 
     .previous-file-name {
-
         font-size: 13px;
-
         font-weight: 600;
 
-        word-break: break-word;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
     }
 
     .previous-file-meta {
-
-        font-size: 10px;
-
+        font-size: 11px;
         color: #777;
-
-        margin-top: 2px;
     }
 
-    .previous-file-added {
-
-        padding: 4px 7px;
-
-        background: #e9f7ef;
+    .previous-file-status {
+        font-size: 11px;
 
         color: #198754;
+        background: #e9f7ef;
 
-        font-size: 10px;
-
-        font-weight: 600;
+        padding: 3px 7px;
 
         white-space: nowrap;
     }
 
+    .previous-file-added {
+        font-size: 11px;
 
-    /* =====================================================
-   MOBILE
-===================================================== */
+        color: #198754;
+        background: #e9f7ef;
 
-    @media (max-width: 576px) {
+        padding: 3px 7px;
 
-        .previous-files-list {
-            max-height: 55vh;
+        white-space: nowrap;
+    }
+
+    .verification-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+
+        margin-top: 12px;
+        padding-top: 12px;
+
+        border-top: 1px solid #e8e8e8;
+    }
+
+    #previousFilesSelectedCount {
+        font-size: 12px;
+        color: #777;
+    }
+
+    #addPreviousFiles {
+        border: 0;
+        border-radius: 0;
+
+        background: #2860e8;
+        border-color: #2860e8;
+
+        color: #fff;
+
+        font-weight: 700;
+
+        padding: 10px 14px;
+    }
+
+    #addPreviousFiles:disabled {
+        background: #88a2e6;
+        border-color: #88a2e6;
+        cursor: not-allowed;
+    }
+
+    #previousFilesLoading {
+        text-align: center;
+    }
+
+    #previousFilesEmpty {
+        text-align: center;
+    }
+
+    @media (max-width: 767px) {
+
+        .upload-verification-overlay {
+            padding: 10px;
         }
 
+        .upload-verification-modal {
+            max-width: 100%;
+            max-height: calc(100vh - 20px);
+        }
+
+        .verification-header {
+            padding: 13px 16px;
+            min-height: 54px;
+        }
+
+        .verification-header h4 {
+            font-size: 17px;
+        }
+
+        .verification-body {
+            padding: 14px 16px 12px;
+        }
+
+        #previousFilesList {
+            max-height: 50vh;
+        }
+    }
+
+    @media (max-width: 575px) {
+
         .previous-file-item {
-            padding: 8px;
+            padding: 7px 8px;
+            min-height: 50px;
             gap: 7px;
         }
 
@@ -156,11 +324,24 @@
             font-size: 12px;
         }
 
+        .previous-file-meta {
+            font-size: 10px;
+        }
+
+        .previous-file-status,
         .previous-file-added {
             font-size: 9px;
             padding: 3px 5px;
         }
 
+        .verification-footer {
+            gap: 10px;
+        }
+
+        #addPreviousFiles {
+            padding: 9px 11px;
+            font-size: 12px;
+        }
     }
 
     /* =========================================================
@@ -418,6 +599,55 @@
         display: block;
     }
 
+    /* =========================================
+   UPLOAD NEW FILE - PREVIOUS FILE MODAL
+========================================= */
+
+    .previous-upload-new-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+
+        background: #2860e8;
+        color: #fff !important;
+
+        border: 1px solid #2860e8;
+
+        padding: 8px 12px;
+
+        font-size: 12px;
+        font-weight: 600;
+
+        text-decoration: none !important;
+
+        line-height: 1;
+
+        white-space: nowrap;
+
+        transition: .2s ease;
+    }
+
+    .previous-upload-new-btn:hover {
+        background: #1d4fc7;
+        border-color: #1d4fc7;
+        color: #fff !important;
+    }
+
+
+    /* Mobile */
+
+    @media (max-width: 575px) {
+
+        .previous-upload-new-btn {
+            padding: 7px 8px;
+            font-size: 10px;
+        }
+
+        .verification-header {
+            gap: 6px;
+        }
+
+    }
 
     /* =========================================================
    OPTION BOX
@@ -966,20 +1196,6 @@
             margin-left: 0 !important;
         }
     }
-
-    .previous-file-item {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        padding: 10px;
-        border-bottom: 1px solid #e5e5e5;
-        background: #fff;
-        cursor: pointer;
-    }
-
-    .previous-file-item:hover {
-        background: #f7f9ff;
-    }
 </style>
 
 @endsection
@@ -1425,107 +1641,147 @@
 </main>
 <!-- =====================================================
      PREVIOUS FILES MODAL
+     SAME DESIGN AS UPLOAD PAGE
 ====================================================== -->
 
 <div
-    class="modal fade"
     id="previousFilesModal"
-    tabindex="-1"
-    aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered modal-lg">
+    class="upload-verification-overlay d-none">
 
-        <div class="modal-content">
+    <div
+        class="upload-verification-modal"
+        style="max-width:650px;">
 
-            <div class="modal-header">
+        <!-- Header -->
 
-                <h5 class="modal-title">
+        <div class="verification-header">
 
-                    <i class="bi bi-folder me-2"></i>
-
+            <div style="display:flex;align-items:center;">
+                <h4 style="margin:0;">
+                    <i class="bi bi-folder2-open me-2"></i>
                     Previous Uploaded Files
-
-                </h5>
-
-                <button
-                    type="button"
-                    class="btn-close"
-                    data-bs-dismiss="modal"></button>
-
+                </h4>
             </div>
 
 
-            <div class="modal-body">
+            <div style="
+        display:flex;
+        align-items:center;
+        gap:8px;
+    ">
 
-                <div class="d-flex justify-content-between align-items-center mb-3">
+                <a
+                    href="{{ route('upload') }}"
+                    class="previous-upload-new-btn">
 
-                    <p class="text-muted small mb-0">
-                        Select files you have uploaded previously.
-                        Selected files will be added to this print order.
-                    </p>
+                    <i class="bi bi-upload"></i>
 
-                    <a
-                        class="btn btn-primary btn-sm ms-3"
-                        href="{{ route('upload', []) }}">
-                        <i class="bi bi-upload me-1"></i>
-                        Upload New File
-                    </a>
+                    Upload New File
 
-                </div>
-
-
-                <div
-                    id="previousFilesLoading"
-                    class="text-center py-4">
-
-                    <div
-                        class="spinner-border spinner-border-sm text-primary"></div>
-
-                    <div class="small text-muted mt-2">
-                        Loading files...
-                    </div>
-
-                </div>
-
-
-                <div
-                    id="previousFilesList"
-                    class="previous-files-list"></div>
-
-
-                <div
-                    id="previousFilesEmpty"
-                    class="text-center py-5 d-none">
-
-                    <i
-                        class="bi bi-folder-x"
-                        style="font-size:32px;color:#aaa;"></i>
-
-                    <div class="fw-bold mt-2">
-                        No previous files found
-                    </div>
-
-                </div>
-
-            </div>
-
-
-            <div class="modal-footer">
-
-                <span
-                    id="previousFilesSelectedCount"
-                    class="text-muted small me-auto">
-                    0 file(s) selected
-                </span>
+                </a>
 
 
                 <button
                     type="button"
-                    class="btn btn-primary"
+                    id="closePreviousFiles"
+                    class="verification-close">
+
+                    &times;
+
+                </button>
+
+            </div>
+
+        </div>
+
+
+        <!-- Body -->
+
+        <div class="verification-body">
+
+            <p class="text-secondary mb-3">
+                Select files you have uploaded previously.
+                Selected files will be added to your current order.
+            </p>
+
+
+            <!-- Loading -->
+
+            <div
+                id="previousFilesLoading"
+                class="text-center py-4">
+
+                <div
+                    class="spinner-border text-primary"
+                    role="status">
+                </div>
+
+                <div class="small text-muted mt-2">
+                    Loading your previous files...
+                </div>
+
+            </div>
+
+
+            <!-- Error -->
+
+            <div
+                id="previousFilesError"
+                class="alert alert-danger d-none">
+            </div>
+
+
+            <!-- Empty -->
+
+            <div
+                id="previousFilesEmpty"
+                class="text-center py-4 d-none">
+
+                <i
+                    class="bi bi-folder-x"
+                    style="font-size:40px;color:#999;">
+                </i>
+
+                <h6 class="fw-bold mt-3">
+                    No previous files found
+                </h6>
+
+                <p class="text-muted small mb-0">
+                    Files you upload will appear here for future orders.
+                </p>
+
+            </div>
+
+
+            <!-- File List -->
+
+            <div
+                id="previousFilesList"
+                class="d-none">
+            </div>
+
+
+            <!-- Footer -->
+
+            <div
+                class="verification-footer">
+
+                <small class="text-muted">
+
+                    <span id="previousFilesSelectedCount">
+                        0 file(s) selected
+                    </span>
+
+                </small>
+
+
+                <button
+                    type="button"
                     id="addPreviousFiles"
+                    class="btn btn-primary"
                     disabled>
 
                     <i class="bi bi-plus-lg me-1"></i>
-
                     Add Selected Files
 
                 </button>
@@ -1535,6 +1791,7 @@
         </div>
 
     </div>
+
 </div>
 @endsection
 
@@ -3340,12 +3597,19 @@
            PREVIOUS FILES MODAL
         ===================================================== */
 
-        var previousFilesModal =
-            new bootstrap.Modal(
-                document.getElementById(
-                    'previousFilesModal'
-                )
-            );
+        var previousFilesModal = {
+
+            show: function() {
+                $('#previousFilesModal')
+                    .removeClass('d-none');
+            },
+
+            hide: function() {
+                $('#previousFilesModal')
+                    .addClass('d-none');
+            }
+
+        };
 
 
         var previousFilesData = [];
@@ -3391,10 +3655,17 @@
                 .removeClass('d-none');
 
             $('#previousFilesList')
-                .empty();
+                .empty()
+                .addClass('d-none');
 
             $('#previousFilesEmpty')
                 .addClass('d-none');
+
+            $('#previousFilesSelectedCount')
+                .text('0 file(s) selected');
+
+            $('#addPreviousFiles')
+                .prop('disabled', true);
 
 
             $.ajax({
@@ -3462,41 +3733,32 @@
             /*
             =====================================================
             CURRENT DOM FILE IDS
-
-            This is extra protection against duplicates.
             =====================================================
             */
 
             var currentIds = [];
 
             $('.print-file-card')
-                .each(
-                    function() {
+                .each(function() {
 
-                        var id =
-                            parseInt(
-                                $(this)
-                                .data(
-                                    'document-id'
-                                ),
-                                10
-                            );
+                    var id =
+                        parseInt(
+                            $(this).data(
+                                'document-id'
+                            ),
+                            10
+                        );
 
-
-                        if (id) {
-                            currentIds.push(id);
-                        }
-
+                    if (id) {
+                        currentIds.push(id);
                     }
-                );
+
+                });
 
 
             $.each(
                 documents,
-                function(
-                    index,
-                    file
-                ) {
+                function(index, file) {
 
                     var fileId =
                         parseInt(
@@ -3505,43 +3767,38 @@
                         );
 
 
-                    /*
-                     * Already selected?
-                     */
-
                     var alreadyAdded =
                         currentIds.includes(
                             fileId
                         );
 
 
-                    var checked =
-                        alreadyAdded ?
-                        '' :
-                        '';
+                    var pageCount =
+                        parseInt(
+                            file.pages || 1,
+                            10
+                        );
 
 
                     html +=
-
-                        '<div class="previous-file-item">' +
+                        '<div class="previous-file-item ' +
+                        (alreadyAdded ? 'selected' : '') +
+                        '" data-file-id="' +
+                        fileId +
+                        '">' +
 
 
                         '<input ' +
-
                         'type="checkbox" ' +
-
-                        'class="previous-file-checkbox" ' +
-
+                        'class="previous-file-check" ' +
                         'value="' +
                         fileId +
                         '" ' +
-
                         (
                             alreadyAdded ?
                             'disabled' :
                             ''
                         ) +
-
                         '>' +
 
 
@@ -3552,7 +3809,7 @@
                         '</div>' +
 
 
-                        '<div class="previous-file-info">' +
+                        '<div class="previous-file-details">' +
 
                         '<div class="previous-file-name">' +
 
@@ -3571,14 +3828,10 @@
 
                         ' • ' +
 
-                        (
-                            file.pages || 1
-                        ) +
+                        pageCount +
 
                         (
-                            parseInt(
-                                file.pages || 1
-                            ) === 1 ?
+                            pageCount === 1 ?
                             ' page' :
                             ' pages'
                         ) +
@@ -3588,25 +3841,26 @@
                         '</div>';
 
 
-                    if (
-                        alreadyAdded
-                    ) {
+                    if (alreadyAdded) {
 
                         html +=
-
                             '<div class="previous-file-added">' +
-
-                            '<i class="bi bi-check-circle me-1"></i>' +
-
+                            '<i class="bi bi-check-circle-fill me-1"></i>' +
                             'Added' +
+                            '</div>';
 
+                    } else {
+
+                        html +=
+                            '<div class="previous-file-status">' +
+                            '<i class="bi bi-check-circle-fill me-1"></i>' +
+                            'Uploaded' +
                             '</div>';
 
                     }
 
 
                     html +=
-
                         '</div>';
 
                 }
@@ -3614,9 +3868,11 @@
 
 
             $('#previousFilesList')
-                .html(html);
+                .html(html)
+                .removeClass('d-none');
 
         }
+
         /* =====================================================
    CLICK ANYWHERE ON PREVIOUS FILE ROW
    ===================================================== */
@@ -3632,7 +3888,7 @@
                 */
                 if (
                     $(e.target).is(
-                        '.previous-file-checkbox'
+                        '.previous-file-check'
                     )
                 ) {
                     return;
@@ -3641,7 +3897,7 @@
 
                 var $checkbox =
                     $(this).find(
-                        '.previous-file-checkbox:not(:disabled)'
+                        '.previous-file-check:not(:disabled)'
                     );
 
 
@@ -3675,13 +3931,23 @@
         );
         $(document).on(
             'change',
-            '.previous-file-checkbox:not(:disabled)',
+            '.previous-file-check:not(:disabled)',
             function() {
+
+                var $row =
+                    $(this).closest(
+                        '.previous-file-item'
+                    );
+
+                $row.toggleClass(
+                    'selected',
+                    $(this).prop('checked')
+                );
 
                 previousFilesSelected = [];
 
 
-                $('.previous-file-checkbox:checked')
+                $('.previous-file-check:checked')
                     .each(
                         function() {
 
@@ -3711,6 +3977,42 @@
 
             }
         );
+        $(document).on(
+            'click',
+            '#closePreviousFiles',
+            function(e) {
+
+                e.preventDefault();
+                e.stopPropagation();
+
+                previousFilesModal.hide();
+
+            }
+        );
+
+
+        /*
+        =====================================================
+        CLOSE WHEN CLICKING OUTSIDE MODAL
+        =====================================================
+        */
+
+        $(document).on(
+            'click',
+            '#previousFilesModal',
+            function(e) {
+
+                if (
+                    e.target ===
+                    this
+                ) {
+                    previousFilesModal.hide();
+                }
+
+            }
+        );
+
+
         $(document).on(
             'click',
             '#addPreviousFiles',
