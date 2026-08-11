@@ -54,6 +54,11 @@ Route::post('/checkout/calculate-shipping', [CheckoutController::class, 'calcula
 Route::post('/checkout/place-order', [CheckoutController::class, 'placeOrder'])->name('checkout.place-order');
 Route::get('/order/success/{order}', [CheckoutController::class, 'success'])->name('order.success');
 
+Route::post('/checkout/verify-razorpay', [CheckoutController::class, 'verifyRazorpay'])
+    ->name('checkout.verify.razorpay');
+
+Route::post('/checkout/razorpay-failed', [CheckoutController::class, 'razorpayFailed'])
+    ->name('checkout.razorpay.failed');
 
 // Route::get('/about_us', [FrontController::class, 'about_us'])->name('about_us');
 // Route::get('/contact_us', [FrontController::class, 'contact_us'])->name('contact_us');

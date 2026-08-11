@@ -523,7 +523,9 @@
     <div class="row">
 
 
-        {{-- PAYMENT --}}
+        {{-- =====================================================
+     PAYMENT DETAILS
+====================================================== --}}
 
         <div class="col-md-6">
 
@@ -540,16 +542,11 @@
                         <tr>
 
                             <td class="info-label">
-                                Method
+                                Payment Method
                             </td>
 
                             <td>
-
-                                {{ strtoupper(
-                                    $order->payment_method
-                                    ?? 'COD'
-                                ) }}
-
+                                {{ strtoupper($order->payment_method ?? '-') }}
                             </td>
 
                         </tr>
@@ -558,19 +555,56 @@
                         <tr>
 
                             <td class="info-label">
-                                Status
+                                Payment Status
                             </td>
 
                             <td>
 
+                                @if(($order->payment_status ?? '') === 'paid')
+
+                                <span
+                                    style="
+                                    display:inline-block;
+                                    padding:3px 7px;
+                                    border-radius:3px;
+                                    font-size:10px;
+                                    font-weight:600;
+                                    background:#d1e7dd;
+                                    color:#0f5132;
+                                ">
+
+                                    Paid
+
+                                </span>
+
+                                @elseif(($order->payment_status ?? '') === 'failed')
+
+                                <span
+                                    style="
+                                    display:inline-block;
+                                    padding:3px 7px;
+                                    border-radius:3px;
+                                    font-size:10px;
+                                    font-weight:600;
+                                    background:#f8d7da;
+                                    color:#842029;
+                                ">
+
+                                    Failed
+
+                                </span>
+
+                                @else
+
                                 <span class="payment-badge">
 
                                     {{ ucfirst(
-                                        $order->payment_status
-                                        ?? 'Pending'
-                                    ) }}
+                                    $order->payment_status ?? 'Pending'
+                                ) }}
 
                                 </span>
+
+                                @endif
 
                             </td>
 
@@ -586,12 +620,9 @@
                             <td>
 
                                 ₹{{ number_format(
-                                    (float)(
-                                        $order->grand_total
-                                        ?? 0
-                                    ),
-                                    2
-                                ) }}
+                            (float)($order->grand_total ?? 0),
+                            2
+                        ) }}
 
                             </td>
 
@@ -601,11 +632,23 @@
                         <tr>
 
                             <td class="info-label">
-                                Transaction ID
+                                Razorpay Order ID
                             </td>
 
                             <td>
-                                {{ $order->transaction_id ?? '-' }}
+
+                                @if(!empty($order->razorpay_order_id))
+
+                                <code>
+                                    {{ $order->razorpay_order_id }}
+                                </code>
+
+                                @else
+
+                                -
+
+                                @endif
+
                             </td>
 
                         </tr>
@@ -614,11 +657,23 @@
                         <tr>
 
                             <td class="info-label">
-                                Payment ID
+                                Razorpay Payment ID
                             </td>
 
                             <td>
-                                {{ $order->payment_id ?? '-' }}
+
+                                @if(!empty($order->razorpay_payment_id))
+
+                                <code>
+                                    {{ $order->razorpay_payment_id }}
+                                </code>
+
+                                @else
+
+                                -
+
+                                @endif
+
                             </td>
 
                         </tr>
@@ -627,18 +682,24 @@
                         <tr>
 
                             <td class="info-label">
-                                Paid At
+                                Razorpay Signature
                             </td>
 
                             <td>
 
-                                @if($order->paid_at)
+                                @if(!empty($order->razorpay_signature))
 
-                                {{ \Carbon\Carbon::parse(
-                                        $order->paid_at
-                                    )->format(
-                                        'd M Y, h:i A'
-                                    ) }}
+                                <code
+                                    style="
+                                    display:block;
+                                    max-width:100%;
+                                    overflow:hidden;
+                                    text-overflow:ellipsis;
+                                ">
+
+                                    {{ $order->razorpay_signature }}
+
+                                </code>
 
                                 @else
 
@@ -657,7 +718,6 @@
             </div>
 
         </div>
-
 
 
         {{-- SHIPPING --}}

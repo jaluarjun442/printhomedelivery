@@ -873,7 +873,7 @@ MOBILE RESPONSIVE
 
                             {{-- RAZORPAY --}}
 
-                            <!-- <label
+                            <label
                                 class="payment-option"
                                 id="razorpayOption">
 
@@ -899,7 +899,7 @@ MOBILE RESPONSIVE
 
                                 </div>
 
-                            </label> -->
+                            </label>
 
                         </div>
 
@@ -982,7 +982,9 @@ MOBILE RESPONSIVE
                             id="placeCodOrder"
                             class="proceed-payment-btn">
 
-                            Place Order — COD
+                            <span id="paymentButtonText">
+                                Place Order — COD
+                            </span>
 
                             <i class="bi bi-arrow-right ms-1"></i>
 
@@ -1001,7 +1003,7 @@ MOBILE RESPONSIVE
 
 @endsection
 @section('custom_footer')
-
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 <script>
     $(document).ready(function() {
 
@@ -1885,259 +1887,493 @@ MOBILE RESPONSIVE
                 );
 
         }
-        $('#placeCodOrder').on(
-            'click',
-            function() {
+        $('#placeCodOrder').on('click', function() {
 
-                let button = $(this);
+            let button = $(this);
+
+            let paymentMethod =
+                $('input[name="payment_method"]:checked').val();
+
+            /*
+            =====================================================
+            BASIC VALIDATION
+            =====================================================
+            */
+
+            let requiredFields = [
+                '#fullName',
+                '#email',
+                '#pincode',
+                '#city',
+                '#state',
+                '#house',
+                '#road'
+            ];
+
+            let valid = true;
+
+            $.each(requiredFields, function(index, selector) {
+
+                let value = $(selector).val().trim();
+
+                $(selector).removeClass('is-invalid');
+
+                if (!value) {
+
+                    $(selector).addClass('is-invalid');
+
+                    valid = false;
+                }
+
+            });
+
+            if (!valid) {
+
+                alert(
+                    'Please fill all required delivery details.'
+                );
+
+                return;
+            }
 
 
-                /*
-                =========================================
-                BASIC VALIDATION
-                =========================================
-                */
+            /*
+            =====================================================
+            COURIER
+            =====================================================
+            */
 
-                let requiredFields = [
+            let courierId =
+                $('#selectedCourierId').val();
 
-                    '#fullName',
-                    '#email',
-                    '#pincode',
-                    '#city',
-                    '#state',
-                    '#house',
-                    '#road',
+            if (!courierId) {
 
-                ];
+                alert(
+                    'Please select a courier.'
+                );
 
-
-                let valid = true;
+                return;
+            }
 
 
-                $.each(
-                    requiredFields,
-                    function(index, selector) {
+            /*
+            =====================================================
+            DISABLE BUTTON
+            =====================================================
+            */
 
-                        let value =
-                            $(selector)
-                            .val()
-                            .trim();
+            button
+                .prop('disabled', true)
+                .html(
+                    '<span class="spinner-border spinner-border-sm me-2"></span>' +
+                    'Processing...'
+                );
 
 
-                        $(selector)
-                            .removeClass(
-                                'is-invalid'
+            /*
+            =====================================================
+            FORM DATA
+            =====================================================
+            */
+
+            let formData = {
+
+                _token: "{{ csrf_token() }}",
+
+                full_name: $('#fullName').val().trim(),
+
+                email: $('#email').val().trim(),
+
+                pincode: $('#pincode').val().trim(),
+
+                city: $('#city').val().trim(),
+
+                state: $('#state').val().trim(),
+
+                house: $('#house').val().trim(),
+
+                road: $('#road').val().trim(),
+
+                landmark: $('#landmark').val().trim(),
+
+                courier_id: courierId,
+
+                payment_method: paymentMethod
+
+            };
+
+
+            /*
+            =====================================================
+            COD
+            =====================================================
+            */
+
+            if (paymentMethod === 'cod') {
+
+                submitCodOrder(formData);
+
+                return;
+            }
+
+
+            /*
+            =====================================================
+            RAZORPAY
+            =====================================================
+            */
+
+            if (paymentMethod === 'razorpay') {
+
+                startRazorpayPayment(
+                    formData,
+                    button
+                );
+
+                return;
+            }
+
+
+            alert(
+                'Please select a payment method.'
+            );
+
+            button.prop('disabled', false);
+
+        });
+
+        function submitCodOrder(formData) {
+
+            let form =
+                $('<form>', {
+
+                    method: 'POST',
+
+                    action: "{{ route('checkout.place-order') }}"
+
+                });
+
+
+            $.each(formData, function(key, value) {
+
+                form.append(
+                    $('<input>', {
+
+                        type: 'hidden',
+
+                        name: key,
+
+                        value: value
+
+                    })
+                );
+
+            });
+
+
+            $('body').append(form);
+
+            form.submit();
+        }
+
+        function startRazorpayPayment(
+            formData,
+            button
+        ) {
+
+            $.ajax({
+
+                url: "{{ route('checkout.place-order') }}",
+
+                type: 'POST',
+
+                dataType: 'json',
+
+                data: formData,
+
+                success: function(response) {
+
+                    if (
+                        !response ||
+                        !response.success
+                    ) {
+
+                        alert(
+                            response.message ||
+                            'Unable to create Razorpay order.'
+                        );
+
+                        button.prop('disabled', false);
+
+                        return;
+                    }
+
+
+                    /*
+                    =================================================
+                    RAZORPAY CHECKOUT
+                    =================================================
+                    */
+
+                    let options = {
+
+                        key: response.key_id,
+
+                        amount: response.amount,
+
+                        currency: response.currency,
+
+                        name: "{{ config('app.name') }}",
+
+                        description: "Print Order",
+
+                        order_id: response.razorpay_order_id,
+
+
+                        prefill: {
+
+                            name: formData.full_name,
+
+                            email: formData.email,
+
+                            contact: "+91" +
+                                "{{ $mobile }}"
+
+                        },
+
+
+                        notes: {
+
+                            order_number: response.order_number
+
+                        },
+
+
+                        theme: {
+
+                            color: "#2856db"
+
+                        },
+
+
+                        modal: {
+
+                            confirm_close: true,
+
+                            escape: true,
+
+                            backdropclose: false
+
+                        },
+
+
+                        handler: function(razorpayResponse) {
+
+                            verifyRazorpayPayment(
+
+                                razorpayResponse,
+
+                                response.order_number,
+
+                                button
+
+                            );
+
+                        },
+
+
+                        "ondismiss": function() {
+
+                            button
+                                .prop('disabled', false)
+                                .html(
+                                    '<span id="paymentButtonText">' +
+                                    (
+                                        $('input[name="payment_method"]:checked').val() === 'razorpay' ?
+                                        'Pay Now' :
+                                        'Place Order — COD'
+                                    ) +
+                                    '</span>' +
+                                    '<i class="bi bi-arrow-right ms-1"></i>'
+                                );
+
+                        }
+
+                    };
+
+
+                    let razorpay =
+                        new Razorpay(options);
+
+
+                    razorpay.on(
+                        'payment.failed',
+                        function(response) {
+
+                            console.error(
+                                'Razorpay Payment Failed:',
+                                response
+                            );
+
+                            alert(
+                                response.error &&
+                                response.error.description ?
+                                response.error.description :
+                                'Payment failed.'
                             );
 
 
-                        if (!value) {
-
-                            $(selector)
-                                .addClass(
-                                    'is-invalid'
+                            button
+                                .prop('disabled', false)
+                                .html(
+                                    '<span id="paymentButtonText">' +
+                                    'Pay Now' +
+                                    '</span>' +
+                                    '<i class="bi bi-arrow-right ms-1"></i>'
                                 );
 
-                            valid = false;
                         }
+                    );
+
+
+                    razorpay.open();
+
+                },
+
+
+                error: function(xhr) {
+
+                    console.error(
+                        xhr.responseText
+                    );
+
+                    let message =
+                        'Unable to start payment.';
+
+                    if (
+                        xhr.responseJSON &&
+                        xhr.responseJSON.message
+                    ) {
+
+                        message =
+                            xhr.responseJSON.message;
 
                     }
-                );
+
+                    alert(message);
 
 
-                if (!valid) {
+                    button
+                        .prop('disabled', false)
+                        .html(
+                            '<span id="paymentButtonText">' +
+                            'Pay Now' +
+                            '</span>' +
+                            '<i class="bi bi-arrow-right ms-1"></i>'
+                        );
 
-                    alert(
-                        'Please fill all required delivery details.'
-                    );
-
-                    return;
                 }
 
+            });
 
-                /*
-                =========================================
-                COURIER
-                =========================================
-                */
+        }
 
-                let courierId =
-                    $('#selectedCourierId')
-                    .val();
+        function verifyRazorpayPayment(
+            razorpayResponse,
+            orderNumber,
+            button
+        ) {
+
+            $.ajax({
+
+                url: "{{ route('checkout.verify.razorpay') }}",
+
+                type: 'POST',
+
+                dataType: 'json',
+
+                data: {
+
+                    _token: "{{ csrf_token() }}",
+
+                    order_number: orderNumber,
+
+                    razorpay_payment_id: razorpayResponse.razorpay_payment_id,
+
+                    razorpay_order_id: razorpayResponse.razorpay_order_id,
+
+                    razorpay_signature: razorpayResponse.razorpay_signature
+
+                },
 
 
-                if (!courierId) {
+                success: function(response) {
+
+                    if (
+                        response &&
+                        response.success &&
+                        response.redirect
+                    ) {
+
+                        window.location.href =
+                            response.redirect;
+
+                        return;
+                    }
+
 
                     alert(
-                        'Please select a courier.'
+                        response.message ||
+                        'Payment verification failed.'
                     );
 
-                    return;
+
+                    button
+                        .prop('disabled', false)
+                        .html(
+                            'Pay Now' +
+                            '<i class="bi bi-arrow-right ms-1"></i>'
+                        );
+
+                },
+
+
+                error: function(xhr) {
+
+                    console.error(
+                        'Razorpay Verify Error:',
+                        xhr.responseText
+                    );
+
+
+                    let message =
+                        'Payment verification failed.';
+
+                    if (
+                        xhr.responseJSON &&
+                        xhr.responseJSON.message
+                    ) {
+
+                        message =
+                            xhr.responseJSON.message;
+                    }
+
+
+                    alert(message);
+
+
+                    button
+                        .prop('disabled', false)
+                        .html(
+                            'Pay Now' +
+                            '<i class="bi bi-arrow-right ms-1"></i>'
+                        );
+
                 }
 
+            });
 
-                /*
-                =========================================
-                COD ONLY
-                =========================================
-                */
-
-                let paymentMethod =
-                    $('input[name="payment_method"]:checked')
-                    .val();
-
-
-                if (
-                    paymentMethod !== 'cod'
-                ) {
-
-                    alert(
-                        'Cash on Delivery is currently the only available payment method.'
-                    );
-
-                    return;
-                }
-
-
-                /*
-                =========================================
-                LOADING
-                =========================================
-                */
-
-                button
-                    .prop(
-                        'disabled',
-                        true
-                    )
-                    .html(
-                        '<span class="spinner-border spinner-border-sm me-2"></span>' +
-                        'Placing Order...'
-                    );
-
-
-                /*
-                =========================================
-                SUBMIT
-                =========================================
-                */
-
-                let form =
-                    $('<form>', {
-
-                        method: 'POST',
-
-                        action: "{{ route('checkout.place-order') }}"
-
-                    });
-
-
-                form.append(
-                    $('<input>', {
-                        type: 'hidden',
-                        name: '_token',
-                        value: "{{ csrf_token() }}"
-                    })
-                );
-
-
-                form.append(
-                    $('<input>', {
-                        type: 'hidden',
-                        name: 'full_name',
-                        value: $('#fullName').val().trim()
-                    })
-                );
-
-
-                form.append(
-                    $('<input>', {
-                        type: 'hidden',
-                        name: 'email',
-                        value: $('#email').val().trim()
-                    })
-                );
-
-
-                form.append(
-                    $('<input>', {
-                        type: 'hidden',
-                        name: 'pincode',
-                        value: $('#pincode').val().trim()
-                    })
-                );
-
-
-                form.append(
-                    $('<input>', {
-                        type: 'hidden',
-                        name: 'city',
-                        value: $('#city').val().trim()
-                    })
-                );
-
-
-                form.append(
-                    $('<input>', {
-                        type: 'hidden',
-                        name: 'state',
-                        value: $('#state').val().trim()
-                    })
-                );
-
-
-                form.append(
-                    $('<input>', {
-                        type: 'hidden',
-                        name: 'house',
-                        value: $('#house').val().trim()
-                    })
-                );
-
-
-                form.append(
-                    $('<input>', {
-                        type: 'hidden',
-                        name: 'road',
-                        value: $('#road').val().trim()
-                    })
-                );
-
-
-                form.append(
-                    $('<input>', {
-                        type: 'hidden',
-                        name: 'landmark',
-                        value: $('#landmark').val().trim()
-                    })
-                );
-
-
-                form.append(
-                    $('<input>', {
-                        type: 'hidden',
-                        name: 'courier_id',
-                        value: courierId
-                    })
-                );
-
-
-                form.append(
-                    $('<input>', {
-                        type: 'hidden',
-                        name: 'payment_method',
-                        value: 'cod'
-                    })
-                );
-
-
-                $('body')
-                    .append(form);
-
-                form.submit();
-
-            }
-        );
-
+        }
     });
 </script>
 

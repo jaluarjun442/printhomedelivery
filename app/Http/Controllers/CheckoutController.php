@@ -442,7 +442,7 @@ class CheckoutController extends Controller
 
             'payment_method' => [
                 'required',
-                'in:cod'
+                'in:cod,razorpay'
             ],
 
             'courier_id' => [
@@ -464,7 +464,7 @@ class CheckoutController extends Controller
             []
         );
 
-
+        $paymentMethod = $validated['payment_method'];
         $printOptions = session(
             'print_options',
             []
@@ -1120,6 +1120,7 @@ class CheckoutController extends Controller
                 $weight,
                 $printSubtotal,
                 $handlingCharge,
+                $paymentMethod,
                 $grandTotal
             ) {
 
@@ -1255,8 +1256,7 @@ class CheckoutController extends Controller
                 PAYMENT
                 */
 
-                    'payment_method' =>
-                    'cod',
+                    'payment_method' => $paymentMethod,
 
                     'payment_status' =>
                     'pending',
@@ -1293,12 +1293,136 @@ class CheckoutController extends Controller
                 */
 
                     'status' =>
-                    'placed',
+                    $paymentMethod === 'razorpay'
+                        ? 'payment_pending'
+                        : 'placed',
 
                 ]);
             }
         );
+        /*
+=====================================================
+RAZORPAY ORDER
+=====================================================
+*/
 
+        if ($validated['payment_method'] === 'razorpay') {
+
+            $razorpayKey =
+                config('services.razorpay.key_id');
+
+            $razorpaySecret =
+                config('services.razorpay.key_secret');
+
+
+            if (
+                !$razorpayKey ||
+                !$razorpaySecret
+            ) {
+
+                return response()->json([
+
+                    'success' => false,
+
+                    'message' =>
+                    'Razorpay configuration is missing.'
+
+                ], 500);
+            }
+
+            $razorpayResponse =
+                Http::withBasicAuth(
+                    $razorpayKey,
+                    $razorpaySecret
+                )
+                ->post(
+                    'https://api.razorpay.com/v1/orders',
+                    [
+
+                        'amount' =>
+                        (int) round(
+                            $grandTotal * 100
+                        ),
+
+                        'currency' =>
+                        'INR',
+
+                        'receipt' =>
+                        $order->order_number,
+
+                        'notes' => [
+
+                            'order_number' =>
+                            $order->order_number,
+
+                            'mobile' =>
+                            (string) $mobile,
+
+                        ],
+
+                        'partial_payment' =>
+                        false,
+
+                    ]
+                );
+            if (!$razorpayResponse->successful()) {
+
+                $order->update([
+                    'status' => 'payment_failed',
+                    'payment_status' => 'failed',
+                ]);
+
+                return response()->json([
+
+                    'success' => false,
+
+                    'message' =>
+                    'Razorpay API Error',
+
+                    'razorpay_response' =>
+                    $razorpayResponse->json(),
+
+                    'http_status' =>
+                    $razorpayResponse->status(),
+
+                ], 500);
+            }
+
+
+            $razorpayData =
+                $razorpayResponse->json();
+
+
+            $order->update([
+
+                'razorpay_order_id' =>
+                $razorpayData['id'],
+
+            ]);
+
+
+            return response()->json([
+
+                'success' =>
+                true,
+
+                'key_id' =>
+                $razorpayKey,
+
+                'amount' =>
+                $razorpayData['amount'],
+
+                'currency' =>
+                $razorpayData['currency'],
+
+                'razorpay_order_id' =>
+                $razorpayData['id'],
+
+                'order_number' =>
+                $order->order_number,
+
+            ]);
+        }
 
         /*
     =====================================================
@@ -1334,6 +1458,224 @@ class CheckoutController extends Controller
                 'success',
                 'Your order has been placed successfully.'
             );
+    }
+    public function verifyRazorpay(Request $request)
+    {
+        $mobile =
+            $request->cookie('loggedin_number');
+
+
+        if (!$mobile) {
+
+            return response()->json([
+
+                'success' => false,
+
+                'message' =>
+                'Please login again.'
+
+            ], 401);
+        }
+
+
+        $validated =
+            $request->validate([
+
+                'order_number' =>
+                'required|string',
+
+                'razorpay_payment_id' =>
+                'required|string',
+
+                'razorpay_order_id' =>
+                'required|string',
+
+                'razorpay_signature' =>
+                'required|string',
+
+            ]);
+
+
+        /*
+    =====================================================
+    GET OUR ORDER
+    =====================================================
+    */
+
+        $order =
+            Order::where(
+                'order_number',
+                $validated['order_number']
+            )
+            ->where(
+                'mobile',
+                $mobile
+            )
+            ->first();
+
+
+        if (!$order) {
+
+            return response()->json([
+
+                'success' => false,
+
+                'message' =>
+                'Order not found.'
+
+            ], 404);
+        }
+
+
+        /*
+    =====================================================
+    SECURITY CHECK
+    =====================================================
+    */
+
+        if (
+            $order->payment_method !==
+            'razorpay'
+        ) {
+
+            return response()->json([
+
+                'success' => false,
+
+                'message' =>
+                'Invalid payment method.'
+
+            ], 400);
+        }
+
+
+        /*
+    IMPORTANT:
+    Use OUR DATABASE Razorpay Order ID.
+    Do NOT trust browser order ID.
+    */
+
+        if (
+            $order->razorpay_order_id !==
+            $validated['razorpay_order_id']
+        ) {
+
+            return response()->json([
+
+                'success' => false,
+
+                'message' =>
+                'Invalid Razorpay order.'
+
+            ], 400);
+        }
+
+
+        /*
+    =====================================================
+    SIGNATURE VERIFY
+    =====================================================
+    */
+
+        $generatedSignature =
+            hash_hmac(
+
+                'sha256',
+
+                $order->razorpay_order_id .
+                    '|' .
+                    $validated['razorpay_payment_id'],
+
+                config(
+                    'services.razorpay.key_secret'
+                )
+
+            );
+
+
+        if (
+            !hash_equals(
+                $generatedSignature,
+                $validated['razorpay_signature']
+            )
+        ) {
+
+            $order->update([
+
+                'payment_status' =>
+                'failed',
+
+                'status' =>
+                'payment_failed',
+
+            ]);
+
+
+            return response()->json([
+
+                'success' => false,
+
+                'message' =>
+                'Payment verification failed.'
+
+            ], 400);
+        }
+
+
+        /*
+    =====================================================
+    PAYMENT VERIFIED
+    =====================================================
+    */
+
+        $order->update([
+
+            'razorpay_payment_id' =>
+            $validated['razorpay_payment_id'],
+
+            'razorpay_signature' =>
+            $validated['razorpay_signature'],
+
+            'payment_status' =>
+            'paid',
+
+            'status' =>
+            'placed',
+
+        ]);
+
+
+        /*
+    =====================================================
+    CLEAR SESSION
+    =====================================================
+    */
+
+        session()->forget([
+
+            'upload_selected_document_ids',
+
+            'print_options',
+
+            'checkout_shipping_couriers',
+
+            'checkout_weight',
+
+        ]);
+
+
+        return response()->json([
+
+            'success' =>
+            true,
+
+            'redirect' =>
+            route(
+                'order.success',
+                $order->order_number
+            ),
+
+        ]);
     }
     public function success($orderNumber)
     {
