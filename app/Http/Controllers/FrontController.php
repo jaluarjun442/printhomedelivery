@@ -131,7 +131,7 @@ class FrontController extends Controller
 
             'binding_type' => [
                 'required',
-                'in:none,spiral,soft,hard'
+                'string',
             ],
 
             'copies' => [

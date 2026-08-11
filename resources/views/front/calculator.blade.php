@@ -421,6 +421,61 @@
 @endsection
 
 @section('content')
+<?php
+
+/*
+=====================================================
+PRINT TYPE PRICES
+=====================================================
+*/
+
+$printTypePrices = \App\Models\Price::whereIn(
+    'slug',
+    [
+        'black_white_single',
+        'black_white_double',
+        'color_single',
+        'color_double',
+    ]
+)
+    ->where('status', 1)
+    ->pluck('amount', 'slug');
+
+
+/*
+=====================================================
+BINDING OPTIONS
+=====================================================
+*/
+
+$bindingParent = \App\Models\Price::where(
+    'slug',
+    'bindings'
+)
+    ->where('status', 1)
+    ->with([
+        'childPrice' => function ($query) {
+            $query
+                ->where('status', 1)
+                ->orderBy('id');
+        }
+    ])
+    ->first();
+
+
+$bindingPrices = [];
+
+if ($bindingParent) {
+
+    foreach (
+        $bindingParent->childPrice as $binding
+    ) {
+
+        $bindingPrices[] = $binding;
+    }
+}
+
+?>
 <div class="elemento_stick" id="stick_here"></div>
 <main>
     <section class="print-calculator-section py-4">
@@ -554,13 +609,24 @@
                                             id="printType"
                                             name="print_type">
 
+                                            @if(
+                                            $printTypePrices->has('black_white_single') ||
+                                            $printTypePrices->has('black_white_double')
+                                            )
                                             <option value="bw" selected>
                                                 Black &amp; White
                                             </option>
+                                            @endif
 
+
+                                            @if(
+                                            $printTypePrices->has('color_single') ||
+                                            $printTypePrices->has('color_double')
+                                            )
                                             <option value="color">
                                                 Color
                                             </option>
+                                            @endif
 
                                         </select>
 
@@ -590,13 +656,6 @@
                                                 75 GSM
                                             </option>
 
-                                            <option value="80">
-                                                80 GSM
-                                            </option>
-
-                                            <option value="100">
-                                                100 GSM
-                                            </option>
 
                                         </select>
 
@@ -626,17 +685,18 @@
                                                 No Staple (+₹0)
                                             </option>
 
-                                            <option value="spiral">
-                                                Spiral Binding
+
+                                            @foreach(
+                                            $bindingPrices as $binding
+                                            )
+
+                                            <option
+                                                value="{{ $binding->slug }}">
+                                                {{ $binding->name }}
+                                                (+₹{{ number_format((float) $binding->amount, 2) }})
                                             </option>
 
-                                            <option value="soft">
-                                                Soft Binding
-                                            </option>
-
-                                            <option value="hard">
-                                                Hard Binding
-                                            </option>
+                                            @endforeach
 
                                         </select>
 
@@ -1204,7 +1264,67 @@
         CALCULATE PRICE BUTTON
         =====================================================
         */
+        /*
+        =====================================================
+        COPIES +/- CONTROL
+        =====================================================
+        */
 
+        let copies = 1;
+
+
+        /*
+        -----------------------------------------------------
+        DECREASE
+        -----------------------------------------------------
+        */
+
+        $('#decreaseCopies').on(
+            'click',
+            function() {
+
+                if (copies > 1) {
+
+                    copies--;
+
+                    $('#copiesValue')
+                        .text(copies);
+
+                    $('#copiesInput')
+                        .val(copies);
+                }
+
+            }
+        );
+
+
+        /*
+        -----------------------------------------------------
+        INCREASE
+        -----------------------------------------------------
+        */
+
+        $('#increaseCopies').on(
+            'click',
+            function() {
+
+                /*
+                Maximum copies
+                */
+
+                if (copies < 100) {
+
+                    copies++;
+
+                    $('#copiesValue')
+                        .text(copies);
+
+                    $('#copiesInput')
+                        .val(copies);
+                }
+
+            }
+        );
         $('#calculatePrice').on(
             'click',
             function() {
