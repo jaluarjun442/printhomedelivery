@@ -7,6 +7,7 @@ use App\Http\Controllers\FrontController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\InstaController;
+use App\Http\Controllers\OrderController;
 use App\Http\Controllers\PriceController;
 use App\Http\Controllers\UploadController;
 use Illuminate\Support\Facades\Auth;
@@ -68,6 +69,11 @@ Route::group(['prefix' => 'admin', 'middleware' => 'auth'], function () {
     Route::get('/home', [AdminController::class, 'index'])->name('admin_home');
 
     Route::get('/setting', [AdminController::class, 'setting'])->name('admin_setting');
+
+    Route::get('/orders', [OrderController::class, 'index'])->name('admin.orders');
+    Route::get('/get_orders', [OrderController::class, 'get_orders'])->name('admin.get_orders');
+    Route::get('/order/{order_id}', [OrderController::class, 'view_order'])->name('admin.view_order');
+    Route::post('/orders/{order}/status', [OrderController::class, 'updateStatus'])->name('admin.orders.update-status');
 
     Route::get('/price', [PriceController::class, 'index'])->name('admin.price');
     Route::get('/get_price', [PriceController::class, 'get_price'])->name('admin.get_price');
