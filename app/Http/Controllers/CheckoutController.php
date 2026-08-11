@@ -6,6 +6,9 @@ use Illuminate\Http\Request;
 use App\Models\PrintDocument;
 use App\Models\Price;
 use Illuminate\Support\Facades\Http;
+use App\Models\Order;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 class CheckoutController extends Controller
 {
@@ -352,6 +355,1058 @@ class CheckoutController extends Controller
                 'grandTotal',
                 'fileBreakdown'
             )
+        );
+    }
+    public function placeOrder(Request $request)
+    {
+        /*
+    =====================================================
+    LOGIN CHECK
+    =====================================================
+    */
+
+        $mobile = $request->cookie(
+            'loggedin_number'
+        );
+
+
+        if (!$mobile) {
+
+            return redirect()
+                ->route('upload')
+                ->with(
+                    'error',
+                    'Please login before placing your order.'
+                );
+        }
+
+
+        /*
+    =====================================================
+    VALIDATION
+    =====================================================
+    */
+
+        $validated = $request->validate([
+
+            'full_name' => [
+                'required',
+                'string',
+                'max:100'
+            ],
+
+            'email' => [
+                'required',
+                'email',
+                'max:150'
+            ],
+
+            'pincode' => [
+                'required',
+                'digits:6'
+            ],
+
+            'city' => [
+                'required',
+                'string',
+                'max:100'
+            ],
+
+            'state' => [
+                'required',
+                'string',
+                'max:100'
+            ],
+
+            'house' => [
+                'required',
+                'string',
+                'max:255'
+            ],
+
+            'road' => [
+                'required',
+                'string',
+                'max:255'
+            ],
+
+            'landmark' => [
+                'nullable',
+                'string',
+                'max:255'
+            ],
+
+            /*
+        COD ONLY
+        */
+
+            'payment_method' => [
+                'required',
+                'in:cod'
+            ],
+
+            'courier_id' => [
+                'required',
+                'integer'
+            ],
+
+        ]);
+
+
+        /*
+    =====================================================
+    GET CURRENT ORDER SESSION
+    =====================================================
+    */
+
+        $selectedIds = session(
+            'upload_selected_document_ids',
+            []
+        );
+
+
+        $printOptions = session(
+            'print_options',
+            []
+        );
+
+
+        if (
+            empty($selectedIds)
+        ) {
+
+            return redirect()
+                ->route('upload')
+                ->with(
+                    'error',
+                    'Your order session has expired. Please select your files again.'
+                );
+        }
+
+
+        /*
+    =====================================================
+    GET DOCUMENTS AGAIN
+    =====================================================
+    */
+
+        $documents = PrintDocument::whereIn(
+            'id',
+            $selectedIds
+        )->get();
+
+
+        if (
+            $documents->isEmpty()
+        ) {
+
+            return redirect()
+                ->route('upload')
+                ->with(
+                    'error',
+                    'No files found for this order.'
+                );
+        }
+
+
+        /*
+    =====================================================
+    GET PRINT PRICES FROM DATABASE
+    =====================================================
+    */
+
+        $printPrices = Price::whereIn(
+            'slug',
+            [
+                'black_white_single',
+                'black_white_double',
+                'color_single',
+                'color_double',
+            ]
+        )
+            ->where(
+                'status',
+                1
+            )
+            ->pluck(
+                'amount',
+                'slug'
+            );
+
+
+        /*
+    =====================================================
+    GET BINDING PRICES
+    =====================================================
+    */
+
+        $binding = Price::where(
+            'slug',
+            'bindings'
+        )
+            ->where(
+                'status',
+                1
+            )
+            ->with([
+                'childPrice' => function ($query) {
+
+                    $query
+                        ->where(
+                            'status',
+                            1
+                        )
+                        ->orderBy(
+                            'id'
+                        );
+                }
+            ])
+            ->first();
+
+
+        $bindingPrices = [];
+
+
+        if ($binding) {
+
+            foreach (
+                $binding->childPrice
+                as $bindingOption
+            ) {
+
+                $bindingPrices[$bindingOption->slug] = (float)
+                $bindingOption->amount;
+            }
+        }
+
+
+        /*
+    =====================================================
+    CALCULATE PRINT SUBTOTAL AGAIN
+    =====================================================
+    */
+
+        $printSubtotal = 0;
+
+        $fileBreakdown = [];
+
+
+        foreach (
+            $documents as $document
+        ) {
+
+            $documentId =
+                (int) $document->id;
+
+
+            $options =
+                $printOptions[$documentId] ?? [];
+
+
+            /*
+        PRINT TYPE
+        */
+
+            $colorMode =
+                $options['color_mode']
+                ?? 'black_white';
+
+
+            /*
+        PRINT SIDE
+        */
+
+            $printSide =
+                $options['print_side']
+                ?? 'double';
+
+
+            /*
+        BINDING
+        */
+
+            $bindingSlug =
+                $options['binding']
+                ?? '';
+
+
+            /*
+        COPIES
+        */
+
+            $copies = max(
+                1,
+                (int) (
+                    $options['copies']
+                    ?? 1
+                )
+            );
+
+
+            /*
+        PAGE COUNT
+        */
+
+            $pages = max(
+                1,
+                (int) (
+                    $document->pages
+                    ?? 1
+                )
+            );
+
+
+            /*
+        =================================================
+        RATE
+        =================================================
+        */
+
+            if (
+                $colorMode === 'color'
+            ) {
+
+                if (
+                    $printSide === 'double'
+                ) {
+
+                    $rate =
+                        (float) (
+                            $printPrices['color_double'] ?? 0
+                        );
+                } else {
+
+                    $rate =
+                        (float) (
+                            $printPrices['color_single'] ?? 0
+                        );
+                }
+            } else {
+
+                if (
+                    $printSide === 'double'
+                ) {
+
+                    $rate =
+                        (float) (
+                            $printPrices['black_white_double'] ?? 0
+                        );
+                } else {
+
+                    $rate =
+                        (float) (
+                            $printPrices['black_white_single'] ?? 0
+                        );
+                }
+            }
+
+
+            /*
+        =================================================
+        BINDING RATE
+        =================================================
+        */
+
+            $bindingRate = 0;
+
+
+            if (
+                !empty($bindingSlug)
+            ) {
+
+                $bindingRate =
+                    (float) (
+                        $bindingPrices[$bindingSlug] ?? 0
+                    );
+            }
+
+
+            /*
+        =================================================
+        PRINT COST
+        =================================================
+        */
+
+            $billableSheets =
+                $pages;
+
+
+            $printCostPerCopy =
+                $billableSheets *
+                $rate;
+
+
+            $oneCopyTotal =
+                $printCostPerCopy +
+                $bindingRate;
+
+
+            $fileTotal =
+                $oneCopyTotal *
+                $copies;
+
+
+            $printSubtotal +=
+                $fileTotal;
+
+
+            /*
+        =================================================
+        FILE BREAKDOWN
+        =================================================
+        */
+
+            $fileBreakdown[] = [
+
+                'id' =>
+                $documentId,
+
+                'name' =>
+                (string)
+                $document->original_name,
+
+                'pages' =>
+                $pages,
+
+                'color_mode' =>
+                (string)
+                $colorMode,
+
+                'print_side' =>
+                (string)
+                $printSide,
+
+                'binding' =>
+                (string)
+                $bindingSlug,
+
+                'page_size' =>
+                (string) (
+                    $options['page_size']
+                    ?? 'a4_75'
+                ),
+
+                'orientation' =>
+                (string) (
+                    $options['orientation']
+                    ?? 'portrait'
+                ),
+
+                'copies' =>
+                $copies,
+
+                'rate' =>
+                $rate,
+
+                'billable_sheets' =>
+                $billableSheets,
+
+                'print_cost_per_copy' =>
+                round(
+                    $printCostPerCopy,
+                    2
+                ),
+
+                'binding_rate' =>
+                $bindingRate,
+
+                'total' =>
+                round(
+                    $fileTotal,
+                    2
+                ),
+
+            ];
+        }
+
+
+        /*
+    =====================================================
+    SHIPPING COURIERS FROM SESSION
+    =====================================================
+    */
+
+        $shippingCouriers = session(
+            'checkout_shipping_couriers',
+            []
+        );
+
+
+        /*
+    =====================================================
+    MAKE SURE SESSION DATA IS ARRAY
+    =====================================================
+    */
+
+        if (
+            !is_array($shippingCouriers)
+        ) {
+
+            $shippingCouriers = [];
+        }
+
+
+        /*
+    =====================================================
+    FIND SELECTED COURIER
+    =====================================================
+    */
+
+        $requestedCourierId =
+            (string)
+            $request->courier_id;
+
+
+        $selectedCourier = null;
+
+
+        foreach (
+            $shippingCouriers
+            as $courier
+        ) {
+
+            if (
+                !is_array($courier)
+            ) {
+
+                continue;
+            }
+
+
+            $sessionCourierId =
+                $courier['courier_id']
+                ?? null;
+
+
+            /*
+        If somehow courier_id itself
+        is an array, normalize it.
+        */
+
+            if (
+                is_array($sessionCourierId)
+            ) {
+
+                $sessionCourierId =
+                    $sessionCourierId['id']
+                    ?? $sessionCourierId['courier_id']
+                    ?? null;
+            }
+
+
+            if (
+                $sessionCourierId !== null
+                &&
+                (string)
+                $sessionCourierId
+                ===
+                $requestedCourierId
+            ) {
+
+                $selectedCourier =
+                    $courier;
+
+                break;
+            }
+        }
+
+
+        /*
+    =====================================================
+    COURIER VALIDATION
+    =====================================================
+    */
+
+        if (
+            !is_array($selectedCourier)
+        ) {
+
+            return back()
+                ->withInput()
+                ->with(
+                    'error',
+                    'Please select a valid courier.'
+                );
+        }
+
+
+        /*
+    =====================================================
+    NORMALIZE COURIER ID
+    =====================================================
+    */
+
+        $courierId =
+            $selectedCourier['courier_id'] ?? null;
+
+
+        if (
+            is_array($courierId)
+        ) {
+
+            $courierId =
+                $courierId['id']
+                ?? $courierId['courier_id']
+                ?? null;
+        }
+
+
+        /*
+    =====================================================
+    NORMALIZE COURIER NAME
+    =====================================================
+    */
+
+        $courierName =
+            $selectedCourier['courier_name'] ?? 'Courier';
+
+
+        if (
+            is_array($courierName)
+        ) {
+
+            $courierName =
+                $courierName['name']
+                ?? $courierName['courier_name']
+                ?? 'Courier';
+        }
+
+
+        $courierName =
+            (string)
+            $courierName;
+
+
+        /*
+    =====================================================
+    DELIVERY CHARGE
+    =====================================================
+    */
+
+        $deliveryCharge =
+            $selectedCourier['total_charges'] ?? 0;
+
+
+        if (
+            is_array($deliveryCharge)
+        ) {
+
+            $deliveryCharge =
+                $deliveryCharge['total']
+                ?? $deliveryCharge['amount']
+                ?? 0;
+        }
+
+
+        $deliveryCharge =
+            (float)
+            $deliveryCharge;
+
+
+        /*
+    =====================================================
+    DELIVERY ESTIMATE
+    =====================================================
+    */
+
+        $deliveryEstimate =
+            $selectedCourier['estimated_delivery'] ?? '';
+
+
+        if (
+            is_array($deliveryEstimate)
+        ) {
+
+            $deliveryEstimate =
+                $deliveryEstimate['value']
+                ?? $deliveryEstimate['date']
+                ?? $deliveryEstimate['estimated_delivery']
+                ?? '';
+        }
+
+
+        $deliveryEstimate =
+            (string)
+            $deliveryEstimate;
+
+
+        /*
+    =====================================================
+    WEIGHT
+    =====================================================
+    */
+
+        $weight =
+            session(
+                'checkout_weight',
+                0
+            );
+
+
+        if (
+            is_array($weight)
+        ) {
+
+            $weight =
+                $weight['weight']
+                ?? $weight['value']
+                ?? 0;
+        }
+
+
+        $weight =
+            (float)
+            $weight;
+
+
+        /*
+    =====================================================
+    HANDLING CHARGE
+    =====================================================
+    */
+
+        $handlingCharge = 0;
+
+
+        /*
+    =====================================================
+    GRAND TOTAL
+    =====================================================
+    */
+
+        $grandTotal =
+            $printSubtotal +
+            $deliveryCharge +
+            $handlingCharge;
+
+
+        /*
+    =====================================================
+    ITEMS JSON
+    =====================================================
+    */
+
+        $itemsJson =
+            json_encode(
+                $fileBreakdown,
+                JSON_UNESCAPED_UNICODE
+            );
+
+
+        if (
+            $itemsJson === false
+        ) {
+
+            $itemsJson = '[]';
+        }
+
+
+        /*
+    =====================================================
+    CREATE ORDER
+    =====================================================
+    */
+
+        $order = DB::transaction(
+            function () use (
+                $validated,
+                $mobile,
+                $fileBreakdown,
+                $itemsJson,
+                $courierId,
+                $courierName,
+                $deliveryCharge,
+                $deliveryEstimate,
+                $weight,
+                $printSubtotal,
+                $handlingCharge,
+                $grandTotal
+            ) {
+
+                /*
+            Generate unique order number
+            */
+
+                do {
+
+                    $orderNumber =
+                        'OF' .
+                        now()->format('ymd') .
+                        strtoupper(
+                            Str::random(6)
+                        );
+                } while (
+                    Order::where(
+                        'order_number',
+                        $orderNumber
+                    )->exists()
+                );
+
+
+                /*
+            =================================================
+            CREATE
+            =================================================
+            */
+
+                return Order::create([
+
+                    'order_number' =>
+                    $orderNumber,
+
+
+                    /*
+                CUSTOMER
+                */
+
+                    'mobile' =>
+                    (string)
+                    $mobile,
+
+                    'full_name' =>
+                    (string)
+                    $validated['full_name'],
+
+                    'email' =>
+                    (string)
+                    $validated['email'],
+
+
+                    /*
+                ADDRESS
+                */
+
+                    'pincode' =>
+                    (string)
+                    $validated['pincode'],
+
+                    'city' =>
+                    (string)
+                    $validated['city'],
+
+                    'state' =>
+                    (string)
+                    $validated['state'],
+
+                    'house' =>
+                    (string)
+                    $validated['house'],
+
+                    'road' =>
+                    (string)
+                    $validated['road'],
+
+                    'landmark' =>
+                    isset(
+                        $validated['landmark']
+                    )
+                        ? (string)
+                        $validated['landmark']
+                        : null,
+
+
+                    /*
+                SHIPPING
+                */
+
+                    'courier_id' =>
+                    $courierId !== null
+                        ? (string)
+                        $courierId
+                        : null,
+
+                    'courier_name' =>
+                    $courierName,
+
+                    'shipping_charge' =>
+                    round(
+                        $deliveryCharge,
+                        2
+                    ),
+
+                    'delivery_estimate' =>
+                    $deliveryEstimate,
+
+                    'weight' =>
+                    $weight,
+
+
+                    /*
+                PRICING
+                */
+
+                    'print_subtotal' =>
+                    round(
+                        $printSubtotal,
+                        2
+                    ),
+
+                    'handling_charge' =>
+                    0,
+
+                    'grand_total' =>
+                    round(
+                        $grandTotal,
+                        2
+                    ),
+
+
+                    /*
+                PAYMENT
+                */
+
+                    'payment_method' =>
+                    'cod',
+
+                    'payment_status' =>
+                    'pending',
+
+
+                    /*
+                RAZORPAY
+                FUTURE USE
+                */
+
+                    'razorpay_order_id' =>
+                    null,
+
+                    'razorpay_payment_id' =>
+                    null,
+
+                    'razorpay_signature' =>
+                    null,
+
+
+                    /*
+                ORDER ITEMS
+
+                JSON string so it cannot cause
+                Array to string conversion.
+                */
+
+                    'items' =>
+                    $itemsJson,
+
+
+                    /*
+                ORDER STATUS
+                */
+
+                    'status' =>
+                    'placed',
+
+                ]);
+            }
+        );
+
+
+        /*
+    =====================================================
+    CLEAR ORDER SESSION
+    =====================================================
+    */
+
+        session()->forget([
+
+            'upload_selected_document_ids',
+
+            'print_options',
+
+            'checkout_shipping_couriers',
+
+            'checkout_weight',
+
+        ]);
+
+
+        /*
+    =====================================================
+    SUCCESS
+    =====================================================
+    */
+
+        return redirect()
+            ->route(
+                'order.success',
+                $order->order_number
+            )
+            ->with(
+                'success',
+                'Your order has been placed successfully.'
+            );
+    }
+    public function success($orderNumber)
+    {
+        /*
+    =====================================================
+    LOGIN CHECK
+    =====================================================
+    */
+
+        $mobile = request()->cookie(
+            'loggedin_number'
+        );
+
+
+        if (!$mobile) {
+
+            return redirect()
+                ->route('upload')
+                ->with(
+                    'error',
+                    'Please login to view your order.'
+                );
+        }
+
+
+        /*
+    =====================================================
+    FIND ORDER BY ORDER NUMBER
+    =====================================================
+    */
+
+        $order = Order::where(
+            'order_number',
+            $orderNumber
+        )->first();
+
+
+        /*
+    =====================================================
+    ORDER NOT FOUND
+    =====================================================
+    */
+
+        if (!$order) {
+
+            abort(404);
+        }
+
+
+        /*
+    =====================================================
+    OWNERSHIP CHECK
+    =====================================================
+    */
+
+        if (
+            (string) $order->mobile !==
+            (string) $mobile
+        ) {
+
+            abort(404);
+        }
+
+
+        /*
+    =====================================================
+    SUCCESS PAGE
+    =====================================================
+    */
+
+        return view(
+            'front.order-success',
+            compact('order')
         );
     }
     public function calculateShipping(Request $request)
@@ -1055,20 +2110,24 @@ class CheckoutController extends Controller
     FINAL RESPONSE
     =====================================================
     */
-
-        return response()->json([
-
-            'success' =>
-            true,
-
-            'message' =>
-            'Shipping charges calculated successfully.',
-
-            'couriers' =>
+        session()->put(
+            'checkout_shipping_couriers',
             array_values(
                 $selectedCouriers
-            ),
+            )
+        );
 
+        session()->put(
+            'checkout_weight',
+            $weight
+        );
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Shipping charges calculated successfully.',
+            'couriers' => array_values(
+                $selectedCouriers
+            ),
         ]);
     }
 }

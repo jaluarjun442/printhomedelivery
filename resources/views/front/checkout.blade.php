@@ -109,7 +109,7 @@ MOBILE
 
         padding: 0 12px;
 
-        background: #f5f5f5;
+        /* background: #f5f5f5; */
 
         color: #555;
     }
@@ -624,8 +624,7 @@ MOBILE RESPONSIVE
                                             type="text"
                                             id="mobile"
                                             class="checkout-mobile-input"
-                                            value="{{ $mobile }}"
-                                            readonly>
+                                            value="{{ $mobile }}">
 
                                     </div>
 
@@ -874,7 +873,7 @@ MOBILE RESPONSIVE
 
                             {{-- RAZORPAY --}}
 
-                            <label
+                            <!-- <label
                                 class="payment-option"
                                 id="razorpayOption">
 
@@ -900,7 +899,7 @@ MOBILE RESPONSIVE
 
                                 </div>
 
-                            </label>
+                            </label> -->
 
                         </div>
 
@@ -973,13 +972,17 @@ MOBILE RESPONSIVE
                         {{-- =================================================
          PROCEED
     ================================================== --}}
-
+                        <input
+                            type="hidden"
+                            id="selectedCourierId"
+                            name="courier_id"
+                            value="">
                         <button
                             type="button"
-                            id="proceedToPay"
+                            id="placeCodOrder"
                             class="proceed-payment-btn">
 
-                            Proceed to Pay
+                            Place Order — COD
 
                             <i class="bi bi-arrow-right ms-1"></i>
 
@@ -1689,7 +1692,9 @@ MOBILE RESPONSIVE
 
             selectedShippingCourier =
                 courier;
-
+            $('#selectedCourierId').val(
+                courier.courier_id
+            );
 
             /*
             -------------------------------------------------
@@ -1880,7 +1885,258 @@ MOBILE RESPONSIVE
                 );
 
         }
+        $('#placeCodOrder').on(
+            'click',
+            function() {
 
+                let button = $(this);
+
+
+                /*
+                =========================================
+                BASIC VALIDATION
+                =========================================
+                */
+
+                let requiredFields = [
+
+                    '#fullName',
+                    '#email',
+                    '#pincode',
+                    '#city',
+                    '#state',
+                    '#house',
+                    '#road',
+
+                ];
+
+
+                let valid = true;
+
+
+                $.each(
+                    requiredFields,
+                    function(index, selector) {
+
+                        let value =
+                            $(selector)
+                            .val()
+                            .trim();
+
+
+                        $(selector)
+                            .removeClass(
+                                'is-invalid'
+                            );
+
+
+                        if (!value) {
+
+                            $(selector)
+                                .addClass(
+                                    'is-invalid'
+                                );
+
+                            valid = false;
+                        }
+
+                    }
+                );
+
+
+                if (!valid) {
+
+                    alert(
+                        'Please fill all required delivery details.'
+                    );
+
+                    return;
+                }
+
+
+                /*
+                =========================================
+                COURIER
+                =========================================
+                */
+
+                let courierId =
+                    $('#selectedCourierId')
+                    .val();
+
+
+                if (!courierId) {
+
+                    alert(
+                        'Please select a courier.'
+                    );
+
+                    return;
+                }
+
+
+                /*
+                =========================================
+                COD ONLY
+                =========================================
+                */
+
+                let paymentMethod =
+                    $('input[name="payment_method"]:checked')
+                    .val();
+
+
+                if (
+                    paymentMethod !== 'cod'
+                ) {
+
+                    alert(
+                        'Cash on Delivery is currently the only available payment method.'
+                    );
+
+                    return;
+                }
+
+
+                /*
+                =========================================
+                LOADING
+                =========================================
+                */
+
+                button
+                    .prop(
+                        'disabled',
+                        true
+                    )
+                    .html(
+                        '<span class="spinner-border spinner-border-sm me-2"></span>' +
+                        'Placing Order...'
+                    );
+
+
+                /*
+                =========================================
+                SUBMIT
+                =========================================
+                */
+
+                let form =
+                    $('<form>', {
+
+                        method: 'POST',
+
+                        action: "{{ route('checkout.place-order') }}"
+
+                    });
+
+
+                form.append(
+                    $('<input>', {
+                        type: 'hidden',
+                        name: '_token',
+                        value: "{{ csrf_token() }}"
+                    })
+                );
+
+
+                form.append(
+                    $('<input>', {
+                        type: 'hidden',
+                        name: 'full_name',
+                        value: $('#fullName').val().trim()
+                    })
+                );
+
+
+                form.append(
+                    $('<input>', {
+                        type: 'hidden',
+                        name: 'email',
+                        value: $('#email').val().trim()
+                    })
+                );
+
+
+                form.append(
+                    $('<input>', {
+                        type: 'hidden',
+                        name: 'pincode',
+                        value: $('#pincode').val().trim()
+                    })
+                );
+
+
+                form.append(
+                    $('<input>', {
+                        type: 'hidden',
+                        name: 'city',
+                        value: $('#city').val().trim()
+                    })
+                );
+
+
+                form.append(
+                    $('<input>', {
+                        type: 'hidden',
+                        name: 'state',
+                        value: $('#state').val().trim()
+                    })
+                );
+
+
+                form.append(
+                    $('<input>', {
+                        type: 'hidden',
+                        name: 'house',
+                        value: $('#house').val().trim()
+                    })
+                );
+
+
+                form.append(
+                    $('<input>', {
+                        type: 'hidden',
+                        name: 'road',
+                        value: $('#road').val().trim()
+                    })
+                );
+
+
+                form.append(
+                    $('<input>', {
+                        type: 'hidden',
+                        name: 'landmark',
+                        value: $('#landmark').val().trim()
+                    })
+                );
+
+
+                form.append(
+                    $('<input>', {
+                        type: 'hidden',
+                        name: 'courier_id',
+                        value: courierId
+                    })
+                );
+
+
+                form.append(
+                    $('<input>', {
+                        type: 'hidden',
+                        name: 'payment_method',
+                        value: 'cod'
+                    })
+                );
+
+
+                $('body')
+                    .append(form);
+
+                form.submit();
+
+            }
+        );
 
     });
 </script>
