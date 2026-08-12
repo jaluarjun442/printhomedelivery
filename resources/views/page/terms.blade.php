@@ -1,134 +1,889 @@
 @extends('layouts.web.web')
 
+
+@section('custom_header')
+
+<style>
+    .terms-section {
+        background: #fbf9f4;
+        min-height: 100vh;
+        padding: 45px 15px 60px;
+    }
+
+    .terms-wrapper {
+        max-width: 1000px;
+        margin: 0 auto;
+    }
+
+    .terms-page-header {
+        text-align: center;
+        margin-bottom: 30px;
+    }
+
+    .terms-page-header h1 {
+        margin: 0;
+        font-size: 30px;
+        font-weight: 800;
+        color: #222;
+    }
+
+    .terms-page-header p {
+        margin: 8px auto 0;
+        max-width: 700px;
+        font-size: 13px;
+        line-height: 1.7;
+        color: #777;
+    }
+
+    .terms-notice {
+        background: #f4f7ff;
+        border: 1px solid #c9d7ff;
+        border-left: 3px solid #2856db;
+        padding: 18px 20px;
+        margin-bottom: 15px;
+    }
+
+    .terms-notice p {
+        margin: 0;
+        font-size: 12px;
+        line-height: 1.8;
+        color: #555;
+    }
+
+    .terms-card {
+        background: #fff;
+        border: 1px solid #ddd;
+        padding: 25px;
+        margin-bottom: 15px;
+    }
+
+    .terms-card h2 {
+        margin: 0 0 12px;
+        font-size: 20px;
+        font-weight: 800;
+        color: #222;
+    }
+
+    .terms-card h2 i {
+        color: #2856db;
+        margin-right: 6px;
+    }
+
+    .terms-card h3 {
+        margin: 18px 0 8px;
+        font-size: 15px;
+        font-weight: 700;
+        color: #333;
+    }
+
+    .terms-card p {
+        margin: 0 0 10px;
+        font-size: 13px;
+        line-height: 1.8;
+        color: #666;
+    }
+
+    .terms-card p:last-child {
+        margin-bottom: 0;
+    }
+
+    .terms-card ul {
+        margin: 8px 0 0;
+        padding-left: 20px;
+    }
+
+    .terms-card li {
+        margin-bottom: 7px;
+        font-size: 13px;
+        line-height: 1.7;
+        color: #666;
+    }
+
+    .terms-contact {
+        background: #f4f7ff;
+        border: 1px solid #c9d7ff;
+        padding: 22px 25px;
+    }
+
+    .terms-contact h2 {
+        margin: 0 0 10px;
+        color: #2856db;
+        font-size: 20px;
+        font-weight: 800;
+    }
+
+    .terms-contact p {
+        margin: 0 0 5px;
+        font-size: 13px;
+        color: #666;
+    }
+
+    .terms-contact a {
+        color: #2856db;
+        text-decoration: none;
+        font-weight: 600;
+    }
+
+    @media (max-width: 767px) {
+
+        .terms-section {
+            padding: 28px 12px 40px;
+        }
+
+        .terms-page-header {
+            margin-bottom: 20px;
+        }
+
+        .terms-page-header h1 {
+            font-size: 25px;
+        }
+
+        .terms-page-header p {
+            font-size: 12px;
+        }
+
+        .terms-card {
+            padding: 18px 15px;
+        }
+
+        .terms-card h2 {
+            font-size: 18px;
+        }
+
+    }
+</style>
+
+@endsection
+
+
+
 @section('content')
-<section class="utf_block_wrapper">
-    <div class="container">
-        <div class="row">
-            <div class="col-lg-8 col-md-12">
-                <h2><strong>Terms and Conditions</strong></h2>
 
-                <p>Welcome to {{ $store_data['website'] }}!</p>
+<main>
 
-                <p>These terms and conditions outline the rules and regulations for the use of {{ $store_data['name'] }}'s Website, located at {{ $store_data['website_url'] }}.</p>
+    <section class="terms-section">
 
-                <p>By accessing this website we assume you accept these terms and conditions. Do not continue to use {{ $store_data['website'] }} if you do not agree to take all of the terms and conditions stated on this page.</p>
+        <div class="container">
 
-                <p>The following terminology applies to these Terms and Conditions, Privacy Statement and Disclaimer Notice and all Agreements: "Client", "You" and "Your" refers to you, the person log on this website and compliant to the Company’s terms and conditions. "The Company", "Ourselves", "We", "Our" and "Us", refers to our Company. "Party", "Parties", or "Us", refers to both the Client and ourselves. All terms refer to the offer, acceptance and consideration of payment necessary to undertake the process of our assistance to the Client in the most appropriate manner for the express purpose of meeting the Client’s needs in respect of provision of the Company’s stated services, in accordance with and subject to, prevailing law of Netherlands. Any use of the above terminology or other words in the singular, plural, capitalization and/or he/she or they, are taken as interchangeable and therefore as referring to same.</p>
+            <div class="terms-wrapper">
 
-                <h3><strong>Cookies</strong></h3>
+                <div class="terms-page-header">
 
-                <p>We employ the use of cookies. By accessing {{ $store_data['website'] }}, you agreed to use cookies in agreement with the {{ $store_data['name'] }}'s Privacy Policy. </p>
+                    <h1>
+                        Terms & Conditions
+                    </h1>
 
-                <p>Most interactive websites use cookies to let us retrieve the user’s details for each visit. Cookies are used by our website to enable the functionality of certain areas to make it easier for people visiting our website. Some of our affiliate/advertising partners may also use cookies.</p>
+                    <p>
+                        Please read these terms carefully before using
+                        PrintHomeDelivery or placing a printing order.
+                    </p>
 
-                <h3><strong>License</strong></h3>
+                </div>
 
-                <p>Unless otherwise stated, {{ $store_data['name'] }} and/or its licensors own the intellectual property rights for all material on {{ $store_data['website'] }}. All intellectual property rights are reserved. You may access this from {{ $store_data['website'] }} for your own personal use subjected to restrictions set in these terms and conditions.</p>
+                <div class="terms-notice">
 
-                <p>You must not:</p>
-                <ul>
-                    <li>Republish material from {{ $store_data['website'] }}</li>
-                    <li>Sell, rent or sub-license material from {{ $store_data['website'] }}</li>
-                    <li>Reproduce, duplicate or copy material from {{ $store_data['website'] }}</li>
-                    <li>Redistribute content from {{ $store_data['website'] }}</li>
-                </ul>
+                    <p>
 
-                <p>Parts of this website offer an opportunity for users to post and exchange opinions and information in certain areas of the website. {{ $store_data['name'] }} does not filter, edit, publish or review Comments prior to their presence on the website. Comments do not reflect the views and opinions of {{ $store_data['name'] }},its agents and/or affiliates. Comments reflect the views and opinions of the person who post their views and opinions. To the extent permitted by applicable laws, {{ $store_data['name'] }} shall not be liable for the Comments or for any liability, damages or expenses caused and/or suffered as a result of any use of and/or posting of and/or appearance of the Comments on this website.</p>
+                        <strong>
+                            By using PrintHomeDelivery, creating an
+                            account or placing an order, you agree to
+                            these Terms & Conditions.
+                        </strong>
 
-                <p>{{ $store_data['name'] }} reserves the right to monitor all Comments and to remove any Comments which can be considered inappropriate, offensive or causes breach of these Terms and Conditions.</p>
+                        If you do not agree with these terms, please do
+                        not use our website or services.
 
-                <p>You warrant and represent that:</p>
+                    </p>
 
-                <ul>
-                    <li>You are entitled to post the Comments on our website and have all necessary licenses and consents to do so;</li>
-                    <li>The Comments do not invade any intellectual property right, including without limitation copyright, patent or trademark of any third party;</li>
-                    <li>The Comments do not contain any defamatory, libelous, offensive, indecent or otherwise unlawful material which is an invasion of privacy</li>
-                    <li>The Comments will not be used to solicit or promote business or custom or present commercial activities or unlawful activity.</li>
-                </ul>
+                </div>
 
-                <p>You hereby grant {{ $store_data['name'] }} a non-exclusive license to use, reproduce, edit and authorize others to use, reproduce and edit any of your Comments in any and all forms, formats or media.</p>
 
-                <h3><strong>Hyperlinking to our Content</strong></h3>
+                <div class="terms-card">
 
-                <p>The following organizations may link to our Website without prior written approval:</p>
+                    <h2>
 
-                <ul>
-                    <li>Government agencies;</li>
-                    <li>Search engines;</li>
-                    <li>News organizations;</li>
-                    <li>Online directory distributors may link to our Website in the same manner as they hyperlink to the Websites of other listed businesses; and</li>
-                    <li>System wide Accredited Businesses except soliciting non-profit organizations, charity shopping malls, and charity fundraising groups which may not hyperlink to our Web site.</li>
-                </ul>
+                        <i class="bi bi-printer"></i>
 
-                <p>These organizations may link to our home page, to publications or to other Website information so long as the link: (a) is not in any way deceptive; (b) does not falsely imply sponsorship, endorsement or approval of the linking party and its products and/or services; and (c) fits within the context of the linking party’s site.</p>
+                        1. Our Services
 
-                <p>We may consider and approve other link requests from the following types of organizations:</p>
+                    </h2>
 
-                <ul>
-                    <li>commonly-known consumer and/or business information sources;</li>
-                    <li>dot.com community sites;</li>
-                    <li>associations or other groups representing charities;</li>
-                    <li>online directory distributors;</li>
-                    <li>internet portals;</li>
-                    <li>accounting, law and consulting firms; and</li>
-                    <li>educational institutions and trade associations.</li>
-                </ul>
+                    <p>
+                        PrintHomeDelivery provides online document
+                        printing and delivery services. Customers can
+                        upload documents, select available printing
+                        requirements, place an order and receive the
+                        printed documents through courier delivery.
+                    </p>
 
-                <p>We will approve link requests from these organizations if we decide that: (a) the link would not make us look unfavorably to ourselves or to our accredited businesses; (b) the organization does not have any negative records with us; (c) the benefit to us from the visibility of the hyperlink compensates the absence of {{ $store_data['name'] }}; and (d) the link is in the context of general resource information.</p>
+                    <p>
+                        Available printing options, paper types,
+                        binding options, delivery locations and other
+                        services may vary from time to time.
+                    </p>
 
-                <p>These organizations may link to our home page so long as the link: (a) is not in any way deceptive; (b) does not falsely imply sponsorship, endorsement or approval of the linking party and its products or services; and (c) fits within the context of the linking party’s site.</p>
+                </div>
 
-                <p>If you are one of the organizations listed in paragraph 2 above and are interested in linking to our website, you must inform us by sending an e-mail to {{ $store_data['name'] }}. Please include your name, your organization name, contact information as well as the URL of your site, a list of any URLs from which you intend to link to our Website, and a list of the URLs on our site to which you would like to link. Wait 2-3 weeks for a response.</p>
 
-                <p>Approved organizations may hyperlink to our Website as follows:</p>
+                <div class="terms-card">
 
-                <ul>
-                    <li>By use of our corporate name; or</li>
-                    <li>By use of the uniform resource locator being linked to; or</li>
-                    <li>By use of any other description of our Website being linked to that makes sense within the context and format of content on the linking party’s site.</li>
-                </ul>
+                    <h2>
 
-                <p>No use of {{ $store_data['name'] }}'s logo or other artwork will be allowed for linking absent a trademark license agreement.</p>
+                        <i class="bi bi-person"></i>
 
-                <h3><strong>iFrames</strong></h3>
+                        2. User Account
 
-                <p>Without prior approval and written permission, you may not create frames around our Webpages that alter in any way the visual presentation or appearance of our Website.</p>
+                    </h2>
 
-                <h3><strong>Content Liability</strong></h3>
+                    <p>
+                        Certain features of PrintHomeDelivery may
+                        require you to provide your mobile number or
+                        other information to access your account and
+                        services.
+                    </p>
 
-                <p>We shall not be hold responsible for any content that appears on your Website. You agree to protect and defend us against all claims that is rising on your Website. No link(s) should appear on any Website that may be interpreted as libelous, obscene or criminal, or which infringes, otherwise violates, or advocates the infringement or other violation of, any third party rights.</p>
+                    <p>
+                        You are responsible for providing accurate
+                        information and for maintaining the security of
+                        access to your account.
+                    </p>
 
-                <h3><strong>Your Privacy</strong></h3>
+                    <p>
+                        You should notify us if you believe that your
+                        account has been accessed or used without your
+                        authorization.
+                    </p>
 
-                <p>Please read Privacy Policy</p>
+                </div>
 
-                <h3><strong>Reservation of Rights</strong></h3>
 
-                <p>We reserve the right to request that you remove all links or any particular link to our Website. You approve to immediately remove all links to our Website upon request. We also reserve the right to amen these terms and conditions and it’s linking policy at any time. By continuously linking to our Website, you agree to be bound to and follow these linking terms and conditions.</p>
+                <div class="terms-card">
 
-                <h3><strong>Removal of links from our website</strong></h3>
+                    <h2>
 
-                <p>If you find any link on our Website that is offensive for any reason, you are free to contact and inform us any moment. We will consider requests to remove links but we are not obligated to or so or to respond to you directly.</p>
+                        <i class="bi bi-cloud-arrow-up"></i>
 
-                <p>We do not ensure that the information on this website is correct, we do not warrant its completeness or accuracy; nor do we promise to ensure that the website remains available or that the material on the website is kept up to date.</p>
+                        3. Document Upload
 
-                <h3><strong>Disclaimer</strong></h3>
+                    </h2>
 
-                <p>To the maximum extent permitted by applicable law, we exclude all representations, warranties and conditions relating to our website and the use of this website. Nothing in this disclaimer will:</p>
+                    <p>
+                        Customers are responsible for all documents and
+                        files uploaded to PrintHomeDelivery.
+                    </p>
 
-                <ul>
-                    <li>limit or exclude our or your liability for death or personal injury;</li>
-                    <li>limit or exclude our or your liability for fraud or fraudulent misrepresentation;</li>
-                    <li>limit any of our or your liabilities in any way that is not permitted under applicable law; or</li>
-                    <li>exclude any of our or your liabilities that may not be excluded under applicable law.</li>
-                </ul>
+                    <ul>
 
-                <p>The limitations and prohibitions of liability set in this Section and elsewhere in this disclaimer: (a) are subject to the preceding paragraph; and (b) govern all liabilities arising under the disclaimer, including liabilities arising in contract, in tort and for breach of statutory duty.</p>
+                        <li>
+                            You must have the necessary rights or
+                            permission to reproduce the uploaded
+                            documents.
+                        </li>
 
-                <p>As long as the website and the information and services on the website are provided free of charge, we will not be liable for any loss or damage of any nature.</p>
+                        <li>
+                            Uploaded files should contain the correct
+                            content and should be suitable for the
+                            selected printing requirements.
+                        </li>
+
+                        <li>
+                            You must not upload files containing
+                            unlawful or prohibited content.
+                        </li>
+
+                        <li>
+                            You should review your documents before
+                            placing an order.
+                        </li>
+
+                    </ul>
+
+                </div>
+
+
+
+                <div class="terms-card">
+
+                    <h2>
+
+                        <i class="bi bi-shield-exclamation"></i>
+
+                        4. Prohibited Use
+
+                    </h2>
+
+                    <p>
+                        You must not use PrintHomeDelivery to print,
+                        reproduce, distribute or facilitate unlawful
+                        material or material that violates the rights
+                        of another person or organization.
+                    </p>
+
+                    <p>
+                        This includes, where applicable, material that
+                        infringes copyright, trademarks, intellectual
+                        property rights, privacy rights or other legal
+                        rights.
+                    </p>
+
+                    <p>
+                        We reserve the right to refuse or cancel an
+                        order where we reasonably believe that the
+                        requested service may violate applicable law or
+                        these terms.
+                    </p>
+
+                </div>
+
+                <div class="terms-card">
+
+                    <h2>
+
+                        <i class="bi bi-sliders"></i>
+
+                        5. Printing Requirements
+
+                    </h2>
+
+                    <p>
+                        Customers are responsible for selecting the
+                        correct printing requirements before placing an
+                        order.
+                    </p>
+
+                    <ul>
+
+                        <li>
+                            Print type or colour mode.
+                        </li>
+
+                        <li>
+                            Paper type and available GSM options.
+                        </li>
+
+                        <li>
+                            Single-sided or double-sided printing.
+                        </li>
+
+                        <li>
+                            Number of copies.
+                        </li>
+
+                        <li>
+                            Binding option, where available.
+                        </li>
+
+                        <li>
+                            Delivery address and pincode.
+                        </li>
+
+                    </ul>
+
+                    <p>
+                        Orders are processed according to the
+                        specifications submitted by the customer.
+                    </p>
+
+                </div>
+
+                <div class="terms-card">
+
+                    <h2>
+
+                        <i class="bi bi-calculator"></i>
+
+                        6. Pricing
+
+                    </h2>
+
+                    <p>
+                        The total price of an order may include printing
+                        charges, binding charges, delivery charges and
+                        other applicable charges displayed during
+                        checkout.
+                    </p>
+
+                    <p>
+                        Prices may vary depending on the selected
+                        options, number of pages, copies, destination
+                        and other applicable factors.
+                    </p>
+
+                    <p>
+                        The price displayed at checkout before order
+                        confirmation will be the applicable order
+                        amount, subject to correction of any obvious
+                        technical or pricing error.
+                    </p>
+
+                </div>
+
+
+
+                <div class="terms-card">
+
+                    <h2>
+
+                        <i class="bi bi-credit-card"></i>
+
+                        7. Payments
+
+                    </h2>
+
+                    <p>
+                        PrintHomeDelivery may offer payment methods
+                        including Cash on Delivery and online payment
+                        options such as Razorpay, depending on
+                        availability.
+                    </p>
+
+                    <p>
+                        Online payments are processed through the
+                        applicable payment gateway provider and are
+                        subject to the provider's terms and policies.
+                    </p>
+
+                    <p>
+                        An online payment is considered successfully
+                        received only after confirmation from the
+                        payment system.
+                    </p>
+
+                </div>
+
+
+                <div class="terms-card">
+
+                    <h2>
+
+                        <i class="bi bi-check2-circle"></i>
+
+                        8. Order Confirmation
+
+                    </h2>
+
+                    <p>
+                        After placing an order, an order number or
+                        confirmation may be provided to the customer.
+                    </p>
+
+                    <p>
+                        An order may be reviewed before processing. We
+                        reserve the right to cancel or refuse an order
+                        where there is a legitimate reason, including
+                        technical errors, suspected misuse, unavailable
+                        services or prohibited content.
+                    </p>
+
+                </div>
+
+
+                <div class="terms-card">
+
+                    <h2>
+
+                        <i class="bi bi-x-circle"></i>
+
+                        9. Order Cancellation
+
+                    </h2>
+
+                    <p>
+                        Cancellation availability may depend on the
+                        current processing status of an order.
+                    </p>
+
+                    <p>
+                        Once an order has entered printing, packing or
+                        dispatch processing, cancellation may no longer
+                        be possible.
+                    </p>
+
+                    <p>
+                        Any eligible cancellation and refund will be
+                        handled according to our applicable Refund &
+                        Cancellation Policy.
+                    </p>
+
+                </div>
+
+
+                <div class="terms-card">
+
+                    <h2>
+
+                        <i class="bi bi-arrow-counterclockwise"></i>
+
+                        10. Refunds & Printing Issues
+
+                    </h2>
+
+                    <p>
+                        If you receive an incorrect print, wrong product
+                        or a significant quality issue caused by our
+                        processing, you should contact us with your
+                        order details as soon as reasonably possible.
+                    </p>
+
+                    <p>
+                        We will review the issue and, where eligible,
+                        provide an appropriate resolution such as
+                        reprinting, replacement or refund according to
+                        our Refund & Cancellation Policy.
+                    </p>
+
+                    <p>
+                        Issues caused by incorrect files, incorrect
+                        customer-selected options or content supplied
+                        incorrectly by the customer may not qualify for
+                        a refund or replacement.
+                    </p>
+
+                </div>
+
+
+                <div class="terms-card">
+
+                    <h2>
+
+                        <i class="bi bi-truck"></i>
+
+                        11. Delivery
+
+                    </h2>
+
+                    <p>
+                        Printed orders may be delivered through
+                        third-party courier partners.
+                    </p>
+
+                    <p>
+                        Customers are responsible for providing an
+                        accurate and complete delivery address, mobile
+                        number and pincode.
+                    </p>
+
+                    <p>
+                        Delivery estimates are approximate and may be
+                        affected by courier operations, weather,
+                        holidays, destination restrictions, address
+                        issues or circumstances outside our reasonable
+                        control.
+                    </p>
+
+                </div>
+
+                <div class="terms-card">
+
+                    <h2>
+
+                        <i class="bi bi-geo-alt"></i>
+
+                        12. Delivery Issues
+
+                    </h2>
+
+                    <p>
+                        If delivery cannot be completed because of an
+                        incorrect address, unavailable recipient,
+                        incorrect contact details or other customer-side
+                        issues, additional delivery or re-shipping
+                        charges may apply where applicable.
+                    </p>
+
+                    <p>
+                        Customers should ensure that someone is
+                        available to receive the package when required.
+                    </p>
+
+                </div>
+
+
+
+                <div class="terms-card">
+
+                    <h2>
+
+                        <i class="bi bi-person-check"></i>
+
+                        13. Customer Responsibility
+
+                    </h2>
+
+                    <p>
+                        You are responsible for:
+                    </p>
+
+                    <ul>
+
+                        <li>
+                            Providing accurate personal and delivery
+                            information.
+                        </li>
+
+                        <li>
+                            Uploading the correct documents.
+                        </li>
+
+                        <li>
+                            Selecting the correct printing options.
+                        </li>
+
+                        <li>
+                            Ensuring that uploaded material can legally
+                            be reproduced.
+                        </li>
+
+                        <li>
+                            Reviewing order details before confirming
+                            the order.
+                        </li>
+
+                    </ul>
+
+                </div>
+
+
+                <div class="terms-card">
+
+                    <h2>
+
+                        <i class="bi bi-file-earmark-lock"></i>
+
+                        14. Intellectual Property
+
+                    </h2>
+
+                    <p>
+                        The PrintHomeDelivery website, branding,
+                        software, design, text, graphics and other
+                        website content may be protected by applicable
+                        intellectual property laws.
+                    </p>
+
+                    <p>
+                        You may not copy, reproduce, modify, distribute
+                        or commercially exploit our website content
+                        without appropriate permission.
+                    </p>
+
+                </div>
+
+
+                <div class="terms-card">
+
+                    <h2>
+
+                        <i class="bi bi-diagram-3"></i>
+
+                        15. Third-Party Services
+
+                    </h2>
+
+                    <p>
+                        Our services may depend on third-party
+                        providers including payment gateways, courier
+                        companies, hosting providers, storage services
+                        and other technology providers.
+                    </p>
+
+                    <p>
+                        Availability and performance of these services
+                        may be outside our direct control.
+                    </p>
+
+                </div>
+
+
+                <div class="terms-card">
+
+                    <h2>
+
+                        <i class="bi bi-globe2"></i>
+
+                        16. Website Availability
+
+                    </h2>
+
+                    <p>
+                        We aim to maintain reliable access to
+                        PrintHomeDelivery, but temporary interruptions
+                        may occur because of maintenance, technical
+                        issues, network problems or other circumstances.
+                    </p>
+
+                    <p>
+                        We do not guarantee uninterrupted or
+                        error-free availability of the website.
+                    </p>
+
+                </div>
+
+
+                <div class="terms-card">
+
+                    <h2>
+
+                        <i class="bi bi-exclamation-triangle"></i>
+
+                        17. Limitation of Liability
+
+                    </h2>
+
+                    <p>
+                        To the extent permitted by applicable law,
+                        PrintHomeDelivery will not be responsible for
+                        losses or delays caused by circumstances beyond
+                        our reasonable control, including third-party
+                        courier delays, payment gateway failures,
+                        internet outages or technical interruptions.
+                    </p>
+
+                    <p>
+                        Nothing in these terms is intended to exclude
+                        or limit any liability or consumer rights that
+                        cannot legally be excluded or limited under
+                        applicable law.
+                    </p>
+
+                </div>
+
+
+                <div class="terms-card">
+
+                    <h2>
+
+                        <i class="bi bi-shield-lock"></i>
+
+                        18. Privacy
+
+                    </h2>
+
+                    <p>
+                        Your use of PrintHomeDelivery is also subject
+                        to our Privacy Policy, which explains how we
+                        collect, use, store and protect information.
+                    </p>
+
+                    <p>
+                        By using our services, you acknowledge that you
+                        have read and understood our Privacy Policy.
+                    </p>
+
+                </div>
+
+
+                <div class="terms-card">
+
+                    <h2>
+
+                        <i class="bi bi-arrow-repeat"></i>
+
+                        19. Changes to These Terms
+
+                    </h2>
+
+                    <p>
+                        We may update these Terms & Conditions from time
+                        to time to reflect changes in our services,
+                        technology, business practices or applicable
+                        requirements.
+                    </p>
+
+                    <p>
+                        Updated terms will be published on this page.
+                        Continued use of the website after changes are
+                        published may constitute acceptance of the
+                        updated terms, to the extent permitted by law.
+                    </p>
+
+                </div>
+
+
+                <div class="terms-card">
+
+                    <h2>
+
+                        <i class="bi bi-bank"></i>
+
+                        20. Governing Law
+
+                    </h2>
+
+                    <p>
+                        These Terms & Conditions shall be governed by
+                        the applicable laws of India.
+                    </p>
+
+                    <p>
+                        Any disputes will be subject to the jurisdiction
+                        of the appropriate courts having jurisdiction
+                        over the applicable location, subject to
+                        applicable law.
+                    </p>
+
+                </div>
+
+
+
+                <div class="terms-contact">
+
+                    <h2>
+
+                        <i class="bi bi-headset"></i>
+
+                        Contact Us
+
+                    </h2>
+
+                    <p>
+                        If you have any questions regarding these Terms
+                        & Conditions, please contact us.
+                    </p>
+
+                    <p>
+
+                        <strong>
+                            Phone:
+                        </strong>
+
+                        <a href="tel:+919104470244">
+                            +91-9104470244
+                        </a>
+
+                    </p>
+
+                    <p>
+
+                        <strong>
+                            Email:
+                        </strong>
+
+                        <a href="mailto:info@printhomedelivery.com">
+                            info@printhomedelivery.com
+                        </a>
+
+                    </p>
+
+                    <p>
+
+                        <strong>
+                            Location:
+                        </strong>
+
+                        Gujarat, India
+
+                    </p>
+
+                </div>
+
+
             </div>
-            @include('sidebar')
+
         </div>
-    </div>
-</section>
+
+    </section>
+
+</main>
+
 @endsection

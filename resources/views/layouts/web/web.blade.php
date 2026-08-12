@@ -131,6 +131,77 @@
                 display: none !important;
             }
         }
+
+        /* =========================
+   PAGES DROPDOWN
+========================= */
+
+        .more-menu {
+            position: relative;
+        }
+
+        .more-dropdown {
+            display: none !important;
+            position: absolute;
+            top: 100%;
+            right: 0;
+            min-width: 190px;
+            margin: 0 !important;
+            padding: 5px 0 !important;
+            background: #fff;
+            border: 1px solid #ddd;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, .15);
+            z-index: 99999;
+            list-style: none;
+        }
+
+        .more-dropdown li {
+            display: block !important;
+            width: 100%;
+        }
+
+        .more-dropdown li a {
+            display: block !important;
+            padding: 10px 15px !important;
+            color: #333 !important;
+            white-space: nowrap;
+        }
+
+
+        /* DESKTOP */
+
+        @media (min-width: 992px) {
+
+            .more-menu:hover>.more-dropdown {
+                display: block !important;
+            }
+
+        }
+
+
+        /* MOBILE */
+
+        @media (max-width: 991px) {
+
+            .more-menu {
+                position: relative;
+            }
+
+            .more-dropdown {
+                position: static !important;
+                width: 100%;
+                min-width: 0;
+                background: transparent;
+                border: 0;
+                box-shadow: none;
+                padding-left: 15px !important;
+            }
+
+            .more-menu.open>.more-dropdown {
+                display: block !important;
+            }
+
+        }
     </style>
     @yield('custom_header')
 </head>
@@ -202,20 +273,46 @@
                                         </a>
                                     </li>
 
-
-                                    <li>
-                                        <a href="<?php echo route('page', ['about_us']); ?>">
-                                            About Us
-                                        </a>
-                                    </li>
-
-
                                     <li>
                                         <a href="<?php echo route('page', ['contact_us']); ?>">
                                             Contact Us
                                         </a>
                                     </li>
+                                    <li class="more-menu">
 
+                                        <a href="javascript:void(0);" class="more-toggle">
+                                            Pages <i class="fa fa-angle-down"></i>
+                                        </a>
+
+                                        <ul class="more-dropdown">
+
+                                            <li>
+                                                <a href="<?php echo route('page', ['about_us']); ?>">
+                                                    About Us
+                                                </a>
+                                            </li>
+
+                                            <li>
+                                                <a href="<?php echo route('page', ['privacy_policy']); ?>">
+                                                    Privacy Policy
+                                                </a>
+                                            </li>
+
+                                            <li>
+                                                <a href="<?php echo route('page', ['terms']); ?>">
+                                                    Terms & Conditions
+                                                </a>
+                                            </li>
+
+                                            <li>
+                                                <a href="<?php echo route('page', ['disclaimers']); ?>">
+                                                    Disclaimer
+                                                </a>
+                                            </li>
+
+                                        </ul>
+
+                                    </li>
 
                                     {{-- LOGOUT --}}
 
@@ -334,7 +431,7 @@
                     $category_data = Category::where('parent_category_id', null)->get();
                     ?>
                     <div class="col-lg-3 col-md-6">
-                        <h3 data-bs-target="#collapse_2">Categories</h3>
+                        <h3 data-bs-target="#collapse_2">Blogs</h3>
                         <div class="collapse dont-collapse-sm links" id="collapse_2">
                             <ul>
                                 <?php foreach ($category_data as $_id => $cat_item) { ?>
@@ -383,11 +480,24 @@
 
     @yield('custom_footer')
     <script>
-        <?php
-        // echo store_data()['footer_script']; 
-        ?>
+        $(document).on('click', '.more-toggle', function(e) {
+
+            e.preventDefault();
+            e.stopPropagation();
+
+            var menu = $(this).closest('.more-menu');
+
+            menu.toggleClass('open');
+
+        });
+
+
+        $(document).on('click', '.more-dropdown', function(e) {
+
+            e.stopPropagation();
+
+        });
     </script>
-    <!-- <br /> -->
 </body>
 
 

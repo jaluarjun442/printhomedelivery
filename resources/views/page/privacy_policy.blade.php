@@ -1,112 +1,645 @@
 @extends('layouts.web.web')
 
+
+@section('custom_header')
+
+<style>
+    .privacy-section {
+        background: #fbf9f4;
+        min-height: 100vh;
+        padding: 45px 15px 60px;
+    }
+
+    .privacy-wrapper {
+        max-width: 1000px;
+        margin: 0 auto;
+    }
+
+    .privacy-page-header {
+        text-align: center;
+        margin-bottom: 30px;
+    }
+
+    .privacy-page-header h1 {
+        margin: 0;
+        font-size: 30px;
+        font-weight: 800;
+        color: #222;
+    }
+
+    .privacy-page-header p {
+        margin: 8px auto 0;
+        max-width: 700px;
+        font-size: 13px;
+        line-height: 1.7;
+        color: #777;
+    }
+
+    .privacy-card {
+        background: #fff;
+        border: 1px solid #ddd;
+        padding: 25px;
+        margin-bottom: 15px;
+    }
+
+    .privacy-card h2 {
+        margin: 0 0 12px;
+        font-size: 20px;
+        font-weight: 800;
+        color: #222;
+    }
+
+    .privacy-card h2 i {
+        color: #2856db;
+        margin-right: 6px;
+    }
+
+    .privacy-card h3 {
+        margin: 18px 0 8px;
+        font-size: 15px;
+        font-weight: 700;
+        color: #333;
+    }
+
+    .privacy-card p {
+        margin: 0 0 10px;
+        font-size: 13px;
+        line-height: 1.8;
+        color: #666;
+    }
+
+    .privacy-card p:last-child {
+        margin-bottom: 0;
+    }
+
+    .privacy-card ul {
+        margin: 8px 0 0;
+        padding-left: 20px;
+    }
+
+    .privacy-card li {
+        margin-bottom: 7px;
+        font-size: 13px;
+        line-height: 1.7;
+        color: #666;
+    }
+
+    .privacy-notice {
+        background: #f4f7ff;
+        border: 1px solid #c9d7ff;
+        border-left: 3px solid #2856db;
+        padding: 18px 20px;
+        margin-bottom: 15px;
+    }
+
+    .privacy-notice p {
+        margin: 0;
+        font-size: 12px;
+        line-height: 1.8;
+        color: #555;
+    }
+
+    .privacy-contact {
+        background: #f4f7ff;
+        border: 1px solid #c9d7ff;
+        padding: 22px 25px;
+    }
+
+    .privacy-contact h2 {
+        margin: 0 0 10px;
+        color: #2856db;
+        font-size: 20px;
+        font-weight: 800;
+    }
+
+    .privacy-contact p {
+        margin: 0 0 5px;
+        font-size: 13px;
+        color: #666;
+    }
+
+    .privacy-contact a {
+        color: #2856db;
+        text-decoration: none;
+        font-weight: 600;
+    }
+
+    @media (max-width: 767px) {
+
+        .privacy-section {
+            padding: 28px 12px 40px;
+        }
+
+        .privacy-page-header {
+            margin-bottom: 20px;
+        }
+
+        .privacy-page-header h1 {
+            font-size: 25px;
+        }
+
+        .privacy-page-header p {
+            font-size: 12px;
+        }
+
+        .privacy-card {
+            padding: 18px 15px;
+        }
+
+        .privacy-card h2 {
+            font-size: 18px;
+        }
+
+    }
+</style>
+
+@endsection
+
+
+
 @section('content')
-<section class="utf_block_wrapper">
-    <div class="container">
-        <div class="row">
-            <div class="col-lg-8 col-md-12">
-                <h1>Privacy Policy for {{ $store_data['name'] }}</h1>
 
-                <p>At {{ $store_data['website'] }}, accessible from {{ $store_data['url'] }}, one of our main priorities is the privacy of our visitors. This Privacy Policy document contains types of information that is collected and recorded by {{ $store_data['website'] }} and how we use it.</p>
+<main>
 
-                <p>If you have additional questions or require more information about our Privacy Policy, do not hesitate to contact us.</p>
+    <section class="privacy-section">
 
-                <p>This Privacy Policy applies only to our online activities and is valid for visitors to our website with regards to the information that they shared and/or collect in {{ $store_data['website'] }}. This policy is not applicable to any information collected offline or via channels other than this website.</p>
+        <div class="container">
 
-                <h2>Consent</h2>
-
-                <p>By using our website, you hereby consent to our Privacy Policy and agree to its terms.</p>
-
-                <h2>Information we collect</h2>
-
-                <p>The personal information that you are asked to provide, and the reasons why you are asked to provide it, will be made clear to you at the point we ask you to provide your personal information.</p>
-                <p>If you contact us directly, we may receive additional information about you such as your name, email address, phone number, the contents of the message and/or attachments you may send us, and any other information you may choose to provide.</p>
-                <p>When you register for an Account, we may ask for your contact information, including items such as name, company name, address, email address, and telephone number.</p>
-
-                <h2>How we use your information</h2>
-
-                <p>We use the information we collect in various ways, including to:</p>
-
-                <ul>
-                    <li>Provide, operate, and maintain our website</li>
-                    <li>Improve, personalize, and expand our website</li>
-                    <li>Understand and analyze how you use our website</li>
-                    <li>Develop new products, services, features, and functionality</li>
-                    <li>Communicate with you, either directly or through one of our partners, including for customer service, to provide you with updates and other information relating to the website, and for marketing and promotional purposes</li>
-                    <li>Send you emails</li>
-                    <li>Find and prevent fraud</li>
-                </ul>
-
-                <h2>Log Files</h2>
-
-                <p>{{ $store_data['website'] }} follows a standard procedure of using log files. These files log visitors when they visit websites. All hosting companies do this and a part of hosting services' analytics. The information collected by log files include internet protocol (IP) addresses, browser type, Internet Service Provider (ISP), date and time stamp, referring/exit pages, and possibly the number of clicks. These are not linked to any information that is personally identifiable. The purpose of the information is for analyzing trends, administering the site, tracking users' movement on the website, and gathering demographic information.</p>
+            <div class="privacy-wrapper">
 
 
-                <h2>Google DoubleClick DART Cookie</h2>
+                <div class="privacy-page-header">
 
-                <p>Google is one of a third-party vendor on our site. It also uses cookies, known as DART cookies, to serve ads to our site visitors based upon their visit to www.website.com and other sites on the internet. However, visitors may choose to decline the use of DART cookies by visiting the Google ad and content network Privacy Policy at the following URL – <a href="https://policies.google.com/technologies/ads">https://policies.google.com/technologies/ads</a></p>
+                    <h1>
+                        Privacy Policy
+                    </h1>
 
-                <h2>Our Advertising Partners</h2>
+                    <p>
+                        This Privacy Policy explains how
+                        PrintHomeDelivery collects, uses and protects
+                        information when you use our website and services.
+                    </p>
 
-                <p>Some of advertisers on our site may use cookies and web beacons. Our advertising partners are listed below. Each of our advertising partners has their own Privacy Policy for their policies on user data. For easier access, we hyperlinked to their Privacy Policies below.</p>
+                </div>
 
-                <ul>
-                    <li>
-                        <p>Google</p>
-                        <p><a href="https://policies.google.com/technologies/ads">https://policies.google.com/technologies/ads</a></p>
-                    </li>
-                </ul>
 
-                <h2>Advertising Partners Privacy Policies</h2>
+                <div class="privacy-notice">
 
-                <P>You may consult this list to find the Privacy Policy for each of the advertising partners of {{ $store_data['website'] }}.</p>
+                    <p>
 
-                <p>Third-party ad servers or ad networks uses technologies like cookies, JavaScript, or Web Beacons that are used in their respective advertisements and links that appear on {{ $store_data['website'] }}, which are sent directly to users' browser. They automatically receive your IP address when this occurs. These technologies are used to measure the effectiveness of their advertising campaigns and/or to personalize the advertising content that you see on websites that you visit.</p>
+                        <strong>
+                            Your privacy matters to us.
+                        </strong>
 
-                <p>Note that {{ $store_data['website'] }} has no access to or control over these cookies that are used by third-party advertisers.</p>
+                        We collect and use information only as reasonably
+                        required to provide our printing, payment,
+                        customer support and delivery services and to
+                        operate and improve our website.
 
-                <h2>Third Party Privacy Policies</h2>
+                    </p>
 
-                <p>{{ $store_data['website'] }}'s Privacy Policy does not apply to other advertisers or websites. Thus, we are advising you to consult the respective Privacy Policies of these third-party ad servers for more detailed information. It may include their practices and instructions about how to opt-out of certain options. </p>
+                </div>
 
-                <p>You can choose to disable cookies through your individual browser options. To know more detailed information about cookie management with specific web browsers, it can be found at the browsers' respective websites.</p>
 
-                <h2>CCPA Privacy Rights (Do Not Sell My Personal Information)</h2>
 
-                <p>Under the CCPA, among other rights, California consumers have the right to:</p>
-                <p>Request that a business that collects a consumer's personal data disclose the categories and specific pieces of personal data that a business has collected about consumers.</p>
-                <p>Request that a business delete any personal data about the consumer that a business has collected.</p>
-                <p>Request that a business that sells a consumer's personal data, not sell the consumer's personal data.</p>
-                <p>If you make a request, we have one month to respond to you. If you would like to exercise any of these rights, please contact us.</p>
+                <div class="privacy-card">
 
-                <h2>GDPR Data Protection Rights</h2>
+                    <h2>
 
-                <p>We would like to make sure you are fully aware of all of your data protection rights. Every user is entitled to the following:</p>
-                <p>The right to access – You have the right to request copies of your personal data. We may charge you a small fee for this service.</p>
-                <p>The right to rectification – You have the right to request that we correct any information you believe is inaccurate. You also have the right to request that we complete the information you believe is incomplete.</p>
-                <p>The right to erasure – You have the right to request that we erase your personal data, under certain conditions.</p>
-                <p>The right to restrict processing – You have the right to request that we restrict the processing of your personal data, under certain conditions.</p>
-                <p>The right to object to processing – You have the right to object to our processing of your personal data, under certain conditions.</p>
-                <p>The right to data portability – You have the right to request that we transfer the data that we have collected to another organization, or directly to you, under certain conditions.</p>
-                <p>If you make a request, we have one month to respond to you. If you would like to exercise any of these rights, please contact us.</p>
+                        <i class="bi bi-person"></i>
 
-                <h2>Children's Information</h2>
+                        Information We Collect
 
-                <p>Another part of our priority is adding protection for children while using the internet. We encourage parents and guardians to observe, participate in, and/or monitor and guide their online activity.</p>
+                    </h2>
 
-                <p>{{ $store_data['website'] }} does not knowingly collect any Personal Identifiable Information from children under the age of 13. If you think that your child provided this kind of information on our website, we strongly encourage you to contact us immediately and we will do our best efforts to promptly remove such information from our records.</p>
+                    <p>
+                        Depending on how you use PrintHomeDelivery, we
+                        may collect the following information:
+                    </p>
 
-                <h2>Changes to This Privacy Policy</h2>
+                    <ul>
 
-                <p>We may update our Privacy Policy from time to time. Thus, we advise you to review this page periodically for any changes. We will notify you of any changes by posting the new Privacy Policy on this page. These changes are effective immediately, after they are posted on this page.</p>
+                        <li>
+                            Name and contact information such as mobile
+                            number and email address.
+                        </li>
 
-               
-                <h2>Contact Us</h2>
+                        <li>
+                            Delivery information such as address,
+                            city, state and pincode.
+                        </li>
 
-                <p>If you have any questions or suggestions about our Privacy Policy, do not hesitate to contact us.</p>
+                        <li>
+                            Order details including selected printing
+                            options, copies, delivery information and
+                            order history.
+                        </li>
+
+                        <li>
+                            Documents and files uploaded by you for
+                            printing.
+                        </li>
+
+                        <li>
+                            Payment-related information required to
+                            process and identify your transaction.
+                        </li>
+
+                        <li>
+                            Technical information such as browser,
+                            device and basic website usage information
+                            where applicable.
+                        </li>
+
+                    </ul>
+
+                </div>
+
+
+                <div class="privacy-card">
+
+                    <h2>
+
+                        <i class="bi bi-file-earmark-lock"></i>
+
+                        Uploaded Documents
+
+                    </h2>
+
+                    <p>
+                        Documents uploaded to PrintHomeDelivery are
+                        processed for the purpose of fulfilling your
+                        printing order.
+                    </p>
+
+                    <p>
+                        Access to uploaded documents may be required by
+                        our printing and order-processing operations.
+                        Where necessary, documents may also be handled
+                        by service providers involved in fulfilling the
+                        order.
+                    </p>
+
+                    <p>
+                        You should not upload documents unless you are
+                        authorized to provide them for printing.
+                    </p>
+
+                </div>
+
+
+                <div class="privacy-card">
+
+                    <h2>
+
+                        <i class="bi bi-gear"></i>
+
+                        How We Use Your Information
+
+                    </h2>
+
+                    <p>
+                        Information collected through the website may
+                        be used for purposes including:
+                    </p>
+
+                    <ul>
+
+                        <li>
+                            Creating and managing your account.
+                        </li>
+
+                        <li>
+                            Processing and fulfilling printing orders.
+                        </li>
+
+                        <li>
+                            Calculating printing, packaging and delivery
+                            charges.
+                        </li>
+
+                        <li>
+                            Arranging courier delivery of printed
+                            documents.
+                        </li>
+
+                        <li>
+                            Processing and verifying payments.
+                        </li>
+
+                        <li>
+                            Providing customer support and resolving
+                            order-related issues.
+                        </li>
+
+                        <li>
+                            Detecting misuse, fraud or unauthorized
+                            activity.
+                        </li>
+
+                        <li>
+                            Improving website functionality and our
+                            services.
+                        </li>
+
+                    </ul>
+
+                </div>
+
+
+                <div class="privacy-card">
+
+                    <h2>
+
+                        <i class="bi bi-credit-card"></i>
+
+                        Payment Information
+
+                    </h2>
+
+                    <p>
+                        Online payments may be processed through a
+                        third-party payment gateway such as Razorpay.
+                    </p>
+
+                    <p>
+                        Payment information entered during checkout may
+                        be processed directly by the applicable payment
+                        service provider according to its own privacy
+                        policy and security practices.
+                    </p>
+
+                    <p>
+                        PrintHomeDelivery does not intend to store
+                        sensitive card numbers, CVV information, banking
+                        passwords or similar payment credentials on its
+                        own servers.
+                    </p>
+
+                </div>
+
+
+                <div class="privacy-card">
+
+                    <h2>
+
+                        <i class="bi bi-truck"></i>
+
+                        Courier & Delivery Partners
+
+                    </h2>
+
+                    <p>
+                        To deliver your printed documents, we may need
+                        to share relevant delivery information such as
+                        recipient name, address, mobile number and
+                        pincode with the selected courier or delivery
+                        partner.
+                    </p>
+
+                    <p>
+                        We share only information reasonably required
+                        for fulfilling the delivery service.
+                    </p>
+
+                </div>
+
+                <div class="privacy-card">
+
+                    <h2>
+
+                        <i class="bi bi-diagram-3"></i>
+
+                        Third-Party Services
+
+                    </h2>
+
+                    <p>
+                        PrintHomeDelivery may use trusted third-party
+                        service providers for functions such as payment
+                        processing, courier delivery, hosting, storage,
+                        security, analytics and website infrastructure.
+                    </p>
+
+                    <p>
+                        These providers may process information only as
+                        required for the services they provide to us or
+                        as otherwise permitted by applicable law.
+                    </p>
+
+                </div>
+
+                <div class="privacy-card">
+
+                    <h2>
+
+                        <i class="bi bi-shield-lock"></i>
+
+                        Data Security
+
+                    </h2>
+
+                    <p>
+                        We take reasonable technical and organizational
+                        measures to protect information against
+                        unauthorized access, misuse, alteration,
+                        disclosure or loss.
+                    </p>
+
+                    <p>
+                        However, no internet transmission or electronic
+                        storage system can be guaranteed to be completely
+                        secure. You understand that use of online
+                        services involves certain inherent security
+                        risks.
+                    </p>
+
+                </div>
+
+
+                <div class="privacy-card">
+
+                    <h2>
+
+                        <i class="bi bi-clock-history"></i>
+
+                        Data Retention
+
+                    </h2>
+
+                    <p>
+                        We retain information for as long as reasonably
+                        necessary to provide our services, maintain
+                        order records, provide customer support, comply
+                        with legal or accounting requirements and
+                        resolve disputes.
+                    </p>
+
+                    <p>
+                        Uploaded documents may be retained only for as
+                        long as required for order processing, support,
+                        security or other legitimate operational
+                        purposes, subject to our applicable practices.
+                    </p>
+
+                </div>
+
+
+                <div class="privacy-card">
+
+                    <h2>
+
+                        <i class="bi bi-cookie"></i>
+
+                        Cookies & Similar Technologies
+
+                    </h2>
+
+                    <p>
+                        PrintHomeDelivery may use cookies or similar
+                        technologies to maintain sessions, remember
+                        preferences, support website functionality and
+                        understand basic website usage.
+                    </p>
+
+                    <p>
+                        Disabling certain cookies may affect some
+                        features or functionality of the website.
+                    </p>
+
+                </div>
+
+
+                <div class="privacy-card">
+
+                    <h2>
+
+                        <i class="bi bi-person-check"></i>
+
+                        Your Information
+
+                    </h2>
+
+                    <p>
+                        Subject to applicable law, you may contact us
+                        regarding information associated with your
+                        account or orders and request correction of
+                        inaccurate information.
+                    </p>
+
+                    <p>
+                        Requests relating to deletion or access to
+                        information may be subject to legal,
+                        operational, security or record-keeping
+                        requirements.
+                    </p>
+
+                </div>
+
+
+                <div class="privacy-card">
+
+                    <h2>
+
+                        <i class="bi bi-shield"></i>
+
+                        Children's Privacy
+
+                    </h2>
+
+                    <p>
+                        Our services are not specifically directed
+                        towards children. We do not knowingly seek to
+                        collect personal information from children in
+                        violation of applicable law.
+                    </p>
+
+                </div>
+
+                <div class="privacy-card">
+
+                    <h2>
+
+                        <i class="bi bi-arrow-repeat"></i>
+
+                        Changes to This Privacy Policy
+
+                    </h2>
+
+                    <p>
+                        We may update this Privacy Policy from time to
+                        time to reflect changes in our services,
+                        technology, legal requirements or business
+                        practices.
+                    </p>
+
+                    <p>
+                        The updated version will be published on this
+                        page. You should review this page periodically
+                        for any changes.
+                    </p>
+
+                </div>
+
+                <div class="privacy-contact">
+
+                    <h2>
+
+                        <i class="bi bi-headset"></i>
+
+                        Privacy Questions?
+
+                    </h2>
+
+                    <p>
+                        If you have questions, concerns or requests
+                        regarding this Privacy Policy or your personal
+                        information, please contact us.
+                    </p>
+
+                    <p>
+
+                        <strong>
+                            Phone:
+                        </strong>
+
+                        <a href="tel:+919104470244">
+                            +91-9104470244
+                        </a>
+
+                    </p>
+
+                    <p>
+
+                        <strong>
+                            Email:
+                        </strong>
+
+                        <a href="mailto:info@printhomedelivery.com">
+                            info@printhomedelivery.com
+                        </a>
+
+                    </p>
+
+                    <p>
+
+                        <strong>
+                            Location:
+                        </strong>
+
+                        Gujarat, India
+
+                    </p>
+
+                </div>
+
+
             </div>
-            @include('sidebar')
+
         </div>
-    </div>
-</section>
+
+    </section>
+
+</main>
+
 @endsection
