@@ -463,7 +463,7 @@
 
 
 
-             
+
                 <div class="disclaimer-card">
 
                     <h2>
@@ -521,8 +521,8 @@
                             Email:
                         </strong>
 
-                        <a href="mailto:info@{{ $store_data['name'] }}.com">
-                            info@{{ $store_data['name'] }}.com
+                        <a href="mailto:{{ $store_data['email'] }}">
+                            {{ $store_data['email'] }}
                         </a>
 
                     </p>

@@ -4,8 +4,6 @@
 @section('custom_header')
 
 <style>
- 
-
     .about-section {
         background: #fbf9f4;
         min-height: 100vh;
@@ -653,8 +651,8 @@
                     <p>
                         <strong>Email:</strong>
 
-                        <a href="mailto:info@{{ $store_data['name'] }}.com">
-                            info@{{ $store_data['name'] }}.com
+                        <a href="mailto:{{ $store_data['email'] }}">
+                            {{ $store_data['email'] }}
                         </a>
                     </p>
 

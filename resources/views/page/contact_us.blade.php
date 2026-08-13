@@ -4,8 +4,6 @@
 @section('custom_header')
 
 <style>
-   
-
     .contact-section {
         background: #fbf9f4;
         min-height: 100vh;
@@ -18,7 +16,7 @@
     }
 
 
-  
+
     .contact-page-header {
         text-align: center;
         margin-bottom: 30px;
@@ -287,7 +285,7 @@
 
                                 <p>
 
-                                    <a href="mailto:info@offerlity.shop">
+                                    <a href="mailto:{{ $store_data['email'] }}">
                                         {{ $store_data['email'] }}
                                     </a>
 
