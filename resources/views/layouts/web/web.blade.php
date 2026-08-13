@@ -31,7 +31,10 @@
         <?php
 
         use App\Models\Category;
+        use App\Models\Store;
 
+        $store_id = store_id();
+        $store_data = Store::where('id', $store_id)->first();
         // echo store_data()['header_script']; 
         ?>
     </style>
@@ -313,7 +316,16 @@
                                         </ul>
 
                                     </li>
+                                    @if(request()->cookie('loggedin_number'))
 
+                                    <li>
+                                        <a href="{{ route('my-orders') }}">
+                                            <i class="ti-package"></i>
+                                            My Orders
+                                        </a>
+                                    </li>
+
+                                    @endif
                                     {{-- LOGOUT --}}
 
                                     @if(request()->cookie('loggedin_number'))
@@ -431,12 +443,14 @@
                     $category_data = Category::where('parent_category_id', null)->get();
                     ?>
                     <div class="col-lg-3 col-md-6">
-                        <h3 data-bs-target="#collapse_2">Blogs</h3>
+                        <h3 data-bs-target="#collapse_2">Tools</h3>
                         <div class="collapse dont-collapse-sm links" id="collapse_2">
                             <ul>
-                                <?php foreach ($category_data as $_id => $cat_item) { ?>
-                                    <li><a href="{{ route('category', ['slug' => $cat_item['slug']]) }}"><?php echo $cat_item['name']; ?></a></li>
-                                <?php } ?>
+                                <li>
+                                    <a href="{{ route('calculator') }}">
+                                        Pricing Calculator
+                                    </a>
+                                </li>
                             </ul>
                         </div>
                     </div>
@@ -445,8 +459,8 @@
                         <div class="collapse dont-collapse-sm contacts" id="collapse_3">
                             <ul>
                                 <!-- <li><i class="ti-home"></i>97845 Baker st. 567<br>Los Angeles - US</li> -->
-                                <li><i class="ti-headphone-alt"></i>+1-202-753-8003</li>
-                                <li><i class="ti-email"></i><a href="#0">info@offerlity.shop</a></li>
+                                <li><i class="ti-headphone-alt"></i>{{ $store_data['phone'] }}</li>
+                                <li><i class="ti-email"></i><a href="#0">{{ $store_data['email'] }}</a></li>
                             </ul>
                         </div>
                     </div>

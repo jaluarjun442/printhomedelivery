@@ -47,6 +47,12 @@ Route::get('/print-options/previous-files', [UploadController::class, 'previousP
 Route::post('/print-options/add-files', [UploadController::class, 'addPreviousPrintFiles'])->name('print-options.add-files');
 Route::post('/print-options/save', [UploadController::class, 'savePrintOptions'])->name('print-options.save');
 
+Route::get('/my-orders', [CheckoutController::class, 'myOrders'])
+    ->name('my-orders');
+Route::get('/my-orders/{order}', [CheckoutController::class, 'myOrderView'])
+    ->name('my-orders.view');
+Route::post('/my-orders/{order}/cancel', [CheckoutController::class, 'cancelOrder'])
+    ->name('my-orders.cancel');
 
 Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout');
 Route::post('/checkout/calculate-shipping', [CheckoutController::class, 'calculateShipping'])

@@ -264,7 +264,7 @@
                 <div class="about-page-header">
 
                     <h1>
-                        About PrintHomeDelivery
+                        About {{ $store_data['name'] }}
                     </h1>
 
                     <p>
@@ -289,7 +289,7 @@
                     </h2>
 
                     <p>
-                        PrintHomeDelivery is a Gujarat-based online
+                        {{ $store_data['name'] }} is a Gujarat-based online
                         document printing service created to make
                         everyday printing more convenient.
                     </p>
@@ -431,7 +431,7 @@
 
                         <i class="bi bi-check2-circle"></i>
 
-                        Why PrintHomeDelivery?
+                        Why {{ $store_data['name'] }}?
 
                     </h2>
 
@@ -611,7 +611,7 @@
                     </h2>
 
                     <p>
-                        PrintHomeDelivery is based in Gujarat and is
+                        {{ $store_data['name'] }} is based in Gujarat and is
                         focused on providing convenient online printing
                         and delivery services to customers in Gujarat
                         and eligible delivery locations.
@@ -653,8 +653,8 @@
                     <p>
                         <strong>Email:</strong>
 
-                        <a href="mailto:info@printhomedelivery.com">
-                            info@printhomedelivery.com
+                        <a href="mailto:info@{{ $store_data['name'] }}.com">
+                            info@{{ $store_data['name'] }}.com
                         </a>
                     </p>
 

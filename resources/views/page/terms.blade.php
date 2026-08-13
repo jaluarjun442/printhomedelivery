@@ -175,7 +175,7 @@
 
                     <p>
                         Please read these terms carefully before using
-                        PrintHomeDelivery or placing a printing order.
+                        {{ $store_data['name'] }} or placing a printing order.
                     </p>
 
                 </div>
@@ -185,7 +185,7 @@
                     <p>
 
                         <strong>
-                            By using PrintHomeDelivery, creating an
+                            By using {{ $store_data['name'] }}, creating an
                             account or placing an order, you agree to
                             these Terms & Conditions.
                         </strong>
@@ -209,7 +209,7 @@
                     </h2>
 
                     <p>
-                        PrintHomeDelivery provides online document
+                        {{ $store_data['name'] }} provides online document
                         printing and delivery services. Customers can
                         upload documents, select available printing
                         requirements, place an order and receive the
@@ -236,7 +236,7 @@
                     </h2>
 
                     <p>
-                        Certain features of PrintHomeDelivery may
+                        Certain features of {{ $store_data['name'] }} may
                         require you to provide your mobile number or
                         other information to access your account and
                         services.
@@ -269,7 +269,7 @@
 
                     <p>
                         Customers are responsible for all documents and
-                        files uploaded to PrintHomeDelivery.
+                        files uploaded to {{ $store_data['name'] }}.
                     </p>
 
                     <ul>
@@ -313,7 +313,7 @@
                     </h2>
 
                     <p>
-                        You must not use PrintHomeDelivery to print,
+                        You must not use {{ $store_data['name'] }} to print,
                         reproduce, distribute or facilitate unlawful
                         material or material that violates the rights
                         of another person or organization.
@@ -431,7 +431,7 @@
                     </h2>
 
                     <p>
-                        PrintHomeDelivery may offer payment methods
+                        {{ $store_data['name'] }} may offer payment methods
                         including Cash on Delivery and online payment
                         options such as Razorpay, depending on
                         availability.
@@ -655,7 +655,7 @@
                     </h2>
 
                     <p>
-                        The PrintHomeDelivery website, branding,
+                        The {{ $store_data['name'] }} website, branding,
                         software, design, text, graphics and other
                         website content may be protected by applicable
                         intellectual property laws.
@@ -707,7 +707,7 @@
 
                     <p>
                         We aim to maintain reliable access to
-                        PrintHomeDelivery, but temporary interruptions
+                        {{ $store_data['name'] }}, but temporary interruptions
                         may occur because of maintenance, technical
                         issues, network problems or other circumstances.
                     </p>
@@ -732,7 +732,7 @@
 
                     <p>
                         To the extent permitted by applicable law,
-                        PrintHomeDelivery will not be responsible for
+                        {{ $store_data['name'] }} will not be responsible for
                         losses or delays caused by circumstances beyond
                         our reasonable control, including third-party
                         courier delays, payment gateway failures,
@@ -760,7 +760,7 @@
                     </h2>
 
                     <p>
-                        Your use of PrintHomeDelivery is also subject
+                        Your use of {{ $store_data['name'] }} is also subject
                         to our Privacy Policy, which explains how we
                         collect, use, store and protect information.
                     </p>
@@ -859,8 +859,8 @@
                             Email:
                         </strong>
 
-                        <a href="mailto:info@printhomedelivery.com">
-                            info@printhomedelivery.com
+                        <a href="mailto:info@{{ $store_data['name'] }}.com">
+                            info@{{ $store_data['name'] }}.com
                         </a>
 
                     </p>

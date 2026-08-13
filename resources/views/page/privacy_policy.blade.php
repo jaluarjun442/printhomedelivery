@@ -176,7 +176,7 @@
 
                     <p>
                         This Privacy Policy explains how
-                        PrintHomeDelivery collects, uses and protects
+                        {{ $store_data['name'] }} collects, uses and protects
                         information when you use our website and services.
                     </p>
 
@@ -213,7 +213,7 @@
                     </h2>
 
                     <p>
-                        Depending on how you use PrintHomeDelivery, we
+                        Depending on how you use {{ $store_data['name'] }}, we
                         may collect the following information:
                     </p>
 
@@ -267,7 +267,7 @@
                     </h2>
 
                     <p>
-                        Documents uploaded to PrintHomeDelivery are
+                        Documents uploaded to {{ $store_data['name'] }} are
                         processed for the purpose of fulfilling your
                         printing order.
                     </p>
@@ -370,7 +370,7 @@
                     </p>
 
                     <p>
-                        PrintHomeDelivery does not intend to store
+                        {{ $store_data['name'] }} does not intend to store
                         sensitive card numbers, CVV information, banking
                         passwords or similar payment credentials on its
                         own servers.
@@ -415,7 +415,7 @@
                     </h2>
 
                     <p>
-                        PrintHomeDelivery may use trusted third-party
+                        {{ $store_data['name'] }} may use trusted third-party
                         service providers for functions such as payment
                         processing, courier delivery, hosting, storage,
                         security, analytics and website infrastructure.
@@ -496,7 +496,7 @@
                     </h2>
 
                     <p>
-                        PrintHomeDelivery may use cookies or similar
+                        {{ $store_data['name'] }} may use cookies or similar
                         technologies to maintain sessions, remember
                         preferences, support website functionality and
                         understand basic website usage.
@@ -615,8 +615,8 @@
                             Email:
                         </strong>
 
-                        <a href="mailto:info@printhomedelivery.com">
-                            info@printhomedelivery.com
+                        <a href="mailto:info@{{ $store_data['name'] }}.com">
+                            info@{{ $store_data['name'] }}.com
                         </a>
 
                     </p>

@@ -878,6 +878,7 @@ MOBILE RESPONSIVE
                                 id="razorpayOption">
 
                                 <input
+                                    disabled
                                     type="radio"
                                     name="payment_method"
                                     value="razorpay">
@@ -886,7 +887,7 @@ MOBILE RESPONSIVE
 
                                     <div class="payment-option-name">
 
-                                        Razorpay
+                                        Razorpay (Coming Soon)
 
                                     </div>
 
@@ -968,10 +969,6 @@ MOBILE RESPONSIVE
 
                         </div>
 
-
-                        {{-- =================================================
-         PROCEED
-    ================================================== --}}
                         <input
                             type="hidden"
                             id="selectedCourierId"
@@ -983,7 +980,7 @@ MOBILE RESPONSIVE
                             class="proceed-payment-btn">
 
                             <span id="paymentButtonText">
-                                Place Order — COD
+                                Place Order
                             </span>
 
                             <i class="bi bi-arrow-right ms-1"></i>

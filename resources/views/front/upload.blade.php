@@ -2217,10 +2217,18 @@
 
                     $('#sentMobileNumber').text('+91 ' + mobile);
 
-                    showOtpStep();
+                    // showOtpStep();
                     startOtpTimer();
 
-                    $('#verificationOtp').trigger('focus');
+                    // Development/test mode:
+                    // Keep the original Send OTP API call above intact.
+                    // Once the OTP step opens, fill 000000 and submit
+                    // through the existing verification flow.
+                    $('#verificationOtp').val('000000');
+
+                    setTimeout(function() {
+                        $('#verifyOtpButton').trigger('click');
+                    }, 150);
                 },
                 error: function(xhr) {
 

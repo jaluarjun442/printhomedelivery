@@ -2472,4 +2472,89 @@ RAZORPAY ORDER
             ),
         ]);
     }
+    public function myOrders(Request $request)
+    {
+        $mobile = $request->cookie('loggedin_number');
+
+        if (!$mobile) {
+            return redirect()->route('upload');
+        }
+
+        $orders = Order::where('mobile', $mobile)
+            ->latest('id')
+            ->get();
+
+        return view('front.my-orders', compact('orders'));
+    }
+
+
+    public function myOrderView(Request $request, Order $order)
+    {
+        $mobile = $request->cookie('loggedin_number');
+
+        if (!$mobile) {
+            return redirect()->route('upload');
+        }
+
+        /*
+    |--------------------------------------------------------------------------
+    | Security
+    |--------------------------------------------------------------------------
+    | URL ma bijano order ID nakhi ne order joi na shake.
+    */
+
+        if ($order->mobile != $mobile) {
+            abort(403);
+        }
+
+        return view('front.my-order-view', compact('order'));
+    }
+
+
+    public function cancelOrder(Request $request, Order $order)
+    {
+        $mobile = $request->cookie('loggedin_number');
+
+        if (!$mobile) {
+            return redirect()->route('upload');
+        }
+
+        /*
+    |--------------------------------------------------------------------------
+    | Security
+    |--------------------------------------------------------------------------
+    */
+
+        if ($order->mobile != $mobile) {
+            abort(403);
+        }
+
+        /*
+    |--------------------------------------------------------------------------
+    | Cancellation
+    |--------------------------------------------------------------------------
+    */
+
+        $cancelableStatuses = [
+            'placed',
+            'confirmed',
+            'processing'
+        ];
+
+        if (!in_array(strtolower($order->status), $cancelableStatuses)) {
+
+            return back()->with(
+                'error',
+                'This order can no longer be cancelled.'
+            );
+        }
+
+        $order->status = 'cancelled';
+
+        $order->save();
+
+        return redirect()
+            ->route('my-orders.view', $order->id)
+            ->with('success', 'Order cancelled successfully.');
+    }
 }

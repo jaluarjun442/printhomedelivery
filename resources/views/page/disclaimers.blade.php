@@ -168,7 +168,7 @@
 
                     <p>
                         Important information about using
-                        PrintHomeDelivery and our printing and
+                        {{ $store_data['name'] }} and our printing and
                         delivery services.
                     </p>
 
@@ -182,7 +182,7 @@
                             Important:
                         </strong>
 
-                        By using PrintHomeDelivery, you acknowledge
+                        By using {{ $store_data['name'] }}, you acknowledge
                         that you have read and understood this
                         disclaimer and agree to use the website and
                         services responsibly.
@@ -202,7 +202,7 @@
                     </h2>
 
                     <p>
-                        PrintHomeDelivery provides online document
+                        {{ $store_data['name'] }} provides online document
                         printing and delivery services. Information
                         displayed on the website, including printing
                         options, prices, delivery charges and estimated
@@ -231,7 +231,7 @@
 
                     <p>
                         Customers are responsible for the documents
-                        and content they upload to PrintHomeDelivery.
+                        and content they upload to {{ $store_data['name'] }}.
                     </p>
 
                     <ul>
@@ -248,7 +248,7 @@
                         </li>
 
                         <li>
-                            PrintHomeDelivery does not take responsibility
+                            {{ $store_data['name'] }} does not take responsibility
                             for errors contained in customer-provided
                             documents.
                         </li>
@@ -283,7 +283,7 @@
                     </p>
 
                     <p>
-                        PrintHomeDelivery does not claim ownership of
+                        {{ $store_data['name'] }} does not claim ownership of
                         customer-uploaded documents and does not
                         authorize customers to reproduce material that
                         they do not have permission to reproduce.
@@ -373,7 +373,7 @@
                     </p>
 
                     <p>
-                        PrintHomeDelivery does not directly store
+                        {{ $store_data['name'] }} does not directly store
                         sensitive card, banking or payment credentials
                         submitted through the payment gateway.
                     </p>
@@ -392,7 +392,7 @@
                     </h2>
 
                     <p>
-                        We aim to keep PrintHomeDelivery available and
+                        We aim to keep {{ $store_data['name'] }} available and
                         functioning properly. However, temporary
                         interruptions may occur because of maintenance,
                         technical problems, hosting issues, network
@@ -418,7 +418,7 @@
                     </h2>
 
                     <p>
-                        PrintHomeDelivery may use third-party services
+                        {{ $store_data['name'] }} may use third-party services
                         such as payment gateways, courier providers,
                         hosting services and other technology providers
                         to operate and deliver our services.
@@ -446,7 +446,7 @@
 
                     <p>
                         To the extent permitted by applicable law,
-                        PrintHomeDelivery shall not be responsible for
+                        {{ $store_data['name'] }} shall not be responsible for
                         delays, interruptions, inaccuracies or losses
                         arising from circumstances outside our
                         reasonable control.
@@ -521,8 +521,8 @@
                             Email:
                         </strong>
 
-                        <a href="mailto:info@printhomedelivery.com">
-                            info@printhomedelivery.com
+                        <a href="mailto:info@{{ $store_data['name'] }}.com">
+                            info@{{ $store_data['name'] }}.com
                         </a>
 
                     </p>

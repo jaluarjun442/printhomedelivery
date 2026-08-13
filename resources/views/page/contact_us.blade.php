@@ -287,8 +287,8 @@
 
                                 <p>
 
-                                    <a href="mailto:info@printhomedelivery.com">
-                                        info@printhomedelivery.com
+                                    <a href="mailto:info@offerlity.shop">
+                                        {{ $store_data['email'] }}
                                     </a>
 
                                 </p>
