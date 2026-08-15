@@ -15,6 +15,7 @@
         "laravel/framework": "^8.0",
         "laravel/tinker": "^2.0",
         "laravel/ui": "^2.3",
+        "league/flysystem-aws-s3-v3": "1.0.30",
         "tecnickcom/tc-lib-pdf": "^8.68",
         "yajra/laravel-datatables-oracle": "*"
     },

@@ -33,6 +33,10 @@ Route::get('/calculator', [FrontController::class, 'calculator'])->name('calcula
 Route::post('/calculator/calculate', [FrontController::class, 'calculateCalculatorPrice'])
     ->name('calculator.calculate');
 
+
+Route::post('/upload/r2-url', [UploadController::class, 'getR2UploadUrl'])->name('upload.r2.url');
+Route::post('/upload/r2-complete', [UploadController::class, 'completeR2Upload'])->name('upload.r2.complete');
+
 Route::get('/upload', [UploadController::class, 'upload'])->name('upload');
 Route::get('/upload/verification-status', [UploadController::class, 'status'])->name('upload.status');
 Route::post('/upload/send-otp', [UploadController::class, 'sendOtp'])->name('upload.sendOtp');

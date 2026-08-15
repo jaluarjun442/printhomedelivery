@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Hash;
 use App\Models\PrintDocument;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Aws\S3\S3Client;
 
 
 class UploadController extends Controller
@@ -200,6 +201,368 @@ class UploadController extends Controller
     /**
      * Upload documents for the verified mobile number.
      */
+    /**
+     * Generate a temporary Cloudflare R2 upload URL.
+     */
+    public function getR2UploadUrl(Request $request)
+    {
+        $mobile = $request->cookie('loggedin_number');
+
+        if (!$mobile) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Mobile verification required.'
+            ], 401);
+        }
+
+        $request->validate([
+            'filename' => 'required|string|max:255',
+            'mime_type' => 'required|string|max:150',
+        ]);
+
+        $originalName = $request->input('filename');
+        $mimeType = $request->input('mime_type');
+
+        $extension = strtolower(
+            pathinfo($originalName, PATHINFO_EXTENSION)
+        );
+
+        $allowedExtensions = [
+            'pdf',
+            'jpg',
+            'jpeg',
+            'png',
+            'gif',
+            'webp'
+        ];
+
+        if (!in_array($extension, $allowedExtensions, true)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'This file type is not supported.'
+            ], 422);
+        }
+
+        $nameWithoutExtension = pathinfo(
+            $originalName,
+            PATHINFO_FILENAME
+        );
+
+        $safeName = preg_replace(
+            '/[^A-Za-z0-9._-]+/',
+            '_',
+            $nameWithoutExtension
+        );
+
+        $safeName = trim($safeName, '._-');
+
+        if ($safeName === '') {
+            $safeName = 'document';
+        }
+
+        do {
+            $filename =
+                $safeName .
+                '_' .
+                random_int(1000, 9999) .
+                '_' .
+                substr(bin2hex(random_bytes(4)), 0, 8) .
+                '.' .
+                $extension;
+        } while (Storage::disk('r2')->exists($filename));
+
+        $client = new S3Client([
+            'version' => 'latest',
+            'region' => 'auto',
+            'endpoint' => env('R2_ENDPOINT'),
+            'credentials' => [
+                'key' => env('R2_ACCESS_KEY_ID'),
+                'secret' => env('R2_SECRET_ACCESS_KEY'),
+            ],
+        ]);
+
+        $command = $client->getCommand('PutObject', [
+            'Bucket' => env('R2_BUCKET'),
+            'Key' => $filename,
+            'ContentType' => $mimeType,
+        ]);
+
+        $presignedRequest =
+            $client->createPresignedRequest(
+                $command,
+                '+15 minutes'
+            );
+
+        $uploadUrl =
+            (string) $presignedRequest->getUri();
+
+        $publicUrl =
+            rtrim(env('R2_PUBLIC_URL'), '/') .
+            '/' .
+            $filename;
+
+        return response()->json([
+            'success' => true,
+            'filename' => $filename,
+            'upload_url' => $uploadUrl,
+            'public_url' => $publicUrl,
+        ]);
+    }
+
+
+    /**
+     * Confirm R2 upload, calculate pages and save print_documents.
+     */
+    public function completeR2Upload(Request $request)
+    {
+        $mobile = $request->cookie('loggedin_number');
+
+        if (!$mobile) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Mobile verification required.'
+            ], 401);
+        }
+
+        $request->validate([
+            'filename' => 'required|string|max:255',
+            'original_name' => 'required|string|max:255',
+            'mime_type' => 'required|string|max:150',
+        ]);
+
+        $filename = $request->input('filename');
+        $originalName = $request->input('original_name');
+        $mimeType = $request->input('mime_type');
+
+        /*
+         * Browser-calculated PDF page count.
+         * This prevents Laravel from downloading the complete R2 PDF again.
+         */
+        $clientPages = $request->input('pages');
+
+        if (
+            strpos($filename, '/') !== false ||
+            strpos($filename, '\\') !== false ||
+            strpos($filename, '..') !== false
+        ) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Invalid file path.'
+            ], 422);
+        }
+
+        $publicUrl =
+            rtrim(env('R2_PUBLIC_URL'), '/') .
+            '/' .
+            $filename;
+
+        /*
+         * If the completion request is repeated, do not create
+         * another print_documents row.
+         */
+        $existing = PrintDocument::where(
+            'mobile',
+            $mobile
+        )
+            ->where(
+                'stored_path',
+                $publicUrl
+            )
+            ->first();
+
+        if ($existing) {
+
+            $currentIds = session(
+                'upload_selected_document_ids',
+                []
+            );
+
+            $currentIds[] = (int) $existing->id;
+
+            session([
+                'upload_selected_document_ids' =>
+                array_values(
+                    array_unique($currentIds)
+                )
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'duplicate' => true,
+                'document' => [
+                    'id' => $existing->id,
+                    'name' => $existing->original_name,
+                    'size' => $existing->file_size,
+                    'pages' => $existing->pages,
+                    'status' => $existing->status,
+                    'url' => $existing->stored_path
+                ]
+            ]);
+        }
+
+        if (!Storage::disk('r2')->exists($filename)) {
+            return response()->json([
+                'success' => false,
+                'message' =>
+                'File was not uploaded to Cloudflare R2.'
+            ], 422);
+        }
+
+        $fileSize =
+            Storage::disk('r2')->getSize($filename);
+
+        /*
+         * FAST PATH:
+         *
+         * The browser calculates PDF page count locally using PDF.js
+         * while the file is being uploaded to R2.
+         *
+         * So Laravel does NOT download the 100MB PDF from R2 again.
+         */
+        $pages = max(1, (int) $clientPages);
+
+        /*
+         * Safe fallback for old clients that do not send pages.
+         */
+        if (!$clientPages) {
+
+            $pages = 1;
+
+            if (
+                strtolower(
+                    pathinfo(
+                        $filename,
+                        PATHINFO_EXTENSION
+                    )
+                ) === 'pdf'
+            ) {
+
+                /*
+                 * Stream the R2 object to disk instead of using get().
+                 * This avoids loading the whole PDF into PHP memory.
+                 */
+                $temporaryPath =
+                    storage_path(
+                        'app/r2_' .
+                        uniqid('', true) .
+                        '.pdf'
+                    );
+
+                $readStream = null;
+                $writeStream = null;
+
+                try {
+
+                    $readStream =
+                        Storage::disk('r2')
+                            ->readStream($filename);
+
+                    if (!$readStream) {
+                        throw new \RuntimeException(
+                            'Unable to open R2 file stream.'
+                        );
+                    }
+
+                    $writeStream =
+                        fopen(
+                            $temporaryPath,
+                            'wb'
+                        );
+
+                    if (!$writeStream) {
+                        throw new \RuntimeException(
+                            'Unable to create temporary PDF file.'
+                        );
+                    }
+
+                    stream_copy_to_stream(
+                        $readStream,
+                        $writeStream
+                    );
+
+                    fclose($writeStream);
+                    $writeStream = null;
+
+                    fclose($readStream);
+                    $readStream = null;
+
+                    $pages =
+                        $this->getPdfPageCount(
+                            $temporaryPath
+                        );
+
+                } catch (\Throwable $e) {
+
+                    if (
+                        is_resource($writeStream)
+                    ) {
+                        fclose($writeStream);
+                    }
+
+                    if (
+                        is_resource($readStream)
+                    ) {
+                        fclose($readStream);
+                    }
+
+                    \Log::error(
+                        'R2 PDF page count fallback failed',
+                        [
+                            'filename' => $filename,
+                            'error' => $e->getMessage()
+                        ]
+                    );
+
+                    $pages = 1;
+
+                } finally {
+
+                    if (file_exists($temporaryPath)) {
+                        @unlink($temporaryPath);
+                    }
+                }
+            }
+        }
+
+        $document = PrintDocument::create([
+            'mobile' => $mobile,
+            'original_name' => $originalName,
+            'stored_path' => $publicUrl,
+            'mime_type' => $mimeType,
+            'file_size' => $fileSize,
+            'pages' => $pages,
+            'status' => 'uploaded'
+        ]);
+
+        $currentIds = session(
+            'upload_selected_document_ids',
+            []
+        );
+
+        $currentIds[] = (int) $document->id;
+
+        session([
+            'upload_selected_document_ids' =>
+            array_values(
+                array_unique($currentIds)
+            )
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'duplicate' => false,
+            'document' => [
+                'id' => $document->id,
+                'name' => $document->original_name,
+                'size' => $document->file_size,
+                'pages' => $document->pages,
+                'status' => $document->status,
+                'url' => $publicUrl
+            ]
+        ]);
+    }
+
+
     public function upload_documents(Request $request)
     {
 
