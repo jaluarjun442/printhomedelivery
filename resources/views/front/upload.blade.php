@@ -1204,6 +1204,21 @@
 
                     previousFiles = response.documents || [];
 
+                    /*
+                    =====================================================
+                    AUTO-SELECT FILES ALREADY IN THE CURRENT ORDER
+
+                    If a file was just uploaded in this order, its database
+                    ID is stored in selectedFiles.uploaded_document_id.
+                    If it was selected from Previous Uploaded Files, its
+                    ID is stored in selectedFiles.previous_id.
+
+                    When the Previous Files popup opens again, mark those
+                    matching files as selected automatically.
+                    =====================================================
+                    */
+                    syncPreviousSelectionWithCurrentFiles();
+
                     $('#previousFilesCount').text(
                         previousFiles.length
                     );
@@ -1251,6 +1266,52 @@
             });
 
         }
+
+        function syncPreviousSelectionWithCurrentFiles() {
+
+            /*
+            Do not blindly clear the existing selection here.
+            Keep any manual selections the user has already made, and add
+            files that are already part of the current order.
+            */
+            $.each(previousFiles, function(index, previousFile) {
+
+                const previousId = parseInt(
+                    previousFile.id,
+                    10
+                );
+
+                if (!previousId) {
+                    return;
+                }
+
+                const alreadyInCurrentOrder = selectedFiles.some(function(file) {
+
+                    const uploadedId = parseInt(
+                        file.uploaded_document_id,
+                        10
+                    );
+
+                    const previousIdFromFile = parseInt(
+                        file.previous_id,
+                        10
+                    );
+
+                    return (
+                        uploadedId === previousId ||
+                        previousIdFromFile === previousId
+                    );
+
+                });
+
+                if (alreadyInCurrentOrder) {
+                    selectedPreviousFileIds[previousId] = true;
+                }
+
+            });
+
+        }
+
 
         function renderPreviousFiles() {
 
@@ -1450,10 +1511,10 @@
 
             if (duplicateCount > 0) {
 
-                showError(
-                    duplicateCount +
-                    ' file(s) were already added and skipped.'
-                );
+                // showError(
+                //     duplicateCount +
+                //     ' file(s) were already added and skipped.'
+                // );
 
             }
 
