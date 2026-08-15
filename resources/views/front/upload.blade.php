@@ -2285,22 +2285,74 @@
                         return;
                     }
 
+                    /*
+                     * TEST / AUTO-VERIFY MODE
+                     *
+                     * User should never see the OTP input.
+                     * As soon as Send OTP succeeds, submit 000000
+                     * directly to the existing VERIFY_OTP_URL.
+                     */
                     verifiedMobile = mobile;
 
-                    $('#sentMobileNumber').text('+91 ' + mobile);
+                    $.ajax({
+                        url: VERIFY_OTP_URL,
+                        type: 'POST',
+                        data: {
+                            mobile: mobile,
+                            otp: '000000',
+                            _token: $('meta[name="csrf-token"]').attr('content')
+                        },
+                        success: function(verifyResponse) {
 
-                    // showOtpStep();
-                    startOtpTimer();
+                            if (!verifyResponse || !verifyResponse.success) {
+                                showMobileError(
+                                    (verifyResponse && verifyResponse.message) ||
+                                    'OTP verification failed.'
+                                );
+                                $button.prop('disabled', false).text('Continue');
+                                return;
+                            }
 
-                    // Development/test mode:
-                    // Keep the original Send OTP API call above intact.
-                    // Once the OTP step opens, fill 000000 and submit
-                    // through the existing verification flow.
-                    $('#verificationOtp').val('000000');
+                            clearError();
 
-                    setTimeout(function() {
-                        $('#verifyOtpButton').trigger('click');
-                    }, 150);
+                            verifiedMobile =
+                                verifyResponse.mobile || mobile;
+
+                            sessionVerified = true;
+
+                            stopOtpTimer();
+
+                            /*
+                             * Close verification modal immediately.
+                             * OTP input / OTP screen is never shown.
+                             */
+                            closeVerificationModal();
+
+                            /*
+                             * Give browser a moment to receive/store
+                             * the verification response cookie.
+                             */
+                            setTimeout(function() {
+                                startDocumentUpload();
+                            }, 150);
+                        },
+                        error: function(xhr) {
+
+                            let message =
+                                'OTP verification failed.';
+
+                            if (
+                                xhr.responseJSON &&
+                                xhr.responseJSON.message
+                            ) {
+                                message =
+                                    xhr.responseJSON.message;
+                            }
+
+                            showMobileError(message);
+                            $button.prop('disabled', false).text('Continue');
+                        }
+                    });
                 },
                 error: function(xhr) {
 
