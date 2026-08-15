@@ -632,7 +632,7 @@
                         <tr>
 
                             <td class="info-label">
-                                Razorpay Order ID
+                                Bank Transaction ID
                             </td>
 
                             <td>
@@ -657,7 +657,7 @@
                         <tr>
 
                             <td class="info-label">
-                                Razorpay Payment ID
+                                Payu Payment ID
                             </td>
 
                             <td>

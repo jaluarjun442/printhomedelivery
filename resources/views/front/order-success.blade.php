@@ -210,6 +210,19 @@
     =====================================================
     */
 
+    .payu-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 5px 9px;
+        background: #eaf0ff;
+        border: 1px solid #c9d7ff;
+        color: #2856db;
+        font-size: 10px;
+        font-weight: 700;
+    }
+
+
     .cod-badge {
         display: inline-flex;
 
@@ -525,7 +538,7 @@
 
 
 
-                        {{-- PAYMENT --}}
+                        {{-- PAYMENT METHOD --}}
 
                         <div class="order-detail-row">
 
@@ -535,18 +548,77 @@
 
                             <span class="order-detail-value">
 
-                                <span class="cod-badge">
+                                @if(
+                                strtolower(
+                                (string) $order->payment_method
+                                ) === 'payu'
+                                )
 
-                                    <i class="bi bi-cash-coin"></i>
-
-                                    Cash on Delivery
-
+                                <span class="payu-badge">
+                                    <i class="bi bi-credit-card"></i>
+                                    PayU
                                 </span>
+
+                                @else
+
+                                <span class="cod-badge">
+                                    <i class="bi bi-cash-coin"></i>
+                                    Cash on Delivery
+                                </span>
+
+                                @endif
 
                             </span>
 
                         </div>
 
+
+                        {{-- PAYU TRANSACTION ID --}}
+
+                        @if(
+                        strtolower(
+                        (string) $order->payment_method
+                        ) === 'payu'
+                        && !empty($order->razorpay_payment_id)
+                        )
+
+                        <div class="order-detail-row">
+
+                            <span class="order-detail-label">
+                                PayU Transaction ID
+                            </span>
+
+                            <span
+                                class="order-detail-value"
+                                style="word-break:break-all;">
+                                {{ $order->razorpay_payment_id }}
+                            </span>
+
+                        </div>
+
+                        @endif
+                        @if(
+                        strtolower(
+                        (string) $order->payment_method
+                        ) === 'payu'
+                        && !empty($order->razorpay_order_id)
+                        )
+
+                        <div class="order-detail-row">
+
+                            <span class="order-detail-label">
+                                Bank Transaction ID
+                            </span>
+
+                            <span
+                                class="order-detail-value"
+                                style="word-break:break-all;">
+                                {{ $order->razorpay_order_id }}
+                            </span>
+
+                        </div>
+
+                        @endif
 
 
                         {{-- PAYMENT STATUS --}}
@@ -559,7 +631,34 @@
 
                             <span class="order-detail-value">
 
+                                @php
+                                $paymentStatus =
+                                strtolower(
+                                (string) $order->payment_status
+                                );
+                                @endphp
+
+                                @if($paymentStatus === 'paid')
+
+                                <span class="payu-badge">
+                                    <i class="bi bi-check-circle"></i>
+                                    Paid
+                                </span>
+
+                                @elseif($paymentStatus === 'failed')
+
+                                <span
+                                    class="payu-badge"
+                                    style="color:#dc3545;border-color:#f1b0b7;background:#fff5f5;">
+                                    <i class="bi bi-x-circle"></i>
+                                    Failed
+                                </span>
+
+                                @else
+
                                 Pending
+
+                                @endif
 
                             </span>
 

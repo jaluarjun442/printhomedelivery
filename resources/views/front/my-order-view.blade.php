@@ -990,7 +990,7 @@ $canCancel = in_array($status, $cancelableStatuses);
                             <div class="detail-item">
 
                                 <span class="detail-label">
-                                    Razorpay Order ID
+                                    Bank Transaction ID
                                 </span>
 
                                 <span class="detail-value">
@@ -1003,7 +1003,7 @@ $canCancel = in_array($status, $cancelableStatuses);
                             <div class="detail-item">
 
                                 <span class="detail-label">
-                                    Razorpay Payment ID
+                                    Payu Payment ID
                                 </span>
 
                                 <span class="detail-value">
@@ -1013,7 +1013,7 @@ $canCancel = in_array($status, $cancelableStatuses);
                             </div>
 
 
-                            <div class="detail-item full-width">
+                            <!-- <div class="detail-item full-width">
 
                                 <span class="detail-label">
                                     Razorpay Signature
@@ -1023,7 +1023,7 @@ $canCancel = in_array($status, $cancelableStatuses);
                                     {{ $order->razorpay_signature ?: '-' }}
                                 </span>
 
-                            </div>
+                            </div> -->
 
 
                         </div>

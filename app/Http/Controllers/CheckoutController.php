@@ -1909,32 +1909,93 @@ class CheckoutController extends Controller
             ))
         );
 
+        /*
+        PayU Verify Payment returns the paid amount as "amt".
+        Keep transaction_amount/net_amount_debit as safe fallbacks.
+        */
         $verifiedAmount = number_format(
             (float) (
-                $transaction['amount']
+                $transaction['amt']
+                ?? $transaction['transaction_amount']
+                ?? $transaction['net_amount_debit']
                 ?? 0
             ),
             2,
             '.',
             ''
         );
-        \Log::info('PAYU VERIFY RESPONSE', [
-            'response' => $verifyData,
-            'txnid' => $validated['txnid'],
-        ]);
+
         if (
             $verifiedStatus !== 'success' ||
             $verifiedAmount !== $orderAmount
         ) {
-            \Log::info('PAYU VERIFY RESPONSE', [
-                'response' => $verifyData,
-                'txnid' => $validated['txnid'],
+
+
+            $order->update([
+                'payment_status' => 'failed',
+                'status' => 'payment_failed',
             ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'PayU payment could not be confirmed.'
+            ], 422);
         }
 
+        /*
+        PayU payment ID (mihpayid) is stored in the existing
+        razorpay_payment_id column so no database migration is needed.
+        The UI should treat this column as the generic Transaction ID.
+        */
+        $transactionId =
+            $transaction['mihpayid']
+            ?? $validated['mihpayid']
+            ?? null;
+
+        if (!$transactionId) {
+            return response()->json([
+                'success' => false,
+                'message' => 'PayU transaction ID was not received.'
+            ], 422);
+        }
+
+        /*
+        =====================================================
+        SAVE PAYU PAYMENT DETAILS
+        =====================================================
+
+        Existing Razorpay columns are intentionally reused so
+        no database migration is required.
+
+        DB mapping:
+        razorpay_payment_id -> PayU Transaction ID (mihpayid)
+        razorpay_order_id   -> Bank Reference ID (bank_ref_num)
+        razorpay_signature  -> PayU response hash
+        */
+
+        $bankReferenceId =
+            $transaction['bank_ref_num']
+            ?? null;
+
         $order->update([
-            'payment_status' => 'paid',
-            'status' => 'placed',
+            'razorpay_payment_id' =>
+            (string) $transactionId,
+
+            'razorpay_order_id' =>
+            $bankReferenceId !== null
+                ? (string) $bankReferenceId
+                : null,
+
+            'razorpay_signature' =>
+            (string) (
+                $validated['hash'] ?? ''
+            ),
+
+            'payment_status' =>
+            'paid',
+
+            'status' =>
+            'placed',
         ]);
 
         session()->forget([

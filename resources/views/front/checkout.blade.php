@@ -888,7 +888,7 @@ MOBILE RESPONSIVE
 
                             {{-- COD --}}
 
-                            <label
+                            <!-- <label
                                 class="payment-option"
                                 id="codOption">
 
@@ -913,7 +913,7 @@ MOBILE RESPONSIVE
 
                                 </div>
 
-                            </label>
+                            </label> -->
 
 
                             {{-- PAYU --}}
