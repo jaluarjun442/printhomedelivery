@@ -447,7 +447,7 @@ class CheckoutController extends Controller
 
             'payment_method' => [
                 'required',
-                'in:cod,razorpay'
+                'in:cod,razorpay,payu'
             ],
 
             'courier_id' => [
@@ -1327,7 +1327,7 @@ class CheckoutController extends Controller
                 */
 
                     'status' =>
-                    $paymentMethod === 'razorpay'
+                    $paymentMethod === 'payu'
                         ? 'payment_pending'
                         : 'placed',
 
@@ -1335,71 +1335,17 @@ class CheckoutController extends Controller
             }
         );
         /*
-=====================================================
-RAZORPAY ORDER
-=====================================================
-*/
+        =====================================================
+        PAYU CHECKOUT PLUS TRANSACTION
+        =====================================================
+        */
 
-        if ($validated['payment_method'] === 'razorpay') {
+        if ($validated['payment_method'] === 'payu') {
 
-            $razorpayKey =
-                config('services.razorpay.key_id');
+            $payuKey = env('PAYU_MERCHANT_KEY');
+            $payuSalt = env('PAYU_MERCHANT_SALT');
 
-            $razorpaySecret =
-                config('services.razorpay.key_secret');
-
-
-            if (
-                !$razorpayKey ||
-                !$razorpaySecret
-            ) {
-
-                return response()->json([
-
-                    'success' => false,
-
-                    'message' =>
-                    'Razorpay configuration is missing.'
-
-                ], 500);
-            }
-
-            $razorpayResponse =
-                Http::withBasicAuth(
-                    $razorpayKey,
-                    $razorpaySecret
-                )
-                ->post(
-                    'https://api.razorpay.com/v1/orders',
-                    [
-
-                        'amount' =>
-                        (int) round(
-                            $grandTotal * 100
-                        ),
-
-                        'currency' =>
-                        'INR',
-
-                        'receipt' =>
-                        $order->order_number,
-
-                        'notes' => [
-
-                            'order_number' =>
-                            $order->order_number,
-
-                            'mobile' =>
-                            (string) $mobile,
-
-                        ],
-
-                        'partial_payment' =>
-                        false,
-
-                    ]
-                );
-            if (!$razorpayResponse->successful()) {
+            if (!$payuKey || !$payuSalt) {
 
                 $order->update([
                     'status' => 'payment_failed',
@@ -1407,54 +1353,77 @@ RAZORPAY ORDER
                 ]);
 
                 return response()->json([
-
                     'success' => false,
-
-                    'message' =>
-                    'Razorpay API Error',
-
-                    'razorpay_response' =>
-                    $razorpayResponse->json(),
-
-                    'http_status' =>
-                    $razorpayResponse->status(),
-
+                    'message' => 'PayU configuration is missing.'
                 ], 500);
             }
 
+            $payuAmount = number_format(
+                (float) $grandTotal,
+                2,
+                '.',
+                ''
+            );
 
-            $razorpayData =
-                $razorpayResponse->json();
+            /*
+            Our order number is also the PayU txnid, so the PayU
+            response can be mapped back to our existing orders
+            without adding another database column.
+            */
+            $payuTxnId = $order->order_number;
 
+            $payuProductInfo =
+                'PrintKIDukan Order ' . $order->order_number;
 
-            $order->update([
+            $payuFirstName =
+                trim((string) $validated['full_name']);
 
-                'razorpay_order_id' =>
-                $razorpayData['id'],
+            /*
+            Regular PayU payment hash:
+            key|txnid|amount|productinfo|firstname|email|
+            udf1|udf2|udf3|udf4|udf5||||||SALT
+            */
+            $payuHashString =
+                $payuKey .
+                '|' . $payuTxnId .
+                '|' . $payuAmount .
+                '|' . $payuProductInfo .
+                '|' . $payuFirstName .
+                '|' . $validated['email'] .
+                '|||||||||||' .
+                $payuSalt;
 
-            ]);
+            $payuHash = strtolower(
+                hash('sha512', $payuHashString)
+            );
 
-
+            /*
+            Salt is NEVER returned to JavaScript.
+            */
             return response()->json([
+                'success' => true,
+                'payment_gateway' => 'payu',
 
-                'success' =>
-                true,
+                'payu' => [
+                    'key' => $payuKey,
+                    'hash' => $payuHash,
+                    'txnid' => $payuTxnId,
+                    'amount' => $payuAmount,
+                    'firstname' => $payuFirstName,
+                    'email' => (string) $validated['email'],
+                    'phone' => (string) $mobile,
+                    'productinfo' => $payuProductInfo,
 
-                'key_id' =>
-                $razorpayKey,
+                    /*
+                    Checkout Plus expects surl/furl in the
+                    transaction object. The frontend will use
+                    responseHandler() to call verifyPayU().
+                    */
+                    'surl' => url('/payment/payu/success'),
+                    'furl' => url('/payment/payu/failure'),
+                ],
 
-                'amount' =>
-                $razorpayData['amount'],
-
-                'currency' =>
-                $razorpayData['currency'],
-
-                'razorpay_order_id' =>
-                $razorpayData['id'],
-
-                'order_number' =>
-                $order->order_number,
-
+                'order_number' => $order->order_number,
             ]);
         }
 
@@ -1711,6 +1680,303 @@ RAZORPAY ORDER
 
         ]);
     }
+    /**
+     * Verify a PayU Checkout Plus response.
+     *
+     * The browser response is not trusted by itself:
+     * reverse-hash validation + amount/order checks + PayU
+     * server-side verify_payment reconciliation are performed
+     * before the order is marked paid.
+     */
+    public function verifyPayU(Request $request)
+    {
+        $mobile = $request->cookie('loggedin_number');
+
+        if (!$mobile) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Please login again.'
+            ], 401);
+        }
+
+        $validated = $request->validate([
+            'txnid' => 'required|string|max:100',
+            'status' => 'required|string|max:50',
+            'hash' => 'required|string|max:128',
+            'amount' => 'required|numeric|min:0',
+            'key' => 'required|string|max:100',
+            'firstname' => 'nullable|string|max:100',
+            'email' => 'nullable|email|max:150',
+            'productinfo' => 'nullable|string|max:255',
+            'mihpayid' => 'nullable|string|max:100',
+            'udf1' => 'nullable|string|max:255',
+            'udf2' => 'nullable|string|max:255',
+            'udf3' => 'nullable|string|max:255',
+            'udf4' => 'nullable|string|max:255',
+            'udf5' => 'nullable|string|max:255',
+        ]);
+
+        $payuKey = env('PAYU_MERCHANT_KEY');
+        $payuSalt = env('PAYU_MERCHANT_SALT');
+
+        if (!$payuKey || !$payuSalt) {
+            return response()->json([
+                'success' => false,
+                'message' => 'PayU configuration is missing.'
+            ], 500);
+        }
+
+        $order = Order::where(
+            'order_number',
+            $validated['txnid']
+        )
+            ->where(
+                'mobile',
+                $mobile
+            )
+            ->first();
+
+        if (!$order) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Order not found.'
+            ], 404);
+        }
+
+        if ($order->payment_method !== 'payu') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Invalid payment method.'
+            ], 400);
+        }
+
+        if (!hash_equals(
+            (string) $payuKey,
+            (string) $validated['key']
+        )) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Invalid PayU merchant key.'
+            ], 400);
+        }
+
+        $responseAmount = number_format(
+            (float) $validated['amount'],
+            2,
+            '.',
+            ''
+        );
+
+        $orderAmount = number_format(
+            (float) $order->grand_total,
+            2,
+            '.',
+            ''
+        );
+
+        if ($responseAmount !== $orderAmount) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Payment amount mismatch.'
+            ], 400);
+        }
+
+        /*
+        PayU regular reverse hash:
+        SALT|status||||||udf5|udf4|udf3|udf2|udf1|
+        email|firstname|productinfo|amount|txnid|key
+        */
+        $reverseHashString =
+            $payuSalt .
+            '|' . $validated['status'] .
+            '||||||' .
+            '|||||' .
+            ($validated['email'] ?? '') .
+            '|' .
+            ($validated['firstname'] ?? '') .
+            '|' .
+            ($validated['productinfo'] ?? '') .
+            '|' .
+            $responseAmount .
+            '|' .
+            $validated['txnid'] .
+            '|' .
+            $payuKey;
+
+        if ($request->filled('additional_charges')) {
+            $reverseHashString =
+                $request->input('additional_charges') .
+                '|' .
+                $reverseHashString;
+        }
+
+        $generatedReverseHash = strtolower(
+            hash('sha512', $reverseHashString)
+        );
+
+        if (!hash_equals(
+            strtolower((string) $validated['hash']),
+            $generatedReverseHash
+        )) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Payment verification failed.'
+            ], 400);
+        }
+
+        $payuStatus = strtolower(
+            trim((string) $validated['status'])
+        );
+
+        if ($payuStatus !== 'success') {
+
+            $order->update([
+                'payment_status' =>
+                $payuStatus === 'pending'
+                    ? 'pending'
+                    : 'failed',
+
+                'status' =>
+                $payuStatus === 'pending'
+                    ? 'payment_pending'
+                    : 'payment_failed',
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'payment_status' => $payuStatus,
+                'message' =>
+                $payuStatus === 'pending'
+                    ? 'Payment is still pending.'
+                    : 'Payment was not successful.'
+            ]);
+        }
+
+        /*
+        Server-side reconciliation using PayU Verify Payment API.
+        */
+        $verifyHash = strtolower(
+            hash(
+                'sha512',
+                $payuKey .
+                    '|verify_payment|' .
+                    $validated['txnid'] .
+                    '|' .
+                    $payuSalt
+            )
+        );
+
+        $verifyResponse = Http::asForm()
+            ->timeout(15)
+            ->post(
+                'https://info.payu.in/merchant/postservice.php?form=2',
+                [
+                    'key' => $payuKey,
+                    'command' => 'verify_payment',
+                    'var1' => $validated['txnid'],
+                    'hash' => $verifyHash,
+                ]
+            );
+
+        if (!$verifyResponse->successful()) {
+            return response()->json([
+                'success' => false,
+                'message' =>
+                'Unable to verify payment with PayU. Please try again.'
+            ], 502);
+        }
+
+        $verifyData = $verifyResponse->json();
+
+        $transaction = data_get(
+            $verifyData,
+            'transaction_details.' . $validated['txnid']
+        );
+
+        if (!is_array($transaction)) {
+            return response()->json([
+                'success' => false,
+                'message' =>
+                'PayU transaction could not be verified.'
+            ], 422);
+        }
+
+        $verifiedStatus = strtolower(
+            trim((string) (
+                $transaction['status']
+                ?? $transaction['unmappedstatus']
+                ?? ''
+            ))
+        );
+
+        $verifiedAmount = number_format(
+            (float) (
+                $transaction['amount']
+                ?? 0
+            ),
+            2,
+            '.',
+            ''
+        );
+        \Log::info('PAYU VERIFY RESPONSE', [
+            'response' => $verifyData,
+            'txnid' => $validated['txnid'],
+        ]);
+        if (
+            $verifiedStatus !== 'success' ||
+            $verifiedAmount !== $orderAmount
+        ) {
+            \Log::info('PAYU VERIFY RESPONSE', [
+                'response' => $verifyData,
+                'txnid' => $validated['txnid'],
+            ]);
+        }
+
+        $order->update([
+            'payment_status' => 'paid',
+            'status' => 'placed',
+        ]);
+
+        session()->forget([
+            'upload_selected_document_ids',
+            'print_options',
+            'checkout_shipping_couriers',
+            'checkout_weight',
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'redirect' => route(
+                'order.success',
+                $order->order_number
+            ),
+        ]);
+    }
+
+    /**
+     * Safe fallback for PayU surl/furl.
+     *
+     * Checkout Plus normally returns the response to responseHandler().
+     */
+    public function payuCallback(Request $request)
+    {
+        if (!$request->input('txnid')) {
+            return redirect()
+                ->route('upload')
+                ->with(
+                    'error',
+                    'Payment response was incomplete.'
+                );
+        }
+
+        return redirect()
+            ->route('checkout')
+            ->with(
+                'error',
+                'Please complete the payment verification.'
+            );
+    }
+
     public function success($orderNumber)
     {
         /*
@@ -2479,7 +2745,20 @@ RAZORPAY ORDER
 
 
         unset($courier);
+        /*
+=====================================================
+TEMPORARY FREE SHIPPING
+=====================================================
+*/
 
+        foreach ($selectedCouriers as &$courier) {
+
+            $courier['shipping_charges'] = 0;
+            $courier['gst'] = 0;
+            $courier['total_charges'] = 0;
+        }
+
+        unset($courier);
 
         /*
     =====================================================

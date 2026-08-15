@@ -635,7 +635,7 @@ MOBILE RESPONSIVE
                                         class="checkout-input"
                                         placeholder="Full Name">
 
-                                <div class="checkout-field-error" id="fullNameError">Please enter your full name.</div>
+                                    <div class="checkout-field-error" id="fullNameError">Please enter your full name.</div>
 
                                 </div>
 
@@ -682,7 +682,7 @@ MOBILE RESPONSIVE
                                         class="checkout-input"
                                         placeholder="Email Address">
 
-                                <div class="checkout-field-error" id="emailError">Please enter a valid email address.</div>
+                                    <div class="checkout-field-error" id="emailError">Please enter a valid email address.</div>
 
                                 </div>
 
@@ -749,7 +749,7 @@ MOBILE RESPONSIVE
                                         class="checkout-input"
                                         placeholder="City">
 
-                                <div class="checkout-field-error" id="cityError">Please enter your city.</div>
+                                    <div class="checkout-field-error" id="cityError">Please enter your city.</div>
 
                                 </div>
 
@@ -769,7 +769,7 @@ MOBILE RESPONSIVE
                                         class="checkout-input"
                                         placeholder="State">
 
-                                <div class="checkout-field-error" id="stateError">Please enter your state.</div>
+                                    <div class="checkout-field-error" id="stateError">Please enter your state.</div>
 
                                 </div>
 
@@ -889,14 +889,13 @@ MOBILE RESPONSIVE
                             {{-- COD --}}
 
                             <label
-                                class="payment-option selected"
+                                class="payment-option"
                                 id="codOption">
 
                                 <input
                                     type="radio"
                                     name="payment_method"
-                                    value="cod"
-                                    checked>
+                                    value="cod">
 
                                 <div>
 
@@ -917,9 +916,36 @@ MOBILE RESPONSIVE
                             </label>
 
 
-                            {{-- RAZORPAY --}}
+                            {{-- PAYU --}}
 
                             <label
+                                class="payment-option selected"
+                                id="payuOption">
+
+                                <input
+                                    type="radio"
+                                    name="payment_method"
+                                    value="payu"
+                                    checked>
+
+                                <div>
+
+                                    <div class="payment-option-name">
+                                        PayU
+                                    </div>
+
+                                    <div class="payment-option-info">
+                                        Pay securely using UPI, Card, Net Banking or Wallet.
+                                    </div>
+
+                                </div>
+
+                            </label>
+
+
+                            {{-- RAZORPAY --}}
+
+                            <!-- <label
                                 class="payment-option"
                                 id="razorpayOption">
 
@@ -946,7 +972,7 @@ MOBILE RESPONSIVE
 
                                 </div>
 
-                            </label>
+                            </label> -->
 
                         </div>
 
@@ -1060,7 +1086,7 @@ MOBILE RESPONSIVE
                             type="hidden"
 
 
-                            id="selectedCourierId" 
+                            id="selectedCourierId"
                             name="courier_id"
                             value="">
                         <button
@@ -1069,7 +1095,7 @@ MOBILE RESPONSIVE
                             class="proceed-payment-btn">
 
                             <span id="paymentButtonText">
-                                Place Order
+                                Pay Now
                             </span>
 
                             <i class="bi bi-arrow-right ms-1"></i>
@@ -1089,28 +1115,23 @@ MOBILE RESPONSIVE
 
 @endsection
 @section('custom_footer')
-<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+
 <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+<script src="https://jssdk.payu.in/bolt/bolt.min.js"></script>
+
 <script>
     $(document).ready(function() {
 
-
-        /*
-        =====================================================
-        SELECTED SHIPPING COURIER
-        =====================================================
-        */
-
         let selectedShippingCourier = null;
-
+        let shippingTimer = null;
 
         /*
         =====================================================
-        SHIPPING TIMER
+        PAYMENT PROCESS LOCK
         =====================================================
         */
 
-        let shippingTimer = null;
+        let paymentProcessing = false;
 
 
         /*
@@ -1123,16 +1144,37 @@ MOBILE RESPONSIVE
             'change',
             function() {
 
+                if (paymentProcessing) {
+                    return;
+                }
+
                 $('.payment-option')
                     .removeClass('selected');
-
 
                 $(this)
                     .closest('.payment-option')
                     .addClass('selected');
 
+                updatePaymentButtonText();
             }
         );
+
+
+        function updatePaymentButtonText() {
+
+            if (paymentProcessing) {
+                return;
+            }
+
+            let paymentMethod =
+                $('input[name="payment_method"]:checked').val();
+
+            $('#paymentButtonText').text(
+                paymentMethod === 'cod' ?
+                'Place Order' :
+                'Pay Now'
+            );
+        }
 
 
         /*
@@ -1145,29 +1187,21 @@ MOBILE RESPONSIVE
             'input',
             function() {
 
+                if (paymentProcessing) {
+                    return;
+                }
+
                 let pincode =
                     $(this)
                     .val()
                     .replace(/\D/g, '')
                     .substring(0, 6);
 
-
                 $(this).val(pincode);
 
+                if (pincode.length !== 6) {
 
-                /*
-                -------------------------------------------------
-                RESET SHIPPING
-                -------------------------------------------------
-                */
-
-                if (
-                    pincode.length !== 6
-                ) {
-
-                    selectedShippingCourier =
-                        null;
-
+                    selectedShippingCourier = null;
 
                     $('#shippingOptions')
                         .html(
@@ -1175,40 +1209,22 @@ MOBILE RESPONSIVE
                             'delivery charges.'
                         );
 
-
                     $('#deliveryCharge')
                         .text('₹0.00');
 
-
                     updateCheckoutTotal();
-
 
                     return;
                 }
 
+                clearTimeout(shippingTimer);
 
-                /*
-                -------------------------------------------------
-                DEBOUNCE
-                -------------------------------------------------
-                */
-
-                clearTimeout(
-                    shippingTimer
+                shippingTimer = setTimeout(
+                    function() {
+                        calculateShipping(pincode);
+                    },
+                    500
                 );
-
-
-                shippingTimer =
-                    setTimeout(
-                        function() {
-
-                            calculateShipping(
-                                pincode
-                            );
-
-                        },
-                        500
-                    );
 
             }
         );
@@ -1220,26 +1236,19 @@ MOBILE RESPONSIVE
         =====================================================
         */
 
-        function calculateShipping(
-            pincode
-        ) {
+        function calculateShipping(pincode) {
 
-            selectedShippingCourier =
-                null;
+            selectedShippingCourier = null;
 
-
-            $('#shippingOptions')
-                .html(`
+            $('#shippingOptions').html(`
 
                 <div class="shipping-loading">
 
                     <div>
-
                         <div
                             class="spinner-border spinner-border-sm text-primary"
                             role="status">
                         </div>
-
                     </div>
 
                     <div class="mt-2">
@@ -1250,7 +1259,6 @@ MOBILE RESPONSIVE
 
             `);
 
-
             $.ajax({
 
                 url: "{{ route('checkout.calculate.shipping') }}",
@@ -1260,79 +1268,45 @@ MOBILE RESPONSIVE
                 dataType: 'json',
 
                 data: {
-
                     delivery_pincode: pincode,
-
                     _token: "{{ csrf_token() }}"
-
                 },
 
-
                 success: function(response) {
-
-                    console.log(
-                        'Shipmozo Rate Response:',
-                        response
-                    );
-
-
-                    /*
-                    =========================================
-                    API FAILURE
-                    =========================================
-                    */
 
                     if (
                         !response ||
                         !response.success ||
-                        !Array.isArray(
-                            response.couriers
-                        ) ||
+                        !Array.isArray(response.couriers) ||
                         !response.couriers.length
                     ) {
 
-                        $('#shippingOptions')
-                            .html(`
+                        $('#shippingOptions').html(`
 
-                                <div class="text-danger small">
+                            <div class="text-danger small">
+                                ${
+                                    response &&
+                                    response.message
+                                        ? response.message
+                                        : 'No courier available for this pincode.'
+                                }
+                            </div>
 
-                                    ${
-                                        response &&
-                                        response.message
-                                        ?
-                                        response.message
-                                        :
-                                        'No courier available for this pincode.'
-                                    }
-
-                                </div>
-
-                            `);
-
+                        `);
 
                         $('#deliveryCharge')
                             .text('₹0.00');
 
-
                         updateCheckoutTotal();
-
 
                         return;
                     }
-
-
-                    /*
-                    =========================================
-                    RENDER COURIERS
-                    =========================================
-                    */
 
                     renderShippingOptions(
                         response.couriers
                     );
 
                 },
-
 
                 error: function(xhr) {
 
@@ -1341,36 +1315,25 @@ MOBILE RESPONSIVE
                         xhr.responseText
                     );
 
-
                     let message =
                         'Unable to calculate delivery charges.';
-
 
                     if (
                         xhr.responseJSON &&
                         xhr.responseJSON.message
                     ) {
-
                         message =
                             xhr.responseJSON.message;
                     }
 
-
-                    $('#shippingOptions')
-                        .html(`
-
-                            <div class="text-danger small">
-
-                                ${escapeHtml(message)}
-
-                            </div>
-
-                        `);
-
+                    $('#shippingOptions').html(`
+                        <div class="text-danger small">
+                            ${escapeHtml(message)}
+                        </div>
+                    `);
 
                     $('#deliveryCharge')
                         .text('₹0.00');
-
 
                     updateCheckoutTotal();
 
@@ -1387,23 +1350,9 @@ MOBILE RESPONSIVE
         =====================================================
         */
 
-        function renderShippingOptions(
-            couriers
-        ) {
-            /*
-             =====================================================
-             REMOVE DUPLICATE DISPLAY COURIER NAMES
-             =====================================================
-
-             Backendમાં courier/service અલગ હોઈ શકે,
-             પરંતુ frontendમાં same company name દેખાય છે.
-
-             Same displayed courier name માંથી CHEAPEST રાખીશું.
-             =====================================================
-             */
+        function renderShippingOptions(couriers) {
 
             const uniqueCouriers = new Map();
-
 
             couriers.forEach(function(courier) {
 
@@ -1419,43 +1368,17 @@ MOBILE RESPONSIVE
                     )
                     .trim();
 
-
-                /*
-                -----------------------------------------------
-                Normalize name
-
-                XpressBees
-                xpressbees
-                XPRESSBEES
-
-                બધું એક જ ગણાશે.
-                -----------------------------------------------
-                */
-
                 let key =
                     displayName
                     .toLowerCase()
-                    .replace(
-                        /\s+/g,
-                        ' '
-                    );
-
+                    .replace(/\s+/g, ' ');
 
                 let currentPrice =
                     parseFloat(
                         courier.total_charges || 0
                     );
 
-
-                /*
-                -----------------------------------------------
-                First courier
-                -----------------------------------------------
-                */
-
-                if (
-                    !uniqueCouriers.has(key)
-                ) {
+                if (!uniqueCouriers.has(key)) {
 
                     courier._displayName =
                         displayName;
@@ -1468,29 +1391,15 @@ MOBILE RESPONSIVE
                     return;
                 }
 
-
-                /*
-                -----------------------------------------------
-                Same company already exists.
-
-                Keep CHEAPEST one.
-                -----------------------------------------------
-                */
-
                 let existing =
                     uniqueCouriers.get(key);
-
 
                 let existingPrice =
                     parseFloat(
                         existing.total_charges || 0
                     );
 
-
-                if (
-                    currentPrice <
-                    existingPrice
-                ) {
+                if (currentPrice < existingPrice) {
 
                     courier._displayName =
                         displayName;
@@ -1503,261 +1412,173 @@ MOBILE RESPONSIVE
 
             });
 
-
-            /*
-            =====================================================
-            FINAL UNIQUE COURIER LIST
-            =====================================================
-            */
-
             couriers =
                 Array.from(
                     uniqueCouriers.values()
                 );
 
-
-            /*
-            =====================================================
-            NOW YOUR EXISTING RENDER CODE CONTINUES
-            =====================================================
-            */
-
             let html =
-                '<div class="shipping-options-list">';
+                '<div class="shipping-options-list>';
 
+            html = '<div class="shipping-options-list">';
 
             $.each(
                 couriers,
-                function(
-                    index,
-                    courier
-                ) {
-
-                    /*
-                    ---------------------------------------------
-                    FIRST OPTION SELECTED BY DEFAULT
-                    ---------------------------------------------
-                    */
+                function(index, courier) {
 
                     let selected =
                         index === 0;
 
-
                     if (selected) {
-
                         selectedShippingCourier =
                             courier;
-
                     }
-
-
-                    /*
-                    ---------------------------------------------
-                    BADGES
-                    ---------------------------------------------
-                    */
 
                     let badges = '';
 
-
-                    if (
-                        courier.is_cheapest
-                    ) {
+                    if (courier.is_cheapest) {
 
                         badges += `
-
-                        <span class="shipping-badge">
-                            CHEAPEST
-                        </span>
-
-                    `;
+                            <span class="shipping-badge">
+                                CHEAPEST
+                            </span>
+                        `;
                     }
 
-
-                    if (
-                        courier.is_fastest
-                    ) {
+                    if (courier.is_fastest) {
 
                         badges += `
-
-                        <span class="shipping-badge">
-                            FASTEST
-                        </span>
-
-                    `;
+                            <span class="shipping-badge">
+                                FASTEST
+                            </span>
+                        `;
                     }
-
-
-                    /*
-                    ---------------------------------------------
-                    DELIVERY TEXT
-                    ---------------------------------------------
-                    */
-
-                    let deliveryText =
-                        courier.estimated_delivery ||
-                        'Delivery estimate unavailable';
-
-
-                    /*
-                    ---------------------------------------------
-                    SELECTED CLASS
-                    ---------------------------------------------
-                    */
 
                     let selectedClass =
                         selected ?
                         'selected' :
                         '';
 
-
-                    /*
-                    ---------------------------------------------
-                    CARD
-                    ---------------------------------------------
-                    */
-
                     html += `
 
-                    <label
-                        class="shipping-option ${selectedClass}"
-                        data-courier-id="${escapeHtml(courier.courier_id)}">
+                        <label
+                            class="shipping-option ${selectedClass}"
+                            data-courier-id="${escapeHtml(courier.courier_id)}">
 
-                        <input
-                            type="radio"
-                            name="shipping_courier"
-                            class="shipping-option-radio"
-                            value="${escapeHtml(courier.courier_id)}"
-                            ${selected ? 'checked' : ''}>
+                            <input
+                                type="radio"
+                                name="shipping_courier"
+                                class="shipping-option-radio"
+                                value="${escapeHtml(courier.courier_id)}"
+                                ${selected ? 'checked' : ''}>
 
+                            <div class="shipping-option-main">
 
-                        <div class="shipping-option-main">
+                                <div class="shipping-option-header">
 
-                            <div class="shipping-option-header">
+                                    <span class="shipping-option-name">
 
-                                <span class="shipping-option-name">
-                                ${escapeHtml(
-                                    String(
-                                        courier.courier_name || 'Courier'
-                                    ).replace(
-                                        /\s+\d+(?:\.\d+)?\s*kg\s*$/i,
-                                        ''
-                                    ).trim()
+                                        ${escapeHtml(
+                                            String(
+                                                courier.courier_name ||
+                                                'Courier'
+                                            )
+                                            .replace(
+                                                /\s+\d+(?:\.\d+)?\s*kg\s*$/i,
+                                                ''
+                                            )
+                                            .trim()
+                                        )}
+
+                                    </span>
+
+                                    ${badges}
+
+                                </div>
+
+                                <div class="shipping-option-delivery">
+                                    ${escapeHtml(
+                                        courier.estimated_delivery ||
+                                        'Delivery estimate unavailable'
+                                    )}
+                                </div>
+
+                                <div class="shipping-option-delivery-sub">
+                                    Excludes Sundays
+                                </div>
+
+                            </div>
+
+                            <div class="shipping-option-price">
+
+                                ₹${formatMoney(
+                                    courier.total_charges
                                 )}
-                                </span>
 
-                                ${badges}
-
-                            </div>
-
-
-                            <div class="shipping-option-delivery">
-
-                                ${escapeHtml(
-                                    courier.estimated_delivery || 'Delivery estimate unavailable'
-                                )}
+                                <small>
+                                    including GST
+                                </small>
 
                             </div>
 
+                        </label>
 
-                            <div class="shipping-option-delivery-sub">
-                                Excludes Sundays
-                            </div>
-
-                        </div>
-
-
-                        <div class="shipping-option-price">
-
-                            ₹${formatMoney(courier.total_charges)}
-
-                            <small>
-                                including GST
-                            </small>
-
-                        </div>
-
-                    </label>
-
-                `;
+                    `;
 
                 }
             );
 
-
             html += `
 
-            <div class="shipping-note">
+                <div class="shipping-note">
 
-                <i class="bi bi-shield-check me-1"></i>
+                    <i class="bi bi-shield-check me-1"></i>
 
-                We pass courier charges as-is with no markup.
+                    We pass courier charges as-is with no markup.
 
-            </div>
+                </div>
 
-        `;
+            `;
 
-
-            html +=
-                '</div>';
-
+            html += '</div>';
 
             $('#shippingOptions')
                 .html(html);
 
-
-            /*
-            -----------------------------------------------------
-            APPLY DEFAULT FIRST COURIER
-            -----------------------------------------------------
-            */
-
-            if (
-                selectedShippingCourier
-            ) {
+            if (selectedShippingCourier) {
 
                 setSelectedShippingCourier(
                     selectedShippingCourier
                 );
-
             }
-
-
-            /*
-            -----------------------------------------------------
-            COURIER CLICK
-            -----------------------------------------------------
-            */
 
             $('.shipping-option').on(
                 'click',
                 function() {
 
+                    if (paymentProcessing) {
+                        return;
+                    }
+
                     let courierId =
                         String(
-                            $(this)
-                            .data('courier-id')
+                            $(this).data('courier-id')
                         );
-
 
                     let courier =
                         couriers.find(
                             function(item) {
 
                                 return String(
-                                        item.courier_id
-                                    ) ===
-                                    courierId;
+                                    item.courier_id
+                                ) === courierId;
 
                             }
                         );
 
-
                     if (!courier) {
-
                         return;
                     }
-
 
                     setSelectedShippingCourier(
                         courier
@@ -1775,49 +1596,28 @@ MOBILE RESPONSIVE
         =====================================================
         */
 
-        function setSelectedShippingCourier(
-            courier
-        ) {
+        function setSelectedShippingCourier(courier) {
 
             selectedShippingCourier =
                 courier;
-            $('#selectedCourierId').val(
-                courier.courier_id
-            );
 
-            /*
-            -------------------------------------------------
-            RADIO
-            -------------------------------------------------
-            */
-
-            $('input[name="shipping_courier"]')
-                .prop(
-                    'checked',
-                    false
+            $('#selectedCourierId')
+                .val(
+                    courier.courier_id
                 );
 
+            $('input[name="shipping_courier"]')
+                .prop('checked', false);
 
             $('input[name="shipping_courier"][value="' +
                     escapeSelectorValue(
                         courier.courier_id
                     ) +
                     '"]')
-                .prop(
-                    'checked',
-                    true
-                );
-
-
-            /*
-            -------------------------------------------------
-            CARD
-            -------------------------------------------------
-            */
+                .prop('checked', true);
 
             $('.shipping-option')
                 .removeClass('selected');
-
 
             $('.shipping-option[data-courier-id="' +
                     escapeHtml(
@@ -1826,44 +1626,14 @@ MOBILE RESPONSIVE
                     '"]')
                 .addClass('selected');
 
-
             /*
-            -------------------------------------------------
-            UPDATE DELIVERY CHARGE
-            -------------------------------------------------
+            TEMPORARY FREE SHIPPING
             */
 
             $('#deliveryCharge')
-                .text(
-                    '₹' +
-                    formatMoney(
-                        courier.total_charges
-                    )
-                );
-
-
-            /*
-            -------------------------------------------------
-            UPDATE GRAND TOTAL
-            -------------------------------------------------
-            */
+                .text('₹0.00');
 
             updateCheckoutTotal();
-
-
-            /*
-            -------------------------------------------------
-            DEBUG
-
-            Later payment/backend stepમાં આ જ object
-            use કરીશું.
-            -------------------------------------------------
-            */
-
-            console.log(
-                'Selected Courier:',
-                selectedShippingCourier
-            );
 
         }
 
@@ -1881,34 +1651,21 @@ MOBILE RESPONSIVE
                     "{{ $printSubtotal }}"
                 ) || 0;
 
-
             let handlingCharge =
                 parseFloat(
                     "{{ $handlingCharge }}"
                 ) || 0;
 
+            /*
+            TEMPORARY FREE SHIPPING
+            */
 
             let deliveryCharge = 0;
-
-
-            if (
-                selectedShippingCourier &&
-                selectedShippingCourier.total_charges
-            ) {
-
-                deliveryCharge =
-                    parseFloat(
-                        selectedShippingCourier.total_charges
-                    ) || 0;
-
-            }
-
 
             let total =
                 printSubtotal +
                 handlingCharge +
                 deliveryCharge;
-
 
             $('#checkoutTotal')
                 .text(
@@ -1919,34 +1676,17 @@ MOBILE RESPONSIVE
         }
 
 
-        /*
-        =====================================================
-        MONEY FORMAT
-        =====================================================
-        */
-
-        function formatMoney(
-            value
-        ) {
+        function formatMoney(value) {
 
             let number =
                 parseFloat(value) || 0;
-
 
             return number.toFixed(2);
 
         }
 
 
-        /*
-        =====================================================
-        HTML ESCAPE
-        =====================================================
-        */
-
-        function escapeHtml(
-            value
-        ) {
+        function escapeHtml(value) {
 
             return $('<div>')
                 .text(
@@ -1957,15 +1697,7 @@ MOBILE RESPONSIVE
         }
 
 
-        /*
-        =====================================================
-        SELECTOR ESCAPE
-        =====================================================
-        */
-
-        function escapeSelectorValue(
-            value
-        ) {
+        function escapeSelectorValue(value) {
 
             return String(value)
                 .replace(
@@ -1974,210 +1706,332 @@ MOBILE RESPONSIVE
                 );
 
         }
-        $('.checkout-input').on('input', function() {
-            $(this).removeClass('is-invalid');
-            $('#' + this.id + 'Error').removeClass('show');
-            $('#checkoutTopError').removeClass('show').text('');
-        });
 
-        $('#placeCodOrder').on('click', function() {
 
-            let button = $(this);
+        /*
+        =====================================================
+        FIELD ERROR CLEAR
+        =====================================================
+        */
 
-            let paymentMethod =
-                $('input[name="payment_method"]:checked').val();
+        $('.checkout-input').on(
+            'input',
+            function() {
 
-            /*
-            =====================================================
-            BASIC VALIDATION
-            =====================================================
-            */
-
-            let requiredFields = [
-                '#fullName',
-                '#email',
-                '#pincode',
-                '#city',
-                '#state',
-                '#house',
-                '#road'
-            ];
-
-            let valid = true;
-
-            $.each(requiredFields, function(index, selector) {
-
-                let value = $(selector).val().trim();
-
-                $(selector).removeClass('is-invalid');
-
-                if (!value) {
-
-                    $(selector).addClass('is-invalid');
-
-                    valid = false;
+                if (paymentProcessing) {
+                    return;
                 }
 
-            });
+                $(this)
+                    .removeClass('is-invalid');
 
-            let emailValue = $('#email').val().trim();
-            if (
-                emailValue &&
-                !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailValue)
-            ) {
-                $('#email').addClass('is-invalid');
-                $('#emailError')
-                    .text('Please enter a valid email address.')
-                    .addClass('show');
-                valid = false;
-            }
+                $('#' + this.id + 'Error')
+                    .removeClass('show');
 
-            let pincodeValue = $('#pincode').val().trim();
-            if (
-                pincodeValue &&
-                !/^\d{6}$/.test(pincodeValue)
-            ) {
-                $('#pincode').addClass('is-invalid');
-                $('#pincodeError')
-                    .text('Pincode must be exactly 6 digits.')
-                    .addClass('show');
-                valid = false;
-            }
-
-            if (!valid) {
                 $('#checkoutTopError')
-                    .text('Please correct the highlighted fields.')
-                    .addClass('show');
+                    .removeClass('show')
+                    .text('');
 
-                return;
             }
+        );
 
 
-            /*
-            =====================================================
-            COURIER
-            =====================================================
-            */
+        /*
+        =====================================================
+        MAIN CHECKOUT BUTTON
+        =====================================================
+        */
 
-            let courierId =
-                $('#selectedCourierId').val();
+        $('#placeCodOrder').on(
+            'click',
+            function() {
 
-            $('#courierError').removeClass('show');
+                let button = $(this);
 
-            if (!courierId) {
-                $('#courierError').addClass('show');
-                return;
-            }
+                /*
+                HARD DOUBLE-CLICK PROTECTION
+                */
 
-            /*
-            =====================================================
-            TURNSTILE
-            =====================================================
-            */
+                if (paymentProcessing) {
+                    return;
+                }
 
-            let turnstileToken =
-                typeof turnstile !== 'undefined'
-                    ? turnstile.getResponse()
-                    : '';
+                let paymentMethod =
+                    $('input[name="payment_method"]:checked')
+                    .val();
 
-            $('#turnstileError').removeClass('show');
+                /*
+                =====================================================
+                BASIC VALIDATION
+                =====================================================
+                */
 
-            if (!turnstileToken) {
-                $('#turnstileError').addClass('show');
-                return;
-            }
+                let requiredFields = [
+                    '#fullName',
+                    '#email',
+                    '#pincode',
+                    '#city',
+                    '#state',
+                    '#house',
+                    '#road'
+                ];
 
+                let valid = true;
 
-            /*
-            =====================================================
-            DISABLE BUTTON
-            =====================================================
-            */
+                $.each(
+                    requiredFields,
+                    function(index, selector) {
 
-            button
-                .prop('disabled', true)
-                .html(
-                    '<span class="spinner-border spinner-border-sm me-2"></span>' +
-                    'Processing...'
+                        let value =
+                            $(selector)
+                            .val()
+                            .trim();
+
+                        $(selector)
+                            .removeClass('is-invalid');
+
+                        if (!value) {
+
+                            $(selector)
+                                .addClass('is-invalid');
+
+                            valid = false;
+
+                        }
+
+                    }
                 );
 
 
-            /*
-            =====================================================
-            FORM DATA
-            =====================================================
-            */
+                let emailValue =
+                    $('#email')
+                    .val()
+                    .trim();
 
-            let formData = {
+                if (
+                    emailValue &&
+                    !/^[^\s@]+@[^\s@]+\.[^\s@]+$/
+                    .test(emailValue)
+                ) {
 
-                _token: "{{ csrf_token() }}",
+                    $('#email')
+                        .addClass('is-invalid');
 
-                full_name: $('#fullName').val().trim(),
+                    $('#emailError')
+                        .text(
+                            'Please enter a valid email address.'
+                        )
+                        .addClass('show');
 
-                email: $('#email').val().trim(),
+                    valid = false;
 
-                pincode: $('#pincode').val().trim(),
-
-                city: $('#city').val().trim(),
-
-                state: $('#state').val().trim(),
-
-                house: $('#house').val().trim(),
-
-                road: $('#road').val().trim(),
-
-                landmark: $('#landmark').val().trim(),
-
-                courier_id: courierId,
-
-                payment_method: paymentMethod,
-
-                turnstile_token:
-                    typeof turnstile !== 'undefined'
-                        ? turnstile.getResponse()
-                        : ''
-
-            };
+                }
 
 
-            /*
-            =====================================================
-            COD
-            =====================================================
-            */
+                let pincodeValue =
+                    $('#pincode')
+                    .val()
+                    .trim();
 
-            if (paymentMethod === 'cod') {
+                if (
+                    pincodeValue &&
+                    !/^\d{6}$/.test(pincodeValue)
+                ) {
 
-                submitCodOrder(formData);
+                    $('#pincode')
+                        .addClass('is-invalid');
 
-                return;
-            }
+                    $('#pincodeError')
+                        .text(
+                            'Pincode must be exactly 6 digits.'
+                        )
+                        .addClass('show');
+
+                    valid = false;
+
+                }
 
 
-            /*
-            =====================================================
-            RAZORPAY
-            =====================================================
-            */
+                if (!valid) {
 
-            if (paymentMethod === 'razorpay') {
+                    $('#checkoutTopError')
+                        .text(
+                            'Please correct the highlighted fields.'
+                        )
+                        .addClass('show');
 
-                startRazorpayPayment(
-                    formData,
+                    return;
+
+                }
+
+
+                /*
+                =====================================================
+                COURIER
+                =====================================================
+                */
+
+                let courierId =
+                    $('#selectedCourierId')
+                    .val();
+
+                $('#courierError')
+                    .removeClass('show');
+
+                if (!courierId) {
+
+                    $('#courierError')
+                        .addClass('show');
+
+                    return;
+
+                }
+
+
+                /*
+                =====================================================
+                TURNSTILE
+                =====================================================
+                */
+
+                let turnstileToken =
+                    typeof turnstile !== 'undefined' ?
+                    turnstile.getResponse() :
+                    '';
+
+                $('#turnstileError')
+                    .removeClass('show');
+
+                if (!turnstileToken) {
+
+                    $('#turnstileError')
+                        .addClass('show');
+
+                    return;
+
+                }
+
+
+                /*
+                =====================================================
+                LOCK IMMEDIATELY
+                =====================================================
+                */
+
+                paymentProcessing = true;
+
+                button
+                    .prop('disabled', true)
+                    .css({
+                        'pointer-events': 'none',
+                        'opacity': '0.65'
+                    })
+                    .html(
+                        '<span class="spinner-border spinner-border-sm me-2"></span>' +
+                        'Processing Payment...'
+                    );
+
+
+                /*
+                =====================================================
+                FORM DATA
+                =====================================================
+                */
+
+                let formData = {
+
+                    _token: "{{ csrf_token() }}",
+
+                    full_name: $('#fullName')
+                        .val()
+                        .trim(),
+
+                    email: $('#email')
+                        .val()
+                        .trim(),
+
+                    pincode: $('#pincode')
+                        .val()
+                        .trim(),
+
+                    city: $('#city')
+                        .val()
+                        .trim(),
+
+                    state: $('#state')
+                        .val()
+                        .trim(),
+
+                    house: $('#house')
+                        .val()
+                        .trim(),
+
+                    road: $('#road')
+                        .val()
+                        .trim(),
+
+                    landmark: $('#landmark')
+                        .val()
+                        .trim(),
+
+                    courier_id: courierId,
+
+                    payment_method: paymentMethod,
+
+                    turnstile_token: turnstileToken
+
+                };
+
+
+                /*
+                =====================================================
+                COD
+                =====================================================
+                */
+
+                if (paymentMethod === 'cod') {
+
+                    submitCodOrder(
+                        formData
+                    );
+
+                    return;
+
+                }
+
+
+                /*
+                =====================================================
+                PAYU
+                =====================================================
+                */
+
+                if (paymentMethod === 'payu') {
+
+                    startPayUPayment(
+                        formData,
+                        button
+                    );
+
+                    return;
+
+                }
+
+
+                showCheckoutError(
+                    'Please select a payment method.',
                     button
                 );
 
-                return;
             }
+        );
 
 
-            $('#checkoutTopError')
-                .text('Please select a payment method.')
-                .addClass('show');
-
-            button.prop('disabled', false);
-
-        });
+        /*
+        =====================================================
+        COD SUBMIT
+        =====================================================
+        */
 
         function submitCodOrder(formData) {
 
@@ -2191,29 +2045,41 @@ MOBILE RESPONSIVE
                 });
 
 
-            $.each(formData, function(key, value) {
+            $.each(
+                formData,
+                function(key, value) {
 
-                form.append(
-                    $('<input>', {
+                    form.append(
+                        $('<input>', {
 
-                        type: 'hidden',
+                            type: 'hidden',
 
-                        name: key,
+                            name: key,
 
-                        value: value
+                            value: value
 
-                    })
-                );
+                        })
+                    );
 
-            });
+                }
+            );
 
 
-            $('body').append(form);
+            $('body')
+                .append(form);
 
             form.submit();
+
         }
 
-        function startRazorpayPayment(
+
+        /*
+        =====================================================
+        PAYU CHECKOUT PLUS
+        =====================================================
+        */
+
+        function startPayUPayment(
             formData,
             button
         ) {
@@ -2232,148 +2098,119 @@ MOBILE RESPONSIVE
 
                     if (
                         !response ||
-                        !response.success
+                        !response.success ||
+                        response.payment_gateway !== 'payu' ||
+                        !response.payu
                     ) {
 
-                        $('#checkoutTopError')
-                            .text(response.message || 'Unable to create Razorpay order.')
-                            .addClass('show');
-
-                        button.prop('disabled', false);
+                        showCheckoutError(
+                            response &&
+                            response.message ?
+                            response.message :
+                            'Unable to start PayU payment.',
+                            button
+                        );
 
                         return;
+
                     }
 
 
-                    /*
-                    =================================================
-                    RAZORPAY CHECKOUT
-                    =================================================
-                    */
-
-                    let options = {
-
-                        key: response.key_id,
-
-                        amount: response.amount,
-
-                        currency: response.currency,
-
-                        name: "{{ config('app.name') }}",
-
-                        description: "Print Order",
-
-                        order_id: response.razorpay_order_id,
+                    let payuData =
+                        response.payu;
 
 
-                        prefill: {
+                    if (
+                        typeof bolt === 'undefined' ||
+                        typeof bolt.launch !== 'function'
+                    ) {
 
-                            name: formData.full_name,
+                        showCheckoutError(
+                            'PayU checkout could not be loaded. Please refresh and try again.',
+                            button
+                        );
 
-                            email: formData.email,
+                        return;
 
-                            contact: "+91" +
-                                "{{ $mobile }}"
-
-                        },
-
-
-                        notes: {
-
-                            order_number: response.order_number
-
-                        },
+                    }
 
 
-                        theme: {
+                    let data = {
 
-                            color: "#2856db"
+                        key: payuData.key,
 
-                        },
+                        hash: payuData.hash,
+
+                        txnid: payuData.txnid,
+
+                        amount: payuData.amount,
+
+                        firstname: payuData.firstname,
+
+                        email: payuData.email,
+
+                        phone: payuData.phone,
+
+                        productinfo: payuData.productinfo,
+
+                        surl: payuData.surl,
+
+                        furl: payuData.furl
+
+                    };
 
 
-                        modal: {
+                    let handlers = {
 
-                            confirm_close: true,
+                        responseHandler: function(BOLT) {
 
-                            escape: true,
+                            let paymentResponse =
+                                BOLT &&
+                                BOLT.response ?
+                                BOLT.response :
+                                null;
 
-                            backdropclose: false
+                            if (!paymentResponse) {
 
-                        },
+                                showCheckoutError(
+                                    'Invalid payment response received.',
+                                    button
+                                );
+
+                                return;
+
+                            }
 
 
-                        handler: function(razorpayResponse) {
-
-                            verifyRazorpayPayment(
-
-                                razorpayResponse,
-
-                                response.order_number,
-
+                            verifyPayUPayment(
+                                paymentResponse,
                                 button
-
                             );
 
                         },
 
 
-                        "ondismiss": function() {
+                        catchException: function(BOLT) {
 
-                            button
-                                .prop('disabled', false)
-                                .html(
-                                    '<span id="paymentButtonText">' +
-                                    (
-                                        $('input[name="payment_method"]:checked').val() === 'razorpay' ?
-                                        'Pay Now' :
-                                        'Place Order — COD'
-                                    ) +
-                                    '</span>' +
-                                    '<i class="bi bi-arrow-right ms-1"></i>'
-                                );
+                            console.error(
+                                'PayU Exception:',
+                                BOLT
+                            );
+
+                            showCheckoutError(
+                                'Unable to complete PayU payment. Please try again.',
+                                button
+                            );
 
                         }
 
                     };
 
 
-                    let razorpay =
-                        new Razorpay(options);
-
-
-                    razorpay.on(
-                        'payment.failed',
-                        function(response) {
-
-                            console.error(
-                                'Razorpay Payment Failed:',
-                                response
-                            );
-
-                            $('#checkoutTopError')
-                                .text(
-                                    response.error && response.error.description
-                                        ? response.error.description
-                                        : 'Payment failed.'
-                                )
-                                .addClass('show');
-
-
-                            button
-                                .prop('disabled', false)
-                                .html(
-                                    '<span id="paymentButtonText">' +
-                                    'Pay Now' +
-                                    '</span>' +
-                                    '<i class="bi bi-arrow-right ms-1"></i>'
-                                );
-
-                        }
+                    bolt.launch(
+                        data,
+                        handlers
                     );
-
-
-                    razorpay.open();
 
                 },
 
@@ -2381,6 +2218,7 @@ MOBILE RESPONSIVE
                 error: function(xhr) {
 
                     console.error(
+                        'PayU Start Error:',
                         xhr.responseText
                     );
 
@@ -2397,19 +2235,10 @@ MOBILE RESPONSIVE
 
                     }
 
-                    $('#checkoutTopError')
-                        .text(message)
-                        .addClass('show');
-
-
-                    button
-                        .prop('disabled', false)
-                        .html(
-                            '<span id="paymentButtonText">' +
-                            'Pay Now' +
-                            '</span>' +
-                            '<i class="bi bi-arrow-right ms-1"></i>'
-                        );
+                    showCheckoutError(
+                        message,
+                        button
+                    );
 
                 }
 
@@ -2417,15 +2246,21 @@ MOBILE RESPONSIVE
 
         }
 
-        function verifyRazorpayPayment(
-            razorpayResponse,
-            orderNumber,
+
+        /*
+        =====================================================
+        VERIFY PAYU PAYMENT
+        =====================================================
+        */
+
+        function verifyPayUPayment(
+            paymentResponse,
             button
         ) {
 
             $.ajax({
 
-                url: "{{ route('checkout.verify.razorpay') }}",
+                url: "{{ route('checkout.verify.payu') }}",
 
                 type: 'POST',
 
@@ -2435,13 +2270,51 @@ MOBILE RESPONSIVE
 
                     _token: "{{ csrf_token() }}",
 
-                    order_number: orderNumber,
+                    txnid: paymentResponse.txnid ||
+                        '',
 
-                    razorpay_payment_id: razorpayResponse.razorpay_payment_id,
+                    status: paymentResponse.status ||
+                        '',
 
-                    razorpay_order_id: razorpayResponse.razorpay_order_id,
+                    hash: paymentResponse.hash ||
+                        '',
 
-                    razorpay_signature: razorpayResponse.razorpay_signature
+                    amount: paymentResponse.amount ||
+                        '',
+
+                    key: paymentResponse.key ||
+                        '',
+
+                    firstname: paymentResponse.firstname ||
+                        '',
+
+                    email: paymentResponse.email ||
+                        '',
+
+                    productinfo: paymentResponse.productinfo ||
+                        '',
+
+                    mihpayid: paymentResponse.mihpayid ||
+                        '',
+
+                    udf1: paymentResponse.udf1 ||
+                        '',
+
+                    udf2: paymentResponse.udf2 ||
+                        '',
+
+                    udf3: paymentResponse.udf3 ||
+                        '',
+
+                    udf4: paymentResponse.udf4 ||
+                        '',
+
+                    udf5: paymentResponse.udf5 ||
+                        '',
+
+                    additional_charges: paymentResponse.additionalCharges ||
+                        paymentResponse.additional_charges ||
+                        ''
 
                 },
 
@@ -2458,20 +2331,17 @@ MOBILE RESPONSIVE
                             response.redirect;
 
                         return;
+
                     }
 
 
-                    $('#checkoutTopError')
-                        .text(response.message || 'Payment verification failed.')
-                        .addClass('show');
-
-
-                    button
-                        .prop('disabled', false)
-                        .html(
-                            'Pay Now' +
-                            '<i class="bi bi-arrow-right ms-1"></i>'
-                        );
+                    showCheckoutError(
+                        response &&
+                        response.message ?
+                        response.message :
+                        'Payment verification failed.',
+                        button
+                    );
 
                 },
 
@@ -2479,10 +2349,9 @@ MOBILE RESPONSIVE
                 error: function(xhr) {
 
                     console.error(
-                        'Razorpay Verify Error:',
+                        'PayU Verify Error:',
                         xhr.responseText
                     );
-
 
                     let message =
                         'Payment verification failed.';
@@ -2494,26 +2363,51 @@ MOBILE RESPONSIVE
 
                         message =
                             xhr.responseJSON.message;
+
                     }
 
-
-                    $('#checkoutTopError')
-                        .text(message)
-                        .addClass('show');
-
-
-                    button
-                        .prop('disabled', false)
-                        .html(
-                            'Pay Now' +
-                            '<i class="bi bi-arrow-right ms-1"></i>'
-                        );
+                    showCheckoutError(
+                        message,
+                        button
+                    );
 
                 }
 
             });
 
         }
+
+
+        /*
+        =====================================================
+        ERROR / UNLOCK
+        =====================================================
+        */
+
+        function showCheckoutError(
+            message,
+            button
+        ) {
+
+            paymentProcessing = false;
+
+            $('#checkoutTopError')
+                .text(message)
+                .addClass('show');
+
+
+            button
+                .prop('disabled', false)
+                .css({
+                    'pointer-events': '',
+                    'opacity': ''
+                });
+
+
+            updatePaymentButtonText();
+
+        }
+
     });
 </script>
 

@@ -64,6 +64,9 @@ Route::post('/checkout/calculate-shipping', [CheckoutController::class, 'calcula
 Route::post('/checkout/place-order', [CheckoutController::class, 'placeOrder'])->name('checkout.place-order');
 Route::get('/order/success/{order}', [CheckoutController::class, 'success'])->name('order.success');
 
+Route::post('/checkout/verify-payu', [CheckoutController::class, 'verifyPayU'])
+    ->name('checkout.verify.payu');
+
 Route::post('/checkout/verify-razorpay', [CheckoutController::class, 'verifyRazorpay'])
     ->name('checkout.verify.razorpay');
 
