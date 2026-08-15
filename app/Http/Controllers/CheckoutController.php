@@ -440,6 +440,11 @@ class CheckoutController extends Controller
         COD ONLY
         */
 
+            'turnstile_token' => [
+                'required',
+                'string'
+            ],
+
             'payment_method' => [
                 'required',
                 'in:cod,razorpay'
@@ -451,6 +456,35 @@ class CheckoutController extends Controller
             ],
 
         ]);
+
+        /*
+    =====================================================
+    CLOUDFLARE TURNSTILE VERIFICATION
+    =====================================================
+    */
+
+        $turnstileResponse = Http::asForm()
+            ->timeout(10)
+            ->post(
+                'https://challenges.cloudflare.com/turnstile/v0/siteverify',
+                [
+                    'secret' => env('TURNSTILE_SECRET_KEY'),
+                    'response' => $validated['turnstile_token'],
+                    'remoteip' => $request->ip(),
+                ]
+            );
+
+        if (
+            !$turnstileResponse->successful() ||
+            !$turnstileResponse->json('success')
+        ) {
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Security verification failed. Please try again.'
+            ], 422);
+        }
+
 
 
         /*

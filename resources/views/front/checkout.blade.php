@@ -71,6 +71,38 @@
         color: #dc3545;
     }
 
+    .checkout-field-error {
+        display: none;
+        margin-top: 4px;
+        font-size: 11px;
+        line-height: 1.3;
+        color: #dc3545;
+        font-weight: 600;
+    }
+
+    .checkout-field-error.show {
+        display: block;
+    }
+
+    .checkout-input.is-invalid {
+        border-color: #dc3545 !important;
+    }
+
+    .checkout-top-error {
+        display: none;
+        margin: 0 0 12px;
+        padding: 9px 11px;
+        border: 1px solid #f1b0b7;
+        background: #fff5f5;
+        color: #b42318;
+        font-size: 12px;
+        font-weight: 600;
+    }
+
+    .checkout-top-error.show {
+        display: block;
+    }
+
 
     /*
 =====================================================
@@ -603,6 +635,8 @@ MOBILE RESPONSIVE
                                         class="checkout-input"
                                         placeholder="Full Name">
 
+                                <div class="checkout-field-error" id="fullNameError">Please enter your full name.</div>
+
                                 </div>
 
 
@@ -648,6 +682,8 @@ MOBILE RESPONSIVE
                                         class="checkout-input"
                                         placeholder="Email Address">
 
+                                <div class="checkout-field-error" id="emailError">Please enter a valid email address.</div>
+
                                 </div>
 
                             </div>
@@ -689,6 +725,8 @@ MOBILE RESPONSIVE
                                     inputmode="numeric"
                                     placeholder="Pincode (e.g. 110001)">
 
+                                <div class="checkout-field-error" id="pincodeError">Please enter a valid 6-digit pincode.</div>
+
                             </div>
 
 
@@ -711,6 +749,8 @@ MOBILE RESPONSIVE
                                         class="checkout-input"
                                         placeholder="City">
 
+                                <div class="checkout-field-error" id="cityError">Please enter your city.</div>
+
                                 </div>
 
 
@@ -728,6 +768,8 @@ MOBILE RESPONSIVE
                                         id="state"
                                         class="checkout-input"
                                         placeholder="State">
+
+                                <div class="checkout-field-error" id="stateError">Please enter your state.</div>
 
                                 </div>
 
@@ -751,6 +793,8 @@ MOBILE RESPONSIVE
                                     class="checkout-input"
                                     placeholder="House No. / Building / Apartment">
 
+                                <div class="checkout-field-error" id="houseError">Please enter your house/building details.</div>
+
                             </div>
 
 
@@ -770,6 +814,8 @@ MOBILE RESPONSIVE
                                     id="road"
                                     class="checkout-input"
                                     placeholder="e.g. MG Road, Indiranagar">
+
+                                <div class="checkout-field-error" id="roadError">Please enter your road/area details.</div>
 
                             </div>
 
@@ -969,9 +1015,52 @@ MOBILE RESPONSIVE
 
                         </div>
 
+                        <div class="checkout-card" style="padding:12px 14px;">
+                            <div class="checkout-section-title mb-2">
+                                <i class="bi bi-shield-check"></i>
+                                Security Verification
+                            </div>
+
+                            <div class="d-flex justify-content-center">
+                                <div
+                                    class="cf-turnstile"
+                                    data-sitekey="{{ env('TURNSTILE_SITE_KEY') }}"
+                                    data-theme="light">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="checkoutTopError" class="checkout-top-error"></div>
+
+
+
+                        <div id="courierError" class="checkout-field-error mb-2">
+
+
+                            Please select a courier.
+
+
+                        </div>
+
+
+
+                        <div id="turnstileError" class="checkout-field-error text-center mb-2">
+
+
+                            Please complete the security verification.
+
+
+                        </div>
+
+
+
                         <input
+
+
                             type="hidden"
-                            id="selectedCourierId"
+
+
+                            id="selectedCourierId" 
                             name="courier_id"
                             value="">
                         <button
@@ -1001,6 +1090,7 @@ MOBILE RESPONSIVE
 @endsection
 @section('custom_footer')
 <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
 <script>
     $(document).ready(function() {
 
@@ -1884,6 +1974,12 @@ MOBILE RESPONSIVE
                 );
 
         }
+        $('.checkout-input').on('input', function() {
+            $(this).removeClass('is-invalid');
+            $('#' + this.id + 'Error').removeClass('show');
+            $('#checkoutTopError').removeClass('show').text('');
+        });
+
         $('#placeCodOrder').on('click', function() {
 
             let button = $(this);
@@ -1924,11 +2020,34 @@ MOBILE RESPONSIVE
 
             });
 
-            if (!valid) {
+            let emailValue = $('#email').val().trim();
+            if (
+                emailValue &&
+                !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailValue)
+            ) {
+                $('#email').addClass('is-invalid');
+                $('#emailError')
+                    .text('Please enter a valid email address.')
+                    .addClass('show');
+                valid = false;
+            }
 
-                alert(
-                    'Please fill all required delivery details.'
-                );
+            let pincodeValue = $('#pincode').val().trim();
+            if (
+                pincodeValue &&
+                !/^\d{6}$/.test(pincodeValue)
+            ) {
+                $('#pincode').addClass('is-invalid');
+                $('#pincodeError')
+                    .text('Pincode must be exactly 6 digits.')
+                    .addClass('show');
+                valid = false;
+            }
+
+            if (!valid) {
+                $('#checkoutTopError')
+                    .text('Please correct the highlighted fields.')
+                    .addClass('show');
 
                 return;
             }
@@ -1943,12 +2062,28 @@ MOBILE RESPONSIVE
             let courierId =
                 $('#selectedCourierId').val();
 
+            $('#courierError').removeClass('show');
+
             if (!courierId) {
+                $('#courierError').addClass('show');
+                return;
+            }
 
-                alert(
-                    'Please select a courier.'
-                );
+            /*
+            =====================================================
+            TURNSTILE
+            =====================================================
+            */
 
+            let turnstileToken =
+                typeof turnstile !== 'undefined'
+                    ? turnstile.getResponse()
+                    : '';
+
+            $('#turnstileError').removeClass('show');
+
+            if (!turnstileToken) {
+                $('#turnstileError').addClass('show');
                 return;
             }
 
@@ -1995,7 +2130,12 @@ MOBILE RESPONSIVE
 
                 courier_id: courierId,
 
-                payment_method: paymentMethod
+                payment_method: paymentMethod,
+
+                turnstile_token:
+                    typeof turnstile !== 'undefined'
+                        ? turnstile.getResponse()
+                        : ''
 
             };
 
@@ -2031,9 +2171,9 @@ MOBILE RESPONSIVE
             }
 
 
-            alert(
-                'Please select a payment method.'
-            );
+            $('#checkoutTopError')
+                .text('Please select a payment method.')
+                .addClass('show');
 
             button.prop('disabled', false);
 
@@ -2095,10 +2235,9 @@ MOBILE RESPONSIVE
                         !response.success
                     ) {
 
-                        alert(
-                            response.message ||
-                            'Unable to create Razorpay order.'
-                        );
+                        $('#checkoutTopError')
+                            .text(response.message || 'Unable to create Razorpay order.')
+                            .addClass('show');
 
                         button.prop('disabled', false);
 
@@ -2212,12 +2351,13 @@ MOBILE RESPONSIVE
                                 response
                             );
 
-                            alert(
-                                response.error &&
-                                response.error.description ?
-                                response.error.description :
-                                'Payment failed.'
-                            );
+                            $('#checkoutTopError')
+                                .text(
+                                    response.error && response.error.description
+                                        ? response.error.description
+                                        : 'Payment failed.'
+                                )
+                                .addClass('show');
 
 
                             button
@@ -2257,7 +2397,9 @@ MOBILE RESPONSIVE
 
                     }
 
-                    alert(message);
+                    $('#checkoutTopError')
+                        .text(message)
+                        .addClass('show');
 
 
                     button
@@ -2319,10 +2461,9 @@ MOBILE RESPONSIVE
                     }
 
 
-                    alert(
-                        response.message ||
-                        'Payment verification failed.'
-                    );
+                    $('#checkoutTopError')
+                        .text(response.message || 'Payment verification failed.')
+                        .addClass('show');
 
 
                     button
@@ -2356,7 +2497,9 @@ MOBILE RESPONSIVE
                     }
 
 
-                    alert(message);
+                    $('#checkoutTopError')
+                        .text(message)
+                        .addClass('show');
 
 
                     button
