@@ -934,6 +934,13 @@
                     We'll send a code on WhatsApp.
                 </div> -->
 
+                <div class="mt-3 mb-2 d-flex justify-content-center">
+                    <div
+                        id="uploadTurnstile"
+                        class="turnstile-placeholder">
+                    </div>
+                </div>
+
                 <div id="mobileVerificationError" class="verification-error"></div>
 
                 <button
@@ -1012,6 +1019,7 @@
 
 @section('custom_footer')
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
 <script>
     if (window.pdfjsLib) {
         window.pdfjsLib.GlobalWorkerOptions.workerSrc =
@@ -1065,10 +1073,12 @@
         const MAX_TOTAL_SIZE = 2 * 1024 * 1024 * 1024;
 
         const allowedExtensions = [
-            'pdf', 'doc', 'docx',
-            'xls', 'xlsx',
-            'ppt', 'pptx',
-            'jpg', 'jpeg', 'png', 'gif', 'webp'
+            'pdf',
+            'jpg',
+            'jpeg',
+            'png',
+            'gif',
+            'webp'
         ];
 
 
@@ -1082,6 +1092,7 @@
         let verifiedMobile = '';
         let sessionVerified = false;
         let isUploading = false;
+        let uploadTurnstileWidgetId = null;
         let otpTimer = null;
         let otpSeconds = 60;
         const restoredDocuments = @json($selectedDocuments ?? []);
@@ -2209,6 +2220,23 @@
             lockModalScroll();
             showMobileStep();
 
+            /*
+             * Turnstile is rendered only when the verification modal opens.
+             * This avoids rendering it inside a hidden modal.
+             */
+            if (
+                uploadTurnstileWidgetId === null &&
+                window.turnstile
+            ) {
+                uploadTurnstileWidgetId =
+                    window.turnstile.render(
+                        '#uploadTurnstile', {
+                            sitekey: "{{ env('TURNSTILE_SITE_KEY') }}",
+                            theme: 'light'
+                        }
+                    );
+            }
+
             $('#verificationMobile').trigger('focus');
         }
 
@@ -2272,6 +2300,13 @@
                 type: 'POST',
                 data: {
                     mobile: mobile,
+                    turnstile_token: (
+                            uploadTurnstileWidgetId !== null &&
+                            window.turnstile
+                        ) ?
+                        window.turnstile.getResponse(
+                            uploadTurnstileWidgetId
+                        ) : '',
                     _token: $('meta[name="csrf-token"]').attr('content')
                 },
                 success: function(response) {
@@ -2280,6 +2315,15 @@
                         showMobileError(
                             (response && response.message) || 'Unable to send OTP.'
                         );
+                        if (
+                            uploadTurnstileWidgetId !== null &&
+                            window.turnstile
+                        ) {
+                            window.turnstile.reset(
+                                uploadTurnstileWidgetId
+                            );
+                        }
+
                         $button.prop('disabled', false).text('Continue');
                         //$button.prop('disabled', false).text('Send OTP');
                         return;
@@ -2327,6 +2371,15 @@
                              * OTP input / OTP screen is never shown.
                              */
                             closeVerificationModal();
+
+                            if (
+                                uploadTurnstileWidgetId !== null &&
+                                window.turnstile
+                            ) {
+                                window.turnstile.reset(
+                                    uploadTurnstileWidgetId
+                                );
+                            }
 
                             /*
                              * Give browser a moment to receive/store

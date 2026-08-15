@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Hash;
 use App\Models\PrintDocument;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
 use Aws\S3\S3Client;
 
@@ -95,8 +96,37 @@ class UploadController extends Controller
             'mobile' => [
                 'required',
                 'digits:10'
+            ],
+            'turnstile_token' => [
+                'required',
+                'string'
             ]
         ]);
+
+        /*
+         * Cloudflare Turnstile server-side verification.
+         * Never trust the browser widget alone.
+         */
+        $turnstileResponse = Http::asForm()
+            ->timeout(10)
+            ->post(
+                'https://challenges.cloudflare.com/turnstile/v0/siteverify',
+                [
+                    'secret' => env('TURNSTILE_SECRET_KEY'),
+                    'response' => $request->turnstile_token,
+                    'remoteip' => $request->ip(),
+                ]
+            );
+
+        if (
+            !$turnstileResponse->successful() ||
+            !$turnstileResponse->json('success')
+        ) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Security verification failed. Please try again.'
+            ], 422);
+        }
 
         $mobile = $request->mobile;
 
