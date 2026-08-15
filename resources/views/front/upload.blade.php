@@ -587,7 +587,7 @@
 
                 <p class="fw-semibold mb-0">
                     <span class="upload-highlight">
-                        Supports PDF, Office Files PPTX, XLSX, DOCX, Images Max 2GB
+                        Supports PDF Max 1GB
                     </span>
                 </p>
             </div>
@@ -622,8 +622,7 @@
                         </p>
 
                         <div class="upload-info d-inline-block">
-                            Supports PDF, Office Files (PPTX, XLSX, DOCX),
-                            Images — up to 50 files, 2 GB total per order
+                            Supports PDF — up to 50 files, 3 GB total per order
                         </div>
                     </div>
                     <div class="d-flex justify-content-end align-items-center mt-3 mb-3 flex-wrap gap-2">
@@ -898,7 +897,8 @@
         <div class="verification-body">
 
             <p class="text-secondary mb-0">
-                We secure your uploads with OTP. No spam, promised.
+                <!-- We secure your uploads with OTP. No spam, promised. -->
+                We secure your uploads with Mobile. No spam, promised.
             </p>
 
             <div class="verification-progress">
@@ -930,9 +930,9 @@
 
                 </div>
 
-                <div class="small text-secondary mt-2">
+                <!-- <div class="small text-secondary mt-2">
                     We'll send a code on WhatsApp.
-                </div>
+                </div> -->
 
                 <div id="mobileVerificationError" class="verification-error"></div>
 
@@ -940,7 +940,8 @@
                     type="button"
                     id="sendOtpButton"
                     class="verification-action">
-                    Send OTP
+                    Continue
+                    <!-- Send OTP -->
                 </button>
 
             </div>
@@ -2193,7 +2194,7 @@
 
             const $button = $(this);
 
-            $button.prop('disabled', true).text('Sending OTP...');
+            $button.prop('disabled', true).text('Continue...');
             clearVerificationErrors();
 
             $.ajax({
@@ -2209,7 +2210,8 @@
                         showMobileError(
                             (response && response.message) || 'Unable to send OTP.'
                         );
-                        $button.prop('disabled', false).text('Send OTP');
+                        $button.prop('disabled', false).text('Continue');
+                        //$button.prop('disabled', false).text('Send OTP');
                         return;
                     }
 
@@ -2365,7 +2367,7 @@
             $('#verifyStepOne').addClass('active');
             $('#verifyStepTwo').removeClass('active');
 
-            $('#sendOtpButton').prop('disabled', false).text('Send OTP');
+            $('#sendOtpButton').prop('disabled', false).text('Continue');
         }
 
 

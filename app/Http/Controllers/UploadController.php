@@ -214,8 +214,8 @@ class UploadController extends Controller
         }
 
 
-        set_time_limit(600);
-        ini_set('max_execution_time', '600');
+        set_time_limit(1200);
+        ini_set('max_execution_time', '1200');
 
         $request->validate([
 
@@ -229,8 +229,8 @@ class UploadController extends Controller
             'documents.*' => [
                 'required',
                 'file',
-                'mimes:pdf,jpg,jpeg,png,gif,webp',
-                'max:2097152'
+                'mimes:pdf',
+                'max:3000000'
             ]
 
         ]);

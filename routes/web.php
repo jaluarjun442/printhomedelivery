@@ -23,8 +23,8 @@ use Illuminate\Support\Facades\Auth;
 |
 */
 
-Auth::routes();
-// Auth::routes(['register' => false]);
+// Auth::routes();
+Auth::routes(['register' => false]);
 
 Route::get('/', [FrontController::class, 'index'])->name('home');
 Route::post('/logout', [FrontController::class, 'logout'])
