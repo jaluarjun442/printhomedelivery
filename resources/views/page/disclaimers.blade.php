@@ -3,148 +3,6 @@
 
 @section('custom_header')
 
-<style>
-    .disclaimer-section {
-        background: #fbf9f4;
-        min-height: 100vh;
-        padding: 45px 15px 60px;
-    }
-
-    .disclaimer-wrapper {
-        max-width: 1000px;
-        margin: 0 auto;
-    }
-
-    .disclaimer-page-header {
-        text-align: center;
-        margin-bottom: 30px;
-    }
-
-    .disclaimer-page-header h1 {
-        margin: 0;
-        font-size: 30px;
-        font-weight: 800;
-        color: #222;
-    }
-
-    .disclaimer-page-header p {
-        margin: 8px auto 0;
-        max-width: 700px;
-        font-size: 13px;
-        line-height: 1.7;
-        color: #777;
-    }
-
-    .disclaimer-card {
-        background: #fff;
-        border: 1px solid #ddd;
-        padding: 25px;
-        margin-bottom: 15px;
-    }
-
-    .disclaimer-card h2 {
-        margin: 0 0 12px;
-        font-size: 20px;
-        font-weight: 800;
-        color: #222;
-    }
-
-    .disclaimer-card h2 i {
-        color: #2856db;
-        margin-right: 6px;
-    }
-
-    .disclaimer-card p {
-        margin: 0 0 10px;
-        font-size: 13px;
-        line-height: 1.8;
-        color: #666;
-    }
-
-    .disclaimer-card p:last-child {
-        margin-bottom: 0;
-    }
-
-    .disclaimer-card ul {
-        margin: 8px 0 0;
-        padding-left: 20px;
-    }
-
-    .disclaimer-card li {
-        margin-bottom: 7px;
-        font-size: 13px;
-        line-height: 1.7;
-        color: #666;
-    }
-
-    .disclaimer-notice {
-        background: #f4f7ff;
-        border: 1px solid #c9d7ff;
-        border-left: 3px solid #2856db;
-        padding: 18px 20px;
-        margin-bottom: 15px;
-    }
-
-    .disclaimer-notice p {
-        margin: 0;
-        font-size: 12px;
-        line-height: 1.8;
-        color: #555;
-    }
-
-    .disclaimer-contact {
-        background: #f4f7ff;
-        border: 1px solid #c9d7ff;
-        padding: 22px 25px;
-    }
-
-    .disclaimer-contact h2 {
-        margin: 0 0 10px;
-        color: #2856db;
-        font-size: 20px;
-        font-weight: 800;
-    }
-
-    .disclaimer-contact p {
-        margin: 0 0 5px;
-        font-size: 13px;
-        color: #666;
-    }
-
-    .disclaimer-contact a {
-        color: #2856db;
-        text-decoration: none;
-        font-weight: 600;
-    }
-
-    @media (max-width: 767px) {
-
-        .disclaimer-section {
-            padding: 28px 12px 40px;
-        }
-
-        .disclaimer-page-header {
-            margin-bottom: 20px;
-        }
-
-        .disclaimer-page-header h1 {
-            font-size: 25px;
-        }
-
-        .disclaimer-page-header p {
-            font-size: 12px;
-        }
-
-        .disclaimer-card {
-            padding: 18px 15px;
-        }
-
-        .disclaimer-card h2 {
-            font-size: 18px;
-        }
-
-    }
-</style>
 
 @endsection
 
@@ -509,8 +367,8 @@
                             Phone:
                         </strong>
 
-                        <a href="tel:+919104470244">
-                            +91-9104470244
+                        <a href="tel:+{{ store_data()['phone'] }}">
+                            {{ store_data()['phone'] }}
                         </a>
 
                     </p>

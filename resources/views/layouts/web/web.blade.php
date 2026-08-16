@@ -27,6 +27,7 @@
     <link href="{{ asset('web_assets/css/home_1.css') }}" rel="stylesheet">
 
     <link href="{{ asset('web_assets/css/custom.css') }}" rel="stylesheet">
+    <link href="{{ asset('web_assets/css/common-pages.css') }}" rel="stylesheet">
     <style>
         <?php
 

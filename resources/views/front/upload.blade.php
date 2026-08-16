@@ -622,7 +622,7 @@
                         </p>
 
                         <div class="upload-info d-inline-block">
-                            Supports PDF — up to 50 files, 3 GB total per order
+                            Supports PDF,Image — up to 10 files, 3 GB total per order
                         </div>
                     </div>
                     <div class="d-flex justify-content-end align-items-center mt-3 mb-3 flex-wrap gap-2">

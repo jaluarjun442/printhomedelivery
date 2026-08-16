@@ -38,8 +38,7 @@
                 <div class="col-lg-8 mx-auto text-center">
 
                     <span
-                        class="text-uppercase small fw-semibold text-muted"
-                        style="letter-spacing:2px;">
+                        class="text-uppercase small fw-semibold text-muted mb-3 blog-label">
                         Print Ki Dukan
                     </span>
 
@@ -94,21 +93,13 @@
                             <img
                                 src="{{ asset('uploads/blog/' . $blog->image) }}"
                                 alt="{{ $blog->title }}"
-                                class="card-img-top"
-                                loading="lazy"
-                                style="
-                                                height:220px;
-                                                object-fit:cover;
-                                            ">
+                                class="card-img-top blog-list-image"
+                                loading="lazy">
 
                             @else
 
                             <div
-                                style="
-                                                height:220px;
-                                                background:#f5f5f5;
-                                            "
-                                class="d-flex align-items-center justify-content-center">
+                                class="d-flex align-items-center justify-content-center blog-list-no-image">
 
                                 <span class="text-muted">
                                     No Image
