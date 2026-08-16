@@ -38,174 +38,7 @@
         // echo store_data()['header_script']; 
         ?>
     </style>
-    <style>
-        /* =========================================
-   PRINT NOW CTA
-========================================= */
 
-        .print-now-menu {
-            margin-left: 8px;
-        }
-
-        .print-now-btn {
-            position: relative;
-            display: inline-flex !important;
-            align-items: center;
-            gap: 7px;
-
-            padding: 9px 17px !important;
-
-            background: #ff7a00 !important;
-            color: #fff !important;
-
-            border-radius: 5px;
-
-            font-weight: 700 !important;
-
-            box-shadow:
-                0 3px 10px rgba(255, 122, 0, 0.30);
-
-            transition:
-                all 0.2s ease;
-        }
-
-        .print-now-btn:hover {
-            background: #e96800 !important;
-            color: #fff !important;
-
-            transform: translateY(-1px);
-
-            box-shadow:
-                0 5px 14px rgba(255, 122, 0, 0.40);
-        }
-
-
-        /* Small blinking dot */
-
-        .print-now-dot {
-            width: 7px;
-            height: 7px;
-
-            background: #fff;
-
-            border-radius: 50%;
-
-            display: inline-block;
-
-            animation: printNowBlink 1.2s infinite;
-        }
-
-
-        @keyframes printNowBlink {
-
-            0%,
-            100% {
-                opacity: 1;
-                transform: scale(1);
-            }
-
-            50% {
-                opacity: 0.35;
-                transform: scale(0.75);
-            }
-        }
-
-
-        /* =========================================
-   MOBILE
-========================================= */
-
-        @media (max-width: 991px) {
-
-            .print-now-menu {
-                margin-left: 0;
-                margin-top: 8px;
-            }
-
-            .print-now-btn {
-                display: inline-flex !important;
-
-                padding: 10px 18px !important;
-
-                width: auto;
-            }
-
-            .print-now-menu {
-                display: none !important;
-            }
-        }
-
-        /* =========================
-   PAGES DROPDOWN
-========================= */
-
-        .more-menu {
-            position: relative;
-        }
-
-        .more-dropdown {
-            display: none !important;
-            position: absolute;
-            top: 100%;
-            right: 0;
-            min-width: 190px;
-            margin: 0 !important;
-            padding: 5px 0 !important;
-            background: #fff;
-            border: 1px solid #ddd;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, .15);
-            z-index: 99999;
-            list-style: none;
-        }
-
-        .more-dropdown li {
-            display: block !important;
-            width: 100%;
-        }
-
-        .more-dropdown li a {
-            display: block !important;
-            padding: 10px 15px !important;
-            color: #333 !important;
-            white-space: nowrap;
-        }
-
-
-        /* DESKTOP */
-
-        @media (min-width: 992px) {
-
-            .more-menu:hover>.more-dropdown {
-                display: block !important;
-            }
-
-        }
-
-
-        /* MOBILE */
-
-        @media (max-width: 991px) {
-
-            .more-menu {
-                position: relative;
-            }
-
-            .more-dropdown {
-                position: static !important;
-                width: 100%;
-                min-width: 0;
-                background: transparent;
-                border: 0;
-                box-shadow: none;
-                padding-left: 15px !important;
-            }
-
-            .more-menu.open>.more-dropdown {
-                display: block !important;
-            }
-
-        }
-    </style>
     @yield('custom_header')
 </head>
 
@@ -312,6 +145,11 @@
                                                     Disclaimer
                                                 </a>
                                             </li>
+                                            <li>
+                                                <a href="{{ route('blogs') }}">
+                                                    Blog
+                                                </a>
+                                            </li>
 
                                         </ul>
 
@@ -319,7 +157,7 @@
                                     @if(request()->cookie('loggedin_number'))
 
                                     <li>
-                                        <a href="{{ route('my-orders') }}">
+                                        <a href=" {{ route('my-orders') }}">
                                             <i class="ti-package"></i>
                                             My Orders
                                         </a>
@@ -449,6 +287,11 @@
                                 <li>
                                     <a href="{{ route('calculator') }}">
                                         Pricing Calculator
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="{{ route('blogs') }}">
+                                        Print Guide
                                     </a>
                                 </li>
                             </ul>

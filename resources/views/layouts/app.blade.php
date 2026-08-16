@@ -95,6 +95,9 @@
                         <a class="nav-link" href="{{ route('admin.orders') }}">
                             Orders
                         </a>
+                        <a class="nav-link" href="{{ route('admin.blog') }}">
+                            Blogs
+                        </a>
 
                         <a class="nav-link"
                             href="{{ route('admin_setting') }}">

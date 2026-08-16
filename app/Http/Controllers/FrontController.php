@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Blogs;
 use App\Models\Category;
 use App\Models\Products;
 use App\Models\Store;
@@ -735,5 +736,68 @@ class FrontController extends Controller
             $prev_next_data = Products::limit(2)->inRandomOrder()->get();
             return view('front.product.index', compact('data', 'related_data', 'prev_next_data'));
         }
+    }
+    public function blogs()
+    {
+        $blogs = Blogs::where('status', 1)
+            ->where(function ($query) {
+                $query->whereNull('published_at')
+                    ->orWhere('published_at', '<=', now());
+            })
+            ->orderBy('published_at', 'desc')
+            ->orderBy('id', 'desc')
+            ->paginate(9);
+
+        return view(
+            'front/blogs',
+            compact('blogs')
+        );
+    }
+
+
+    public function blog($id, $slug)
+    {
+        $blog = Blogs::where('id', $id)
+            ->where('status', 1)
+            ->where(function ($query) {
+                $query->whereNull('published_at')
+                    ->orWhere('published_at', '<=', now());
+            })
+            ->firstOrFail();
+
+
+        /*
+    |--------------------------------------------------------------------------
+    | Canonical slug
+    |--------------------------------------------------------------------------
+    | If somebody opens an old/wrong slug, redirect to the correct SEO URL.
+    */
+
+        if ($slug !== $blog->slug) {
+
+            return redirect()->route(
+                'blog',
+                [
+                    'id' => $blog->id,
+                    'slug' => $blog->slug,
+                ],
+                301
+            );
+        }
+
+
+        /*
+    |--------------------------------------------------------------------------
+    | Views
+    |--------------------------------------------------------------------------
+    */
+
+        $blog->increment('views');
+
+
+        return view(
+            'front/blog',
+            compact('blog')
+        );
     }
 }

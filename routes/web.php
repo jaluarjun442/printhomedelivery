@@ -27,12 +27,13 @@ use Illuminate\Support\Facades\Auth;
 Auth::routes(['register' => false]);
 
 Route::get('/', [FrontController::class, 'index'])->name('home');
-Route::post('/logout', [FrontController::class, 'logout'])
-    ->name('logout');
-Route::get('/calculator', [FrontController::class, 'calculator'])->name('calculator');
-Route::post('/calculator/calculate', [FrontController::class, 'calculateCalculatorPrice'])
-    ->name('calculator.calculate');
+Route::post('/logout', [FrontController::class, 'logout'])->name('logout');
 
+Route::get('/calculator', [FrontController::class, 'calculator'])->name('calculator');
+Route::post('/calculator/calculate', [FrontController::class, 'calculateCalculatorPrice'])->name('calculator.calculate');
+
+Route::get('/blogs', [FrontController::class, 'blogs'])->name('blogs');
+Route::get('/blog/{id}/{slug}', [FrontController::class, 'blog'])->name('blog');
 
 Route::post('/upload/r2-url', [UploadController::class, 'getR2UploadUrl'])->name('upload.r2.url');
 Route::post('/upload/r2-complete', [UploadController::class, 'completeR2Upload'])->name('upload.r2.complete');
@@ -51,32 +52,24 @@ Route::get('/print-options/previous-files', [UploadController::class, 'previousP
 Route::post('/print-options/add-files', [UploadController::class, 'addPreviousPrintFiles'])->name('print-options.add-files');
 Route::post('/print-options/save', [UploadController::class, 'savePrintOptions'])->name('print-options.save');
 
-Route::get('/my-orders', [CheckoutController::class, 'myOrders'])
-    ->name('my-orders');
-Route::get('/my-orders/{order}', [CheckoutController::class, 'myOrderView'])
-    ->name('my-orders.view');
-Route::post('/my-orders/{order}/cancel', [CheckoutController::class, 'cancelOrder'])
-    ->name('my-orders.cancel');
+Route::get('/my-orders', [CheckoutController::class, 'myOrders'])->name('my-orders');
+Route::get('/my-orders/{order}', [CheckoutController::class, 'myOrderView'])->name('my-orders.view');
+Route::post('/my-orders/{order}/cancel', [CheckoutController::class, 'cancelOrder'])->name('my-orders.cancel');
 
 Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout');
-Route::post('/checkout/calculate-shipping', [CheckoutController::class, 'calculateShipping'])
-    ->name('checkout.calculate.shipping');
+Route::post('/checkout/calculate-shipping', [CheckoutController::class, 'calculateShipping'])->name('checkout.calculate.shipping');
 Route::post('/checkout/place-order', [CheckoutController::class, 'placeOrder'])->name('checkout.place-order');
 Route::get('/order/success/{order}', [CheckoutController::class, 'success'])->name('order.success');
 
-Route::post('/checkout/verify-payu', [CheckoutController::class, 'verifyPayU'])
-    ->name('checkout.verify.payu');
+Route::post('/checkout/verify-payu', [CheckoutController::class, 'verifyPayU'])->name('checkout.verify.payu');
 Route::post('/api/payu/webhook', [CheckoutController::class, 'payuWebhook'])
-    ->name('payu.webhook')
-    ->withoutMiddleware([\App\Http\Middleware\VerifyCsrfToken::class,]);
+    ->name('payu.webhook')->withoutMiddleware([\App\Http\Middleware\VerifyCsrfToken::class,]);
 Route::post('/api/payu/check-status/{order}', [CheckoutController::class, 'checkPayUStatus'])->name('payu.check.status');
 Route::get('/cron/payu-pending-check', [CheckoutController::class, 'payuPendingCron'])->name('payu.pending.cron');
 
 
-Route::post('/checkout/verify-razorpay', [CheckoutController::class, 'verifyRazorpay'])
-    ->name('checkout.verify.razorpay');
-Route::post('/checkout/razorpay-failed', [CheckoutController::class, 'razorpayFailed'])
-    ->name('checkout.razorpay.failed');
+Route::post('/checkout/verify-razorpay', [CheckoutController::class, 'verifyRazorpay'])->name('checkout.verify.razorpay');
+Route::post('/checkout/razorpay-failed', [CheckoutController::class, 'razorpayFailed'])->name('checkout.razorpay.failed');
 
 // Route::get('/about_us', [FrontController::class, 'about_us'])->name('about_us');
 // Route::get('/contact_us', [FrontController::class, 'contact_us'])->name('contact_us');
@@ -129,6 +122,14 @@ Route::group(['prefix' => 'admin', 'middleware' => 'auth'], function () {
     Route::post('/update_product', [AdminController::class, 'update_product'])->name('admin.update_product');
     Route::delete('/delete_product_image/{id}', [AdminController::class, 'delete_product_image'])->name('admin.delete_product_image');
     Route::delete('/delete_product_attribute/{id}', [AdminController::class, 'delete_product_attribute'])->name('admin.delete_product_attribute');
+
+    Route::get('/blog', [AdminController::class, 'blog'])->name('admin.blog');
+    Route::get('/get_blog', [AdminController::class, 'get_blog'])->name('admin.get_blog');
+    Route::get('/add_blog', [AdminController::class, 'add_blog'])->name('admin.add_blog');
+    Route::post('/save_blog', [AdminController::class, 'save_blog'])->name('admin.save_blog');
+    Route::get('/edit_blog/{blog_id}', [AdminController::class, 'edit_blog'])->name('admin.edit_blog');
+    Route::post('/update_blog', [AdminController::class, 'update_blog'])->name('admin.update_blog');
+
 
     Route::get('/add_product_widget/{product_id}', [AdminController::class, 'add_product_widget'])->name('admin.add_product_widget');
     Route::post('/save_product_widget', [AdminController::class, 'save_product_widget'])->name('admin.save_product_widget');

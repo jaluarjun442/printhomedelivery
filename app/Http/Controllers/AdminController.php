@@ -13,6 +13,7 @@ use Illuminate\Support\Str;
 use DataTables;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\File;
+use App\Models\Blogs;
 
 class AdminController extends Controller
 {
@@ -422,5 +423,380 @@ class AdminController extends Controller
         if ($data) {
             return redirect()->route('admin.product')->with('success', 'Data Added Successfully.');
         }
+    }
+    public function blog()
+    {
+        return view('admin/blog/index');
+    }
+
+
+    public function get_blog(Request $request)
+    {
+        $data = Blogs::orderBy('id', 'desc');
+
+        return DataTables::of($data)
+            ->addIndexColumn()
+
+            ->editColumn('image', function ($row) {
+
+                if ($row->image) {
+
+                    return '<img src="' .
+                        asset('uploads/blog/' . $row->image) .
+                        '" style="width:60px;height:60px;object-fit:cover;" />';
+                }
+
+                return '';
+            })
+
+            ->editColumn('status', function ($row) {
+
+                if ((int) $row->status === 1) {
+                    return '<span class="badge badge-success">Published</span>';
+                }
+
+                return '<span class="badge badge-secondary">Draft</span>';
+            })
+
+            ->editColumn('published_at', function ($row) {
+
+                return $row->published_at
+                    ? $row->published_at->format('d M Y')
+                    : '-';
+            })
+
+            ->addColumn('action', function ($row) {
+
+                return '<a href="' .
+                    route('admin.edit_blog', $row->id) .
+                    '" class="edit mr-2 btn btn-primary btn-sm">
+                    Edit
+                </a>';
+            })
+
+            ->rawColumns([
+                'image',
+                'status',
+                'action'
+            ])
+
+            ->make(true);
+    }
+
+
+    public function add_blog()
+    {
+        return view('admin/blog/add');
+    }
+
+
+    public function save_blog(Request $request)
+    {
+        $title = $request->post('title') ?? '';
+
+        /*
+    |--------------------------------------------------------------------------
+    | SEO FRIENDLY SLUG
+    |--------------------------------------------------------------------------
+    */
+
+        $slug = Str::slug($title, '-');
+
+        /*
+    |--------------------------------------------------------------------------
+    | Prevent duplicate slug
+    |--------------------------------------------------------------------------
+    */
+
+        $originalSlug = $slug;
+        $counter = 1;
+
+        while (
+            Blogs::where('slug', $slug)->exists()
+        ) {
+            $slug = $originalSlug . '-' . $counter;
+            $counter++;
+        }
+
+
+        /*
+    |--------------------------------------------------------------------------
+    | IMAGE
+    |--------------------------------------------------------------------------
+    */
+
+        $image = null;
+
+        if ($request->hasFile('image')) {
+
+            $file = $request->file('image');
+
+            $image =
+                rand(1111111111, 9999999999) .
+                '_' .
+                rand(1111111111, 9999999999) .
+                '.' .
+                $file->getClientOriginalExtension();
+
+            $file->move(
+                'uploads/blog/',
+                $image
+            );
+        }
+
+
+        /*
+    |--------------------------------------------------------------------------
+    | BLOG
+    |--------------------------------------------------------------------------
+    */
+
+        $data = Blogs::create([
+            'title' => $title,
+            'slug' => $slug,
+
+            'excerpt' =>
+            $request->post('excerpt') ?? '',
+
+            'content' =>
+            $request->post('content') ?? '',
+
+            'image' => $image,
+
+            'meta_title' =>
+            $request->post('meta_title') ?? '',
+
+            'meta_description' =>
+            $request->post('meta_description') ?? '',
+
+            'og_title' =>
+            $request->post('og_title') ?? '',
+
+            'og_description' =>
+            $request->post('og_description') ?? '',
+
+            'og_image' => $image,
+
+            'status' =>
+            $request->post('status') ?? 1,
+
+            'published_at' => $request->post('status') == 1
+                ? ($request->post('published_at') ?: now())
+                : null,
+
+            'views' => 0,
+        ]);
+
+
+        if ($data) {
+
+            return redirect()
+                ->route('admin.blog')
+                ->with(
+                    'success',
+                    'Blog Added Successfully.'
+                );
+        }
+
+
+        return back()
+            ->withInput()
+            ->with(
+                'error',
+                'Unable to add blog.'
+            );
+    }
+
+
+    public function edit_blog($blog_id)
+    {
+        $blog_data = Blogs::where(
+            'id',
+            $blog_id
+        )->firstOrFail();
+
+        return view(
+            'admin/blog/edit',
+            compact(
+                'blog_id',
+                'blog_data'
+            )
+        );
+    }
+
+
+    public function update_blog(Request $request)
+    {
+        $blog = Blogs::where(
+            'id',
+            $request->post('id')
+        )->firstOrFail();
+
+
+        $title = $request->post('title') ?? '';
+
+
+        /*
+    |--------------------------------------------------------------------------
+    | SLUG
+    |--------------------------------------------------------------------------
+    */
+
+        $slug = Str::slug(
+            $title,
+            '-'
+        );
+
+        $originalSlug = $slug;
+        $counter = 1;
+
+        while (
+            Blogs::where('slug', $slug)
+            ->where(
+                'id',
+                '!=',
+                $blog->id
+            )
+            ->exists()
+        ) {
+
+            $slug =
+                $originalSlug .
+                '-' .
+                $counter;
+
+            $counter++;
+        }
+
+
+        /*
+    |--------------------------------------------------------------------------
+    | IMAGE
+    |--------------------------------------------------------------------------
+    */
+
+        $image = $blog->image;
+
+        if ($request->hasFile('image')) {
+
+            /*
+        Delete old image
+        */
+
+            if (
+                $image &&
+                File::exists(
+                    base_path(
+                        'uploads/blog/' . $image
+                    )
+                )
+            ) {
+
+                File::delete(
+                    base_path(
+                        'uploads/blog/' . $image
+                    )
+                );
+            }
+
+
+            $file =
+                $request->file('image');
+
+            $image =
+                rand(1111111111, 9999999999) .
+                '_' .
+                rand(1111111111, 9999999999) .
+                '.' .
+                $file->getClientOriginalExtension();
+
+            $file->move(
+                'uploads/blog/',
+                $image
+            );
+        }
+
+
+        /*
+    |--------------------------------------------------------------------------
+    | UPDATE
+    |--------------------------------------------------------------------------
+    */
+
+        $wasPublished =
+            (int) $blog->status === 1;
+
+        $newStatus =
+            (int) ($request->post('status') ?? 1);
+
+
+        $publishedAt =
+            $blog->published_at;
+
+
+        $publishedAt = $request->post('published_at');
+
+        if ($newStatus === 1 && empty($publishedAt)) {
+            $publishedAt = $blog->published_at ?: now();
+        }
+
+        if ($newStatus === 0) {
+            $publishedAt = null;
+        }
+
+
+
+        $updated = $blog->update([
+
+            'title' => $title,
+
+            'slug' => $slug,
+
+            'excerpt' =>
+            $request->post('excerpt') ?? '',
+
+            'content' =>
+            $request->post('content') ?? '',
+
+            'image' => $image,
+
+            'meta_title' =>
+            $request->post('meta_title') ?? '',
+
+            'meta_description' =>
+            $request->post('meta_description') ?? '',
+
+            'og_title' =>
+            $request->post('og_title') ?? '',
+
+            'og_description' =>
+            $request->post('og_description') ?? '',
+
+            'og_image' => $image,
+
+            'status' => $newStatus,
+
+            'published_at' =>
+            $publishedAt,
+        ]);
+
+
+        if ($updated) {
+
+            return redirect()
+                ->route('admin.blog')
+                ->with(
+                    'success',
+                    'Blog Updated Successfully.'
+                );
+        }
+
+
+        return back()
+            ->withInput()
+            ->with(
+                'error',
+                'Unable to update blog.'
+            );
     }
 }
