@@ -2,8 +2,9 @@
 
 
 @section('custom_header')
-
-
+<title>About Us | Print Ki Dukan</title>
+<meta name="keywords" content="about Print Ki Dukan, online printing service India, document printing company, home delivery printing India">
+<meta name="description" content="Learn about Print Ki Dukan, an online printing service that makes document printing simple. Upload your files, choose printing options and get printed documents delivered to your home or office.">
 @endsection
 
 

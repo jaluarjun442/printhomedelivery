@@ -2,7 +2,9 @@
 
 
 @section('custom_header')
-
+<title>Order Details | Print Ki Dukan</title>
+<meta name="keywords" content="printing order details, Print Ki Dukan order details, print order status, document printing order details">
+<meta name="description" content="View your Print Ki Dukan order details including printed documents, printing options, payment information, delivery details and current order status.">
 @endsection
 
 

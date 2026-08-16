@@ -2,8 +2,9 @@
 
 
 @section('custom_header')
-
-
+<title>Disclaimer | Print Ki Dukan</title>
+<meta name="keywords" content="Print Ki Dukan disclaimer, online printing disclaimer, printing service disclaimer, document printing terms">
+<meta name="description" content="Read the Print Ki Dukan Disclaimer for important information about our online printing services, pricing, document uploads, orders, delivery and website content.">
 @endsection
 
 

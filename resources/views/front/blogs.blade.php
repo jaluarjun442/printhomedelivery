@@ -2,14 +2,9 @@
 
 @section('custom_header')
 
-<title>
-    Blogs | Print Ki Dukan
-</title>
-
-<meta
-    name="description"
-    content="Read the latest printing guides, tips, ideas and useful information from Print Ki Dukan.">
-
+<title>Printing Guides, Tips & Ideas | Print Ki Dukan Blog</title>
+<meta name="keywords" content="printing tips, printing guides, document printing tips, PDF printing guide, online printing blog">
+<meta name="description" content="Explore Print Ki Dukan's printing guides, helpful tips and practical ideas for document printing, paper selection, print quality, file preparation and online printing.">
 <meta
     name="robots"
     content="index,follow">

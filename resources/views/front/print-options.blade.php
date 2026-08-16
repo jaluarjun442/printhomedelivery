@@ -2,14 +2,9 @@
 
 @section('custom_header')
 
-<link href="{{ asset('web_assets/css/listing.css') }}" rel="stylesheet">
-
-<link
-    rel="stylesheet"
-    href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-
-
-
+<title>Print Options & Pricing | Print Ki Dukan</title>
+<meta name="keywords" content="print options, printing options, paper size printing, color printing, black and white printing, print settings, online printing">
+<meta name="description" content="Choose the right print options for your documents with Print Ki Dukan. Select paper size, color, pages, copies and other printing preferences before placing your online printing order.">
 @endsection
 
 

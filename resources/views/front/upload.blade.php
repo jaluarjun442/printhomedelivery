@@ -1,9 +1,10 @@
 @extends('layouts.web.web')
 
 @section('custom_header')
-<link href="{{ asset('web_assets/css/listing.css') }}" rel="stylesheet">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 
+<title>Upload Documents for Online Printing | Print Ki Dukan</title>
+<meta name="keywords" content="upload documents for printing, online document printing, print PDF online, upload PDF for printing, home delivery printing">
+<meta name="description" content="Upload your PDF and image files for online printing with Print Ki Dukan. Choose your printing preferences, get the price and have your documents printed and delivered to your doorstep.">
 
 @endsection
 

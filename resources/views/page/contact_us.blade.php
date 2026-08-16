@@ -1,13 +1,9 @@
 @extends('layouts.web.web')
 
 @section('custom_header')
-
 <title>Contact Us | Print Ki Dukan</title>
-
-<meta
-    name="description"
-    content="Contact Print Ki Dukan for printing orders, delivery, services and support.">
-
+<meta name="keywords" content="Print Ki Dukan contact, online printing support, printing customer support, Print Ki Dukan phone number, printing help">
+<meta name="description" content="Contact Print Ki Dukan for help with online printing, document uploads, orders, delivery and printing services. Get in touch with our support team for assistance.">
 <meta
     name="robots"
     content="index,follow">
@@ -61,57 +57,57 @@
 
                 @if(session('success'))
 
-                    <div class="alert alert-success alert-dismissible fade show" role="alert">
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
 
-                        {{ session('success') }}
+                    {{ session('success') }}
 
-                        <button
-                            type="button"
-                            class="btn-close"
-                            data-bs-dismiss="alert"
-                            aria-label="Close">
-                        </button>
+                    <button
+                        type="button"
+                        class="btn-close"
+                        data-bs-dismiss="alert"
+                        aria-label="Close">
+                    </button>
 
-                    </div>
+                </div>
 
                 @endif
 
 
                 @if(session('error'))
 
-                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
 
-                        {{ session('error') }}
+                    {{ session('error') }}
 
-                        <button
-                            type="button"
-                            class="btn-close"
-                            data-bs-dismiss="alert"
-                            aria-label="Close">
-                        </button>
+                    <button
+                        type="button"
+                        class="btn-close"
+                        data-bs-dismiss="alert"
+                        aria-label="Close">
+                    </button>
 
-                    </div>
+                </div>
 
                 @endif
 
 
                 @if($errors->any())
 
-                    <div class="alert alert-danger">
+                <div class="alert alert-danger">
 
-                        <strong>Please check the following:</strong>
+                    <strong>Please check the following:</strong>
 
-                        <ul class="mb-0 mt-2">
+                    <ul class="mb-0 mt-2">
 
-                            @foreach($errors->all() as $error)
+                        @foreach($errors->all() as $error)
 
-                                <li>{{ $error }}</li>
+                        <li>{{ $error }}</li>
 
-                            @endforeach
+                        @endforeach
 
-                        </ul>
+                    </ul>
 
-                    </div>
+                </div>
 
                 @endif
 

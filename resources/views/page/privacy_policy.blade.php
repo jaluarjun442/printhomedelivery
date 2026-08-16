@@ -2,8 +2,9 @@
 
 
 @section('custom_header')
-
-
+<title>Privacy Policy | Print Ki Dukan</title>
+<meta name="keywords" content="Print Ki Dukan privacy policy, printing website privacy, online printing data privacy, customer data protection">
+<meta name="description" content="Read the Print Ki Dukan Privacy Policy to understand how we collect, use, protect and handle information when you use our online printing and document delivery services.">
 @endsection
 
 

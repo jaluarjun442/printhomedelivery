@@ -15,8 +15,7 @@ $store_data = Store::where('id', 1)->first();
     <meta name="author" content="">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     @yield('title')
-    <meta name="keywords" content="" />
-    <meta name="description" content="">
+
 
     <link rel="shortcut icon" href="img/favicon.png" type="image/png">
     <link rel="apple-touch-icon" type="image/x-icon" href="img/favicon.png">
@@ -34,6 +33,9 @@ $store_data = Store::where('id', 1)->first();
 
     <link href="{{ asset('web_assets/css/custom.css') }}" rel="stylesheet">
     <link href="{{ asset('web_assets/css/common-pages.css') }}" rel="stylesheet">
+
+    <link href="{{ asset('web_assets/css/listing.css') }}" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 
     <?php echo $store_data['header_script']; ?> </br>
     @yield('custom_header')

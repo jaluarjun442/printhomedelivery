@@ -2,7 +2,9 @@
 
 
 @section('custom_header')
-
+<title>Order Placed Successfully | Print Ki Dukan</title>
+<meta name="keywords" content="printing order confirmation, Print Ki Dukan order confirmation, print order success, online printing order placed">
+<meta name="description" content="Your Print Ki Dukan printing order has been placed successfully. View your order details and keep your order information available for tracking and delivery updates.">
 @endsection
 
 

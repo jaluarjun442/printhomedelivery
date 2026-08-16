@@ -1,8 +1,9 @@
 @extends('layouts.web.web')
 @section('custom_header')
-<link href="{{ asset('web_assets/css/listing.css') }}" rel="stylesheet">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 
+<title>Printing Price Calculator | Print Ki Dukan</title>
+<meta name="keywords" content="printing price calculator, print cost calculator, online printing calculator, document printing cost, printing charges calculator">
+<meta name="description" content="Calculate your document printing cost online with Print Ki Dukan. Select paper size, color, pages, copies and printing options to get an instant printing price estimate.">
 @endsection
 
 @section('content')

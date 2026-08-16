@@ -1,12 +1,10 @@
 @extends('layouts.web.web')
 
 @section('custom_header')
+<title>Track Your Order | Print Ki Dukan</title>
+<meta name="keywords" content="track printing order, track Print Ki Dukan order, printing order tracking, document delivery tracking, online print order status">
+<meta name="description" content="Track your Print Ki Dukan printing order using your mobile number. Check your order status and stay updated on the processing and delivery of your printed documents.">
 
-<title>Track Order | Print Ki Dukan</title>
-
-<meta
-    name="description"
-    content="Track your Print Ki Dukan orders using your mobile number.">
 
 <meta
     name="robots"

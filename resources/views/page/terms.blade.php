@@ -2,7 +2,9 @@
 
 
 @section('custom_header')
-
+<title>Terms & Conditions | Print Ki Dukan</title>
+<meta name="keywords" content="Print Ki Dukan terms and conditions, online printing terms, printing service terms, document printing terms">
+<meta name="description" content="Read the Terms and Conditions for using Print Ki Dukan's online printing, document upload, payment, order processing and delivery services.">
 @endsection
 
 

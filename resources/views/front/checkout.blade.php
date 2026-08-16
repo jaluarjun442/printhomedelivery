@@ -1,7 +1,9 @@
 @extends('layouts.web.web')
 
 @section('custom_header')
-
+<title>Checkout | Print Ki Dukan</title>
+<meta name="keywords" content="online printing checkout, print order checkout, document printing order, online print payment, Print Ki Dukan checkout">
+<meta name="description" content="Complete your Print Ki Dukan printing order securely. Review your documents, printing options, delivery charges and total amount before placing your order.">
 @endsection
 
 
