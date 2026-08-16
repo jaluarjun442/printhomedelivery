@@ -1068,12 +1068,12 @@
                     '"]')
                 .addClass('selected');
 
-            /*
-            TEMPORARY FREE SHIPPING
-            */
+
+            let deliveryCharge =
+                parseFloat(courier.total_charges) || 0;
 
             $('#deliveryCharge')
-                .text('₹0.00');
+                .text('₹' + formatMoney(deliveryCharge));
 
             updateCheckoutTotal();
 
@@ -1103,6 +1103,13 @@
             */
 
             let deliveryCharge = 0;
+
+            if (selectedShippingCourier) {
+                deliveryCharge =
+                    parseFloat(
+                        selectedShippingCourier.total_charges
+                    ) || 0;
+            }
 
             let total =
                 printSubtotal +
