@@ -37,7 +37,7 @@ $store_data = Store::where('id', 1)->first();
     <link href="{{ asset('web_assets/css/listing.css') }}" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 
-    <?php echo $store_data['header_script']; ?> 
+    <?php echo $store_data['header_script']; ?>
     @yield('custom_header')
 </head>
 
@@ -51,11 +51,15 @@ $store_data = Store::where('id', 1)->first();
                     <div class="row small-gutters">
                         <div class="col-xl-2 col-lg-2 d-lg-flex align-items-center">
                             <div id="logo">
-                                <a href="{{ route('home') }}"><img src="{{ asset('uploads/logo') . '/' . $store_data['logo'] }}" alt="" class="desktop_logo"></a>
+                                <a href="{{ route('home') }}">
+                                    <img src="{{ asset('uploads/logo') . '/' . $store_data['logo'] }}"
+                                        alt="Home"
+                                        class="desktop_logo">
+                                </a>
                             </div>
                         </div>
                         <nav class="col-xl-8 col-lg-8">
-                            <a class="open_close" href="javascript:void(0);">
+                            <a class="open_close" href="javascript:void(0);" aria-label="Open menu">
                                 <div class="hamburger hamburger--spin">
                                     <div class="hamburger-box">
                                         <div class="hamburger-inner"></div>
@@ -71,7 +75,7 @@ $store_data = Store::where('id', 1)->first();
                                     <a href="{{ route('home') }}">
                                         <img
                                             src="{{ asset('uploads/logo') . '/' . $store_data['logo'] }}"
-                                            alt=""
+                                            alt="Home"
                                             width="100"
                                             height="35">
                                     </a>
@@ -79,8 +83,9 @@ $store_data = Store::where('id', 1)->first();
                                     <a
                                         href="#"
                                         class="open_close"
-                                        id="close_in">
-                                        <i class="ti-close"></i>
+                                        id="close_in"
+                                        aria-label="Close menu">
+                                        <i class="ti-close" aria-hidden="true"></i>
                                     </a>
 
                                 </div>
@@ -243,14 +248,18 @@ $store_data = Store::where('id', 1)->first();
         </script>
         <div class="top_panel">
             <div class="container header_panel">
-                <a href="#0" class="btn_close_top_panel"><i class="ti-close"></i></a>
+                <a href="#0" class="btn_close_top_panel" aria-label="Close panel">
+                    <i class="ti-close" aria-hidden="true"></i>
+                </a>
                 <small>What are you looking for?</small>
             </div>
 
             <div class="container">
                 <div class="search-input">
                     <input type="text" placeholder="Search products...">
-                    <button type="submit"><i class="ti-search"></i></button>
+                    <button type="submit" aria-label="Search">
+                        <i class="ti-search" aria-hidden="true"></i>
+                    </button>
                 </div>
             </div>
         </div>
@@ -328,7 +337,7 @@ $store_data = Store::where('id', 1)->first();
     <script src="{{ asset('web_assets/js/carousel-home.min.js') }}"></script>
 
     <?php echo $store_data['footer_script']; ?>
-    
+
     @yield('custom_footer')
     <script>
         $(document).on('click', '.more-toggle', function(e) {

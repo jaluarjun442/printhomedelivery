@@ -130,8 +130,10 @@
                 <div class="col-lg-6 text-center d-none d-lg-block">
 
                     <img src="{{ asset('img/pkd_banner_t.png') }}"
-                        class="img-fluid home-hero-image">
-
+                        class="img-fluid home-hero-image"
+                        width="522"
+                        height="576"
+                        alt="Print Home Delivery">
                 </div>
 
             </div>
