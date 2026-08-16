@@ -402,8 +402,8 @@
                     <p>
                         <strong>Phone:</strong>
 
-                        <a href="tel:+{{ store_data()['phone'] }}">
-                            {{ store_data()['phone'] }}
+                        <a href="tel:+{{ $store_data['phone'] }}">
+                            {{ $store_data['phone'] }}
                         </a>
                     </p>
 

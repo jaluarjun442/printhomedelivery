@@ -246,7 +246,7 @@ $canonicalUrl = route('blog', [
         ARTICLE
     ====================================================== --}}
 
-    <article>
+    <article class="document-upload-section">
 
         <div class="container py-5">
 

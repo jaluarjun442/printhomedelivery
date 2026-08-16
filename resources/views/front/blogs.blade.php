@@ -64,7 +64,7 @@
         BLOG LIST
     ====================================================== --}}
 
-    <section class="py-5">
+    <section class="py-5 document-upload-section">
 
         <div class="container">
 

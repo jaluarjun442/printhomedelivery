@@ -102,11 +102,6 @@
                             Blogs
                         </a>
 
-                        <a class="nav-link"
-                            href="{{ route('admin_setting') }}">
-                            Settings
-                        </a>
-
                     </ul>
 
                     @endguest

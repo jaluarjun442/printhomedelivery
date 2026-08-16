@@ -28,7 +28,7 @@
     <link rel="stylesheet" href="{{ asset('web_assets/css/bootstrap.min.css') }}">
     <link rel="stylesheet" href="{{ asset('web_assets/css/demo4.min.css') }}">
     <link rel="stylesheet" type="text/css" href="{{ asset('web_assets/vendor/fontawesome-free/css/all.min.css') }}">
-    <?php echo store_data()['header_script']; ?>
+    
 </head>
 
 <body>
@@ -753,7 +753,7 @@
 
     <!-- Main JS File -->
     <script src="{{ asset('web_assets/js/main.min.js') }}"></script>
-    <?php echo store_data()['footer_script']; ?>
+  
 </body>
 
 </html>

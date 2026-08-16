@@ -1,3 +1,9 @@
+<?php
+
+use App\Models\Store;
+
+$store_data = Store::where('id', 1)->first();
+?>
 <!DOCTYPE html>
 <html lang="en">
 
@@ -28,18 +34,8 @@
 
     <link href="{{ asset('web_assets/css/custom.css') }}" rel="stylesheet">
     <link href="{{ asset('web_assets/css/common-pages.css') }}" rel="stylesheet">
-    <style>
-        <?php
 
-        use App\Models\Category;
-        use App\Models\Store;
-
-        $store_id = store_id();
-        $store_data = Store::where('id', $store_id)->first();
-        // echo store_data()['header_script']; 
-        ?>
-    </style>
-
+    <?php echo $store_data['header_script']; ?> </br>
     @yield('custom_header')
 </head>
 
@@ -53,7 +49,7 @@
                     <div class="row small-gutters">
                         <div class="col-xl-2 col-lg-2 d-lg-flex align-items-center">
                             <div id="logo">
-                                <a href="{{ route('home') }}"><img src="{{ asset('uploads/logo') . '/' . store_data()['logo'] }}" alt="" class="desktop_logo"></a>
+                                <a href="{{ route('home') }}"><img src="{{ asset('uploads/logo') . '/' . $store_data['logo'] }}" alt="" class="desktop_logo"></a>
                             </div>
                         </div>
                         <nav class="col-xl-8 col-lg-8">
@@ -72,7 +68,7 @@
 
                                     <a href="{{ route('home') }}">
                                         <img
-                                            src="{{ asset('uploads/logo') . '/' . store_data()['logo'] }}"
+                                            src="{{ asset('uploads/logo') . '/' . $store_data['logo'] }}"
                                             alt=""
                                             width="100"
                                             height="35">
@@ -274,9 +270,7 @@
                             </ul>
                         </div>
                     </div>
-                    <?php
-                    $category_data = Category::where('parent_category_id', null)->get();
-                    ?>
+
                     <div class="col-lg-3 col-md-6">
                         <h3 data-bs-target="#collapse_2">Tools</h3>
                         <div class="collapse dont-collapse-sm links" id="collapse_2">
@@ -331,7 +325,8 @@
     <script src="{{ asset('web_assets/js/main.js') }}"></script>
     <script src="{{ asset('web_assets/js/carousel-home.min.js') }}"></script>
 
-
+    <?php echo $store_data['footer_script']; ?>
+    </br>
     @yield('custom_footer')
     <script>
         $(document).on('click', '.more-toggle', function(e) {
