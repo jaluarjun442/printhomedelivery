@@ -37,7 +37,7 @@ $store_data = Store::where('id', 1)->first();
     <link href="{{ asset('web_assets/css/listing.css') }}" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 
-    <?php echo $store_data['header_script']; ?> </br>
+    <?php echo $store_data['header_script']; ?> 
     @yield('custom_header')
 </head>
 
@@ -328,7 +328,7 @@ $store_data = Store::where('id', 1)->first();
     <script src="{{ asset('web_assets/js/carousel-home.min.js') }}"></script>
 
     <?php echo $store_data['footer_script']; ?>
-    </br>
+    
     @yield('custom_footer')
     <script>
         $(document).on('click', '.more-toggle', function(e) {
