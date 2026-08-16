@@ -6,6 +6,7 @@ use App\Http\Controllers\HomeController;
 use App\Http\Controllers\FrontController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\CheckoutController;
+use App\Http\Controllers\ContactController;
 use App\Http\Controllers\InstaController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\PriceController;
@@ -71,6 +72,8 @@ Route::get('/cron/payu-pending-check', [CheckoutController::class, 'payuPendingC
 Route::post('/checkout/verify-razorpay', [CheckoutController::class, 'verifyRazorpay'])->name('checkout.verify.razorpay');
 Route::post('/checkout/razorpay-failed', [CheckoutController::class, 'razorpayFailed'])->name('checkout.razorpay.failed');
 
+Route::post('/contact', [ContactController::class, 'submit'])->name('contact.submit');
+
 // Route::get('/about_us', [FrontController::class, 'about_us'])->name('about_us');
 // Route::get('/contact_us', [FrontController::class, 'contact_us'])->name('contact_us');
 Route::get('/categories', [FrontController::class, 'categories'])->name('categories');
@@ -130,6 +133,10 @@ Route::group(['prefix' => 'admin', 'middleware' => 'auth'], function () {
     Route::get('/edit_blog/{blog_id}', [AdminController::class, 'edit_blog'])->name('admin.edit_blog');
     Route::post('/update_blog', [AdminController::class, 'update_blog'])->name('admin.update_blog');
 
+    Route::get('/contact', [AdminController::class, 'contact'])->name('admin.contact');
+    Route::get('/get_contact', [AdminController::class, 'get_contact'])->name('admin.get_contact');
+    Route::get('/contact/{id}', [AdminController::class, 'contact_view'])->name('admin.contact.view');
+    Route::post('/contact/{id}/read', [AdminController::class, 'contact_read'])->name('admin.contact.read');
 
     Route::get('/add_product_widget/{product_id}', [AdminController::class, 'add_product_widget'])->name('admin.add_product_widget');
     Route::post('/save_product_widget', [AdminController::class, 'save_product_widget'])->name('admin.save_product_widget');

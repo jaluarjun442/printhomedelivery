@@ -14,6 +14,7 @@ use DataTables;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\File;
 use App\Models\Blogs;
+use App\Models\Contact;
 
 class AdminController extends Controller
 {
@@ -798,5 +799,72 @@ class AdminController extends Controller
                 'error',
                 'Unable to update blog.'
             );
+    }
+    public function contact()
+    {
+        return view('admin/contact/index');
+    }
+
+
+    public function get_contact(Request $request)
+    {
+        $data = Contact::orderBy('id', 'desc');
+
+        return DataTables::of($data)
+
+            ->addIndexColumn()
+
+            ->editColumn('is_read', function ($row) {
+
+                if ($row->is_read) {
+                    return '<span class="badge badge-success">Read</span>';
+                }
+
+                return '<span class="badge badge-warning">Unread</span>';
+            })
+
+            ->editColumn('created_at', function ($row) {
+
+                return $row->created_at
+                    ? $row->created_at->format('d M Y h:i A')
+                    : '';
+            })
+
+            ->addColumn('action', function ($row) {
+
+                return '<a href="' .
+                    route('admin.contact.view', $row->id) .
+                    '" class="btn btn-primary btn-sm">
+                    View
+                </a>';
+            })
+
+            ->rawColumns([
+                'is_read',
+                'action'
+            ])
+
+            ->make(true);
+    }
+
+
+    public function contact_view($id)
+    {
+        $contact = Contact::findOrFail($id);
+
+        return view('admin/contact/view', compact('contact'));
+    }
+
+
+    public function contact_read($id)
+    {
+        $contact = Contact::findOrFail($id);
+
+        $contact->is_read = 1;
+        $contact->save();
+
+        return redirect()
+            ->route('admin.contact.view', $id)
+            ->with('success', 'Message marked as read.');
     }
 }

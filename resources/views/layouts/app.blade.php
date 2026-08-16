@@ -82,7 +82,7 @@
                             Price
                         </a>
 
-                        <a class="nav-link"
+                        <!-- <a class="nav-link"
                             href="{{ route('admin.category') }}">
                             Category
                         </a>
@@ -90,10 +90,13 @@
                         <a class="nav-link"
                             href="{{ route('admin.product') }}">
                             Product
-                        </a>
+                        </a> -->
 
                         <a class="nav-link" href="{{ route('admin.orders') }}">
                             Orders
+                        </a>
+                        <a class="nav-link" href="{{ route('admin.contact') }}">
+                            Contacts
                         </a>
                         <a class="nav-link" href="{{ route('admin.blog') }}">
                             Blogs

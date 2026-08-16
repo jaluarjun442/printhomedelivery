@@ -1,11 +1,29 @@
 @extends('layouts.web.web')
 
-
 @section('custom_header')
 
+<title>Contact Us | Print Ki Dukan</title>
+
+<meta
+    name="description"
+    content="Contact Print Ki Dukan for printing orders, delivery, services and support.">
+
+<meta
+    name="robots"
+    content="index,follow">
+
+<link
+    rel="canonical"
+    href="{{ url('/contact') }}">
+
+{{-- Cloudflare Turnstile --}}
+<script
+    src="https://challenges.cloudflare.com/turnstile/v0/api.js"
+    async
+    defer>
+</script>
 
 @endsection
-
 
 
 @section('content')
@@ -18,6 +36,10 @@
 
             <div class="contact-wrapper">
 
+
+                {{-- =====================================================
+                    PAGE HEADER
+                ====================================================== --}}
 
                 <div class="contact-page-header">
 
@@ -33,6 +55,71 @@
                 </div>
 
 
+                {{-- =====================================================
+                    SUCCESS / ERROR MESSAGE
+                ====================================================== --}}
+
+                @if(session('success'))
+
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+
+                    {{ session('success') }}
+
+                    <button
+                        type="button"
+                        class="btn-close"
+                        data-bs-dismiss="alert"
+                        aria-label="Close">
+                    </button>
+
+                </div>
+
+                @endif
+
+
+                @if(session('error'))
+
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+
+                    {{ session('error') }}
+
+                    <button
+                        type="button"
+                        class="btn-close"
+                        data-bs-dismiss="alert"
+                        aria-label="Close">
+                    </button>
+
+                </div>
+
+                @endif
+
+
+                @if($errors->any())
+
+                <div class="alert alert-danger">
+
+                    <strong>Please check the following:</strong>
+
+                    <ul class="mb-0 mt-2">
+
+                        @foreach($errors->all() as $error)
+
+                        <li>{{ $error }}</li>
+
+                        @endforeach
+
+                    </ul>
+
+                </div>
+
+                @endif
+
+
+
+                {{-- =====================================================
+                    CONTACT INFORMATION
+                ====================================================== --}}
 
                 <div class="contact-card">
 
@@ -131,6 +218,12 @@
 
                 </div>
 
+
+
+                {{-- =====================================================
+                    CONTACT FORM
+                ====================================================== --}}
+
                 <div class="contact-card">
 
                     <h2>
@@ -141,13 +234,18 @@
 
                     </h2>
 
+
                     <form
-                        action="javascript:void(0);"
-                        method="POST"
-                        onsubmit="return false;">
+                        action="{{ route('contact.submit') }}"
+                        method="POST">
+
+                        @csrf
+
 
                         <div class="row">
 
+
+                            {{-- NAME --}}
 
                             <div class="col-md-6">
 
@@ -162,13 +260,17 @@
                                         id="contact_name"
                                         name="name"
                                         class="contact-form-control"
-                                        placeholder="Enter your name">
+                                        placeholder="Enter your name"
+                                        value="{{ old('name') }}"
+                                        required>
 
                                 </div>
 
                             </div>
 
 
+
+                            {{-- EMAIL --}}
 
                             <div class="col-md-6">
 
@@ -183,13 +285,17 @@
                                         id="contact_email"
                                         name="email"
                                         class="contact-form-control"
-                                        placeholder="Enter your email">
+                                        placeholder="Enter your email"
+                                        value="{{ old('email') }}"
+                                        required>
 
                                 </div>
 
                             </div>
 
 
+
+                            {{-- MOBILE --}}
 
                             <div class="col-md-6">
 
@@ -204,13 +310,16 @@
                                         id="contact_mobile"
                                         name="mobile"
                                         class="contact-form-control"
-                                        placeholder="Enter your mobile number">
+                                        placeholder="Enter your mobile number"
+                                        value="{{ old('mobile') }}">
 
                                 </div>
 
                             </div>
 
 
+
+                            {{-- SUBJECT --}}
 
                             <div class="col-md-6">
 
@@ -225,13 +334,16 @@
                                         id="contact_subject"
                                         name="subject"
                                         class="contact-form-control"
-                                        placeholder="Enter subject">
+                                        placeholder="Enter subject"
+                                        value="{{ old('subject') }}">
 
                                 </div>
 
                             </div>
 
 
+
+                            {{-- MESSAGE --}}
 
                             <div class="col-md-12">
 
@@ -245,8 +357,24 @@
                                         id="contact_message"
                                         name="message"
                                         class="contact-form-control"
-                                        placeholder="Write your message"></textarea>
+                                        placeholder="Write your message"
+                                        required>{{ old('message') }}</textarea>
 
+                                </div>
+
+                            </div>
+
+
+
+                            {{-- =================================================
+                                CLOUDFLARE TURNSTILE
+                            ================================================== --}}
+
+                            <div class="col-md-12 mb-3">
+
+                                <div
+                                    class="cf-turnstile"
+                                    data-sitekey="{{ env('TURNSTILE_SITE_KEY') }}">
                                 </div>
 
                             </div>
@@ -255,11 +383,11 @@
                         </div>
 
 
+                        {{-- SUBMIT --}}
+
                         <button
                             type="submit"
-                            class="contact-submit-btn"
-
-                            style="">
+                            class="contact-submit-btn">
 
                             <i class="bi bi-send"></i>
 
@@ -267,12 +395,17 @@
 
                         </button>
 
-                    </form>
 
+                    </form>
 
 
                 </div>
 
+
+
+                {{-- =====================================================
+                    EXISTING ORDER
+                ====================================================== --}}
 
                 <div class="contact-card">
 
@@ -285,15 +418,18 @@
                     </h2>
 
                     <p>
+
                         If you are contacting us about an existing
                         printing order, please keep your order number
                         ready. This helps us identify your order and
                         assist you more quickly.
+
                     </p>
 
                     <p style="margin-bottom:0;">
 
                         For example:
+
                         <strong style="color:#2856db;">
                             OF260811CZ1TF4
                         </strong>
