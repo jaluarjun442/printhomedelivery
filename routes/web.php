@@ -66,10 +66,15 @@ Route::get('/order/success/{order}', [CheckoutController::class, 'success'])->na
 
 Route::post('/checkout/verify-payu', [CheckoutController::class, 'verifyPayU'])
     ->name('checkout.verify.payu');
+Route::post('/api/payu/webhook', [CheckoutController::class, 'payuWebhook'])
+    ->name('payu.webhook')
+    ->withoutMiddleware([\App\Http\Middleware\VerifyCsrfToken::class,]);
+Route::post('/api/payu/check-status/{order}', [CheckoutController::class, 'checkPayUStatus'])->name('payu.check.status');
+Route::get('/cron/payu-pending-check', [CheckoutController::class, 'payuPendingCron'])->name('payu.pending.cron');
+
 
 Route::post('/checkout/verify-razorpay', [CheckoutController::class, 'verifyRazorpay'])
     ->name('checkout.verify.razorpay');
-
 Route::post('/checkout/razorpay-failed', [CheckoutController::class, 'razorpayFailed'])
     ->name('checkout.razorpay.failed');
 

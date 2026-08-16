@@ -2182,8 +2182,66 @@ MOBILE RESPONSIVE
                             }
 
 
-                            verifyPayUPayment(
-                                paymentResponse,
+                            /*
+                            =====================================================
+                            PAYU RESPONSE STATUS
+                            =====================================================
+
+                            Checkout Plus uses txnStatus for SUCCESS / FAILED /
+                            CANCEL. Do not send CANCEL/FAILED to the verification
+                            endpoint.
+
+                            If the customer closes/cancels the PayU popup,
+                            immediately unlock the Pay Now button.
+                            */
+
+                            let txnStatus =
+                                String(
+                                    paymentResponse.txnStatus ||
+                                    paymentResponse.status ||
+                                    ''
+                                ).toUpperCase();
+
+                            if (
+                                txnStatus === 'CANCEL' ||
+                                txnStatus === 'CANCELLED'
+                            ) {
+                                showCheckoutError(
+                                    'Payment cancelled.',
+                                    button
+                                );
+
+                                return;
+                            }
+
+                            if (txnStatus === 'FAILED') {
+                                showCheckoutError(
+                                    'Payment failed. Please try again.',
+                                    button
+                                );
+
+                                return;
+                            }
+
+                            /*
+                            Only SUCCESS goes to server-side verification.
+                            */
+                            if (
+                                txnStatus === 'SUCCESS' ||
+                                String(
+                                    paymentResponse.status || ''
+                                ).toLowerCase() === 'success'
+                            ) {
+                                verifyPayUPayment(
+                                    paymentResponse,
+                                    button
+                                );
+
+                                return;
+                            }
+
+                            showCheckoutError(
+                                'Payment was not completed. Please try again.',
                                 button
                             );
 
@@ -2273,7 +2331,12 @@ MOBILE RESPONSIVE
                     txnid: paymentResponse.txnid ||
                         '',
 
+                    /*
+                    PayU Checkout Plus may expose txnStatus while the
+                    server-side verification expects status.
+                    */
                     status: paymentResponse.status ||
+                        paymentResponse.txnStatus ||
                         '',
 
                     hash: paymentResponse.hash ||
@@ -2321,6 +2384,39 @@ MOBILE RESPONSIVE
 
                 success: function(response) {
 
+                    /*
+                    =====================================================
+                    PENDING PAYMENT
+                    =====================================================
+                    Keep the customer away from checkout. Redirect to
+                    the SAME order detail page so they do not start a
+                    duplicate payment/order.
+                    */
+
+                    if (
+                        response &&
+                        response.payment_status === 'pending' &&
+                        (
+                            response.redirect_url ||
+                            response.redirect
+                        )
+                    ) {
+
+                        window.location.href =
+                            response.redirect_url ||
+                            response.redirect;
+
+                        return;
+
+                    }
+
+
+                    /*
+                    =====================================================
+                    SUCCESS
+                    =====================================================
+                    */
+
                     if (
                         response &&
                         response.success &&
@@ -2334,6 +2430,12 @@ MOBILE RESPONSIVE
 
                     }
 
+
+                    /*
+                    =====================================================
+                    FAILED / OTHER RESPONSE
+                    =====================================================
+                    */
 
                     showCheckoutError(
                         response &&
@@ -2353,16 +2455,44 @@ MOBILE RESPONSIVE
                         xhr.responseText
                     );
 
+
+                    /*
+                    =====================================================
+                    PENDING RETURNED WITH HTTP 4xx
+                    =====================================================
+                    */
+
+                    let response =
+                        xhr.responseJSON || null;
+
+                    if (
+                        response &&
+                        response.payment_status === 'pending' &&
+                        (
+                            response.redirect_url ||
+                            response.redirect
+                        )
+                    ) {
+
+                        window.location.href =
+                            response.redirect_url ||
+                            response.redirect;
+
+                        return;
+
+                    }
+
+
                     let message =
                         'Payment verification failed.';
 
                     if (
-                        xhr.responseJSON &&
-                        xhr.responseJSON.message
+                        response &&
+                        response.message
                     ) {
 
                         message =
-                            xhr.responseJSON.message;
+                            response.message;
 
                     }
 
@@ -2389,6 +2519,13 @@ MOBILE RESPONSIVE
             button
         ) {
 
+            /*
+            =====================================================
+            PAYMENT FAILED / CANCELLED
+            UNLOCK CHECKOUT BUTTON
+            =====================================================
+            */
+
             paymentProcessing = false;
 
             $('#checkoutTopError')
@@ -2396,15 +2533,35 @@ MOBILE RESPONSIVE
                 .addClass('show');
 
 
+            /*
+            =====================================================
+            RESET BUTTON COMPLETELY
+            =====================================================
+            */
+
             button
                 .prop('disabled', false)
                 .css({
                     'pointer-events': '',
                     'opacity': ''
-                });
+                })
+                .html(
+                    '<span id="paymentButtonText">Pay Now</span>' +
+                    '<i class="bi bi-arrow-right ms-1"></i>'
+                );
 
 
-            updatePaymentButtonText();
+            /*
+            =====================================================
+            MAKE SURE PAYMENT OPTION IS STILL SELECTED
+            =====================================================
+            */
+
+            $('input[name="payment_method"][value="payu"]')
+                .prop('checked', true);
+
+            $('#payuOption')
+                .addClass('selected');
 
         }
 

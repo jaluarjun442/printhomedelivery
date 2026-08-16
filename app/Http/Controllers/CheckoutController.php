@@ -1829,7 +1829,6 @@ class CheckoutController extends Controller
         );
 
         if ($payuStatus !== 'success') {
-
             $order->update([
                 'payment_status' =>
                 $payuStatus === 'pending'
@@ -1843,12 +1842,10 @@ class CheckoutController extends Controller
             ]);
 
             return response()->json([
-                'success' => false,
-                'payment_status' => $payuStatus,
-                'message' =>
-                $payuStatus === 'pending'
-                    ? 'Payment is still pending.'
-                    : 'Payment was not successful.'
+                'success' => true,
+                'payment_status' => 'pending',
+                'redirect_url' => route('my-orders.view', $order->id),
+                'message' => 'Payment is still pending. Please wait 10–15 minutes.'
             ]);
         }
 
@@ -1925,11 +1922,89 @@ class CheckoutController extends Controller
             ''
         );
 
-        if (
-            $verifiedStatus !== 'success' ||
-            $verifiedAmount !== $orderAmount
+        /*
+=====================================================
+AMOUNT MISMATCH
+=====================================================
+*/
+
+        if ($verifiedAmount !== $orderAmount) {
+
+            \Log::warning('PAYU VERIFY: AMOUNT MISMATCH', [
+                'txnid' => $validated['txnid'],
+                'verified_status' => $verifiedStatus,
+                'verified_amount' => $verifiedAmount,
+                'order_amount' => $orderAmount,
+            ]);
+
+            /*
+    Never mark the order failed because of a temporary
+    verification mismatch. Keep it pending so a later
+    webhook / status check can recover the same order.
+    */
+
+            $order->update([
+                'payment_status' => 'pending',
+                'status' => 'payment_pending',
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'payment_status' => 'pending',
+                'message' => 'Payment is still being confirmed. Please wait a few minutes.'
+            ], 422);
+        }
+
+
+        /*
+=====================================================
+PAYU FINAL STATUS
+=====================================================
+*/
+
+        /*
+|--------------------------------------------------------------------------
+| SUCCESS
+|--------------------------------------------------------------------------
+*/
+
+        if ($verifiedStatus === 'success') {
+
+            /*
+    Continue below to the existing SUCCESS section
+    which saves mihpayid, bank_ref_num, paid, placed.
+    */
+        } elseif ($verifiedStatus === 'pending') {
+
+            $order->update([
+                'payment_status' => 'pending',
+                'status' => 'payment_pending',
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'payment_status' => 'pending',
+                'message' => 'Payment is still pending. Please wait 10–15 minutes.'
+            ]);
+        } elseif (
+            in_array(
+                $verifiedStatus,
+                [
+                    'failed',
+                    'failure',
+                    'dropped',
+                    'bounced',
+                    'cancelled',
+                    'cancel',
+                ],
+                true
+            )
         ) {
 
+            /*
+    Only an explicit final PayU failure is allowed
+    to mark the order failed.
+    */
 
             $order->update([
                 'payment_status' => 'failed',
@@ -1938,8 +2013,31 @@ class CheckoutController extends Controller
 
             return response()->json([
                 'success' => false,
-                'message' => 'PayU payment could not be confirmed.'
-            ], 422);
+                'payment_status' => 'failed',
+                'message' => 'Payment failed.'
+            ]);
+        } else {
+
+            /*
+    Unknown / temporary gateway state:
+    DO NOT mark failed.
+    */
+
+            \Log::warning('PAYU VERIFY: UNKNOWN STATUS', [
+                'txnid' => $validated['txnid'],
+                'verified_status' => $verifiedStatus,
+            ]);
+
+            $order->update([
+                'payment_status' => 'pending',
+                'status' => 'payment_pending',
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'payment_status' => 'pending',
+                'message' => 'Payment is still being confirmed. Please wait 10–15 minutes.'
+            ]);
         }
 
         /*
@@ -2013,7 +2111,1197 @@ class CheckoutController extends Controller
             ),
         ]);
     }
+    public function payuPendingCron(Request $request)
+    {
+        /*
+    =====================================================
+    CRON SECURITY
+    =====================================================
+    */
 
+        $cronKey = (string) env('PAYU_CRON_KEY');
+
+        if (
+            !$cronKey ||
+            !hash_equals(
+                $cronKey,
+                (string) $request->query('key')
+            )
+        ) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthorized.'
+            ], 403);
+        }
+
+
+        /*
+    =====================================================
+    PAYU CONFIG
+    =====================================================
+    */
+
+        $payuKey = env('PAYU_MERCHANT_KEY');
+        $payuSalt = env('PAYU_MERCHANT_SALT');
+
+        if (!$payuKey || !$payuSalt) {
+            return response()->json([
+                'success' => false,
+                'message' => 'PayU configuration missing.'
+            ], 500);
+        }
+
+
+        /*
+    =====================================================
+    GET ONLY PENDING PAYU ORDERS
+    =====================================================
+    */
+
+        $orders = Order::where('payment_method', 'payu')
+            ->where(function ($query) {
+                $query->where('payment_status', 'pending')
+                    ->orWhere('status', 'payment_pending');
+            })
+            ->whereNotNull('order_number')
+            ->get();
+
+
+        if ($orders->isEmpty()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'No pending PayU orders.',
+                'checked' => 0,
+                'updated' => 0,
+            ]);
+        }
+
+
+        /*
+    =====================================================
+    COLLECT TXNIDS
+    =====================================================
+    */
+
+        $orderMap = [];
+
+        foreach ($orders as $order) {
+            $orderMap[$order->order_number] = $order;
+        }
+
+        $txniDs = array_keys($orderMap);
+
+
+        /*
+    =====================================================
+    BATCH
+    =====================================================
+    */
+
+        $batchSize = max(
+            1,
+            (int) env('PAYU_VERIFY_BATCH_SIZE', 50)
+        );
+
+        $batches = array_chunk(
+            $txniDs,
+            $batchSize
+        );
+
+
+        $summary = [
+            'checked' => 0,
+            'success' => 0,
+            'pending' => 0,
+            'failed' => 0,
+            'mismatch' => 0,
+            'not_found' => 0,
+            'errors' => 0,
+        ];
+
+
+        /*
+    =====================================================
+    PROCESS BATCHES
+    =====================================================
+    */
+
+        foreach ($batches as $batch) {
+
+            /*
+        -------------------------------------------------
+        IMPORTANT:
+        -------------------------------------------------
+        PayU verify_payment expects var1 in its supported
+        transaction-list format. Keep the batch construction
+        isolated here so the API format can be changed in
+        one place if PayU account/API version requires it.
+        */
+
+            $var1 = implode('|', $batch);
+
+
+            $verifyHash = strtolower(
+                hash(
+                    'sha512',
+                    $payuKey .
+                        '|verify_payment|' .
+                        $var1 .
+                        '|' .
+                        $payuSalt
+                )
+            );
+
+
+            try {
+
+                $verifyResponse = Http::asForm()
+                    ->timeout(20)
+                    ->post(
+                        'https://info.payu.in/merchant/postservice.php?form=2',
+                        [
+                            'key' => $payuKey,
+                            'command' => 'verify_payment',
+                            'var1' => $var1,
+                            'hash' => $verifyHash,
+                        ]
+                    );
+            } catch (\Throwable $e) {
+
+                \Log::error(
+                    'PAYU CRON VERIFY EXCEPTION',
+                    [
+                        'message' => $e->getMessage(),
+                        'txnid_count' => count($batch),
+                    ]
+                );
+
+                $summary['errors']++;
+
+                /*
+            Temporary API failure:
+            Leave all orders pending.
+            */
+
+                continue;
+            }
+
+
+            if (!$verifyResponse->successful()) {
+
+                \Log::warning(
+                    'PAYU CRON VERIFY API FAILED',
+                    [
+                        'status' => $verifyResponse->status(),
+                        'body' => $verifyResponse->body(),
+                        'txnid_count' => count($batch),
+                    ]
+                );
+
+                $summary['errors']++;
+
+                continue;
+            }
+
+
+            $verifyData = $verifyResponse->json();
+
+            $transactions =
+                data_get(
+                    $verifyData,
+                    'transaction_details',
+                    []
+                );
+
+
+            if (!is_array($transactions)) {
+                $transactions = [];
+            }
+
+
+            /*
+        -------------------------------------------------
+        PROCESS EACH RETURNED TRANSACTION LOCALLY
+        -------------------------------------------------
+        */
+
+            foreach ($batch as $txnid) {
+
+                $summary['checked']++;
+
+
+                if (!isset($orderMap[$txnid])) {
+                    continue;
+                }
+
+
+                $order = $orderMap[$txnid];
+
+
+                /*
+            ---------------------------------------------
+            PAYU TRANSACTION
+            ---------------------------------------------
+            */
+
+                $transaction =
+                    $transactions[$txnid]
+                    ?? null;
+
+
+                if (!is_array($transaction)) {
+
+                    $summary['not_found']++;
+
+                    continue;
+                }
+
+
+                $status = strtolower(
+                    trim(
+                        (string) (
+                            $transaction['status']
+                            ?? ''
+                        )
+                    )
+                );
+
+
+                /*
+            ---------------------------------------------
+            AMOUNT
+            ---------------------------------------------
+            */
+
+                $verifiedAmount = number_format(
+                    (float) (
+                        $transaction['amt']
+                        ?? $transaction['transaction_amount']
+                        ?? $transaction['net_amount_debit']
+                        ?? 0
+                    ),
+                    2,
+                    '.',
+                    ''
+                );
+
+
+                $orderAmount = number_format(
+                    (float) $order->grand_total,
+                    2,
+                    '.',
+                    ''
+                );
+
+
+                /*
+            ---------------------------------------------
+            AMOUNT MISMATCH
+            ---------------------------------------------
+            */
+
+                if ($verifiedAmount !== $orderAmount) {
+
+                    $summary['mismatch']++;
+
+                    \Log::warning(
+                        'PAYU CRON AMOUNT MISMATCH',
+                        [
+                            'order_id' => $order->id,
+                            'txnid' => $txnid,
+                            'verified_amount' => $verifiedAmount,
+                            'order_amount' => $orderAmount,
+                        ]
+                    );
+
+                    /*
+                Never mark failed because of mismatch.
+                Keep pending for manual investigation/retry.
+                */
+
+                    continue;
+                }
+
+
+                /*
+            ---------------------------------------------
+            SUCCESS
+            ---------------------------------------------
+            */
+
+                if ($status === 'success') {
+
+                    $transactionId =
+                        $transaction['mihpayid']
+                        ?? null;
+
+
+                    $bankReferenceId =
+                        $transaction['bank_ref_num']
+                        ?? $transaction['bank_ref_no']
+                        ?? null;
+
+
+                    $order->update([
+                        'razorpay_payment_id' =>
+                        $transactionId
+                            ? (string) $transactionId
+                            : null,
+
+                        'razorpay_order_id' =>
+                        $bankReferenceId
+                            ? (string) $bankReferenceId
+                            : null,
+
+                        'razorpay_signature' => '',
+
+                        'payment_status' => 'paid',
+
+                        'status' => 'placed',
+                    ]);
+
+
+                    $summary['success']++;
+
+                    continue;
+                }
+
+
+                /*
+            ---------------------------------------------
+            FAILED
+            ---------------------------------------------
+            */
+
+                if (
+                    in_array(
+                        $status,
+                        [
+                            'failed',
+                            'failure',
+                            'dropped',
+                            'bounced',
+                            'cancelled',
+                            'cancel',
+                        ],
+                        true
+                    )
+                ) {
+
+                    $order->update([
+                        'payment_status' => 'failed',
+                        'status' => 'payment_failed',
+                    ]);
+
+
+                    $summary['failed']++;
+
+                    continue;
+                }
+
+
+                /*
+            ---------------------------------------------
+            PENDING / UNKNOWN
+            ---------------------------------------------
+            */
+
+                $summary['pending']++;
+
+                /*
+            Keep existing pending state.
+            Do not unnecessarily update the DB.
+            */
+            }
+        }
+
+
+        /*
+    =====================================================
+    RESULT
+    =====================================================
+    */
+
+        \Log::info(
+            'PAYU PENDING CRON COMPLETED',
+            $summary
+        );
+
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Pending PayU orders checked.',
+            'summary' => $summary,
+        ]);
+    }
+    /**
+     * PayU server-to-server webhook.
+     *
+     * IMPORTANT:
+     * - No logged-in user/cookie required.
+     * - Never trust webhook status alone.
+     * - PayU Verify API is used before changing payment state.
+     * - Same txnid/order can safely receive duplicate webhooks.
+     */
+    public function payuWebhook(Request $request)
+    {
+        /*
+    =====================================================
+    GET WEBHOOK DATA
+    =====================================================
+    */
+
+        $payload = $request->all();
+
+        \Log::info('PAYU WEBHOOK RECEIVED', [
+            'payload' => $payload,
+        ]);
+
+
+        /*
+    =====================================================
+    FIND TRANSACTION ID
+    =====================================================
+    */
+
+        $txnid =
+            $request->input('txnid')
+            ?? $request->input('mihpayid')
+            ?? null;
+
+
+        if (!$txnid) {
+
+            \Log::warning('PAYU WEBHOOK: TXNID MISSING');
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Transaction ID missing.'
+            ], 400);
+        }
+
+
+        /*
+    =====================================================
+    FIND OUR ORDER
+    =====================================================
+    */
+
+        $order = Order::where(
+            'order_number',
+            $txnid
+        )->first();
+
+
+        if (!$order) {
+
+            \Log::warning('PAYU WEBHOOK: ORDER NOT FOUND', [
+                'txnid' => $txnid,
+            ]);
+
+            /*
+        Return 200 so PayU does not endlessly retry
+        a transaction that does not belong to us.
+        */
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Order not found.'
+            ]);
+        }
+
+
+        /*
+    =====================================================
+    SECURITY
+    =====================================================
+    */
+
+        if ($order->payment_method !== 'payu') {
+
+            \Log::warning('PAYU WEBHOOK: INVALID PAYMENT METHOD', [
+                'txnid' => $txnid,
+                'order_id' => $order->id,
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Invalid payment method.'
+            ], 400);
+        }
+
+
+        /*
+    =====================================================
+    ALREADY PAID
+    =====================================================
+    */
+
+        if (
+            $order->payment_status === 'paid'
+            &&
+            $order->status === 'placed'
+        ) {
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Order already processed.'
+            ]);
+        }
+
+
+        /*
+    =====================================================
+    PAYU CREDENTIALS
+    =====================================================
+    */
+
+        $payuKey = env('PAYU_MERCHANT_KEY');
+        $payuSalt = env('PAYU_MERCHANT_SALT');
+
+
+        if (!$payuKey || !$payuSalt) {
+
+            \Log::error('PAYU WEBHOOK: CONFIGURATION MISSING');
+
+            return response()->json([
+                'success' => false,
+                'message' => 'PayU configuration is missing.'
+            ], 500);
+        }
+
+
+        /*
+    =====================================================
+    VERIFY PAYMENT WITH PAYU
+    =====================================================
+    */
+
+        $verifyHash = strtolower(
+            hash(
+                'sha512',
+                $payuKey .
+                    '|verify_payment|' .
+                    $txnid .
+                    '|' .
+                    $payuSalt
+            )
+        );
+
+
+        $verifyResponse = Http::asForm()
+            ->timeout(15)
+            ->post(
+                'https://info.payu.in/merchant/postservice.php?form=2',
+                [
+                    'key' => $payuKey,
+                    'command' => 'verify_payment',
+                    'var1' => $txnid,
+                    'hash' => $verifyHash,
+                ]
+            );
+
+
+        if (!$verifyResponse->successful()) {
+
+            \Log::warning('PAYU WEBHOOK: VERIFY API FAILED', [
+                'txnid' => $txnid,
+                'response' => $verifyResponse->body(),
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Unable to verify payment.'
+            ], 502);
+        }
+
+
+        $verifyData = $verifyResponse->json();
+
+
+        /*
+    =====================================================
+    GET TRANSACTION
+    =====================================================
+    */
+
+        $transaction = data_get(
+            $verifyData,
+            'transaction_details.' . $txnid
+        );
+
+
+        if (!is_array($transaction)) {
+
+            \Log::warning('PAYU WEBHOOK: TRANSACTION NOT FOUND', [
+                'txnid' => $txnid,
+                'response' => $verifyData,
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Transaction could not be verified.'
+            ], 422);
+        }
+
+
+        /*
+    =====================================================
+    FINAL PAYU STATUS
+    =====================================================
+    */
+
+        $verifiedStatus = strtolower(
+            trim(
+                (string) (
+                    $transaction['status']
+                    ?? ''
+                )
+            )
+        );
+
+
+        /*
+    =====================================================
+    VERIFY AMOUNT
+    =====================================================
+    */
+
+        $verifiedAmount = number_format(
+            (float) (
+                $transaction['amt']
+                ?? $transaction['transaction_amount']
+                ?? $transaction['net_amount_debit']
+                ?? 0
+            ),
+            2,
+            '.',
+            ''
+        );
+
+
+        $orderAmount = number_format(
+            (float) $order->grand_total,
+            2,
+            '.',
+            ''
+        );
+
+
+        /*
+    =====================================================
+    AMOUNT MISMATCH
+    =====================================================
+    */
+
+        if ($verifiedAmount !== $orderAmount) {
+
+            \Log::warning('PAYU WEBHOOK: AMOUNT MISMATCH', [
+                'txnid' => $txnid,
+                'verified_amount' => $verifiedAmount,
+                'order_amount' => $orderAmount,
+            ]);
+
+            /*
+        NEVER mark a payment paid if amount differs.
+        */
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Payment amount mismatch.'
+            ], 422);
+        }
+
+
+        /*
+    =====================================================
+    PENDING
+    =====================================================
+    */
+
+        if ($verifiedStatus === 'pending') {
+
+            $order->update([
+                'payment_status' => 'pending',
+                'status' => 'payment_pending',
+            ]);
+
+
+            \Log::info('PAYU WEBHOOK: PAYMENT PENDING', [
+                'txnid' => $txnid,
+                'order_id' => $order->id,
+            ]);
+
+
+            return response()->json([
+                'success' => true,
+                'payment_status' => 'pending',
+                'message' => 'Payment is still pending.'
+            ]);
+        }
+
+
+        /*
+    =====================================================
+    FAILED
+    =====================================================
+    */
+
+        if (
+            in_array(
+                $verifiedStatus,
+                [
+                    'failed',
+                    'failure',
+                    'dropped',
+                    'bounced',
+                    'cancelled',
+                    'cancel',
+                ],
+                true
+            )
+        ) {
+
+            $order->update([
+                'payment_status' => 'failed',
+                'status' => 'payment_failed',
+            ]);
+
+
+            \Log::info('PAYU WEBHOOK: PAYMENT FAILED', [
+                'txnid' => $txnid,
+                'status' => $verifiedStatus,
+                'order_id' => $order->id,
+            ]);
+
+
+            return response()->json([
+                'success' => true,
+                'payment_status' => 'failed',
+                'message' => 'Payment failed.'
+            ]);
+        }
+
+
+        /*
+    =====================================================
+    SUCCESS
+    =====================================================
+    */
+
+        if ($verifiedStatus !== 'success') {
+
+            \Log::info('PAYU WEBHOOK: UNKNOWN STATUS', [
+                'txnid' => $txnid,
+                'status' => $verifiedStatus,
+            ]);
+
+            /*
+        Unknown state = keep order pending.
+        Do NOT mark failed.
+        */
+
+            $order->update([
+                'payment_status' => 'pending',
+                'status' => 'payment_pending',
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'payment_status' => 'pending',
+                'message' => 'Payment status is still being confirmed.'
+            ]);
+        }
+
+
+        /*
+    =====================================================
+    SAVE PAYU DETAILS
+    =====================================================
+    */
+
+        $transactionId =
+            $transaction['mihpayid']
+            ?? null;
+
+
+        $bankReferenceId =
+            $transaction['bank_ref_num']
+            ?? null;
+
+
+        /*
+    =====================================================
+    FINAL SUCCESS
+    =====================================================
+    */
+
+        $order->update([
+
+            /*
+        Existing DB columns are reused.
+        */
+
+            'razorpay_payment_id' =>
+            $transactionId
+                ? (string) $transactionId
+                : null,
+
+            'razorpay_order_id' =>
+            $bankReferenceId !== null
+                ? (string) $bankReferenceId
+                : null,
+
+            'razorpay_signature' =>
+            '',
+
+            'payment_status' =>
+            'paid',
+
+            'status' =>
+            'placed',
+        ]);
+
+
+        \Log::info('PAYU WEBHOOK: PAYMENT SUCCESS', [
+            'txnid' => $txnid,
+            'order_id' => $order->id,
+            'mihpayid' => $transactionId,
+            'bank_ref_num' => $bankReferenceId,
+            'amount' => $verifiedAmount,
+        ]);
+
+
+        return response()->json([
+            'success' => true,
+            'payment_status' => 'paid',
+            'message' => 'Payment confirmed successfully.'
+        ]);
+    }
+    public function checkPayUStatus(Request $request, Order $order)
+    {
+        /*
+    =====================================================
+    USER AUTH / ORDER OWNERSHIP
+    =====================================================
+    */
+
+        $mobile = $request->cookie('loggedin_number');
+
+        if (!$mobile) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthenticated.'
+            ], 401);
+        }
+
+        if ((string) $order->mobile !== (string) $mobile) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthorized.'
+            ], 403);
+        }
+
+
+        /*
+    =====================================================
+    ONLY PAYU PENDING ORDERS
+    =====================================================
+    */
+
+        if (
+            strtolower((string) $order->payment_method) !== 'payu'
+        ) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Not a PayU order.'
+            ], 422);
+        }
+
+        if (
+            strtolower((string) $order->payment_status) === 'paid'
+        ) {
+            return response()->json([
+                'success' => true,
+                'payment_status' => 'paid',
+                'order_status' => $order->status,
+                'message' => 'Payment already confirmed.'
+            ]);
+        }
+
+
+        /*
+    =====================================================
+    TXNID
+    =====================================================
+    */
+
+        $txnid = $order->order_number;
+
+        if (!$txnid) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Transaction ID not found.'
+            ], 422);
+        }
+
+
+        /*
+    =====================================================
+    PAYU CREDENTIALS
+    =====================================================
+    */
+
+        $payuKey = env('PAYU_MERCHANT_KEY');
+        $payuSalt = env('PAYU_MERCHANT_SALT');
+
+        if (!$payuKey || !$payuSalt) {
+            return response()->json([
+                'success' => false,
+                'message' => 'PayU configuration missing.'
+            ], 500);
+        }
+
+
+        /*
+    =====================================================
+    VERIFY PAYMENT
+    =====================================================
+    */
+
+        $verifyHash = strtolower(
+            hash(
+                'sha512',
+                $payuKey .
+                    '|verify_payment|' .
+                    $txnid .
+                    '|' .
+                    $payuSalt
+            )
+        );
+
+
+        $verifyResponse = Http::asForm()
+            ->timeout(15)
+            ->post(
+                'https://info.payu.in/merchant/postservice.php?form=2',
+                [
+                    'key' => $payuKey,
+                    'command' => 'verify_payment',
+                    'var1' => $txnid,
+                    'hash' => $verifyHash,
+                ]
+            );
+
+
+        if (!$verifyResponse->successful()) {
+
+            return response()->json([
+                'success' => false,
+                'payment_status' => 'pending',
+                'message' => 'Payment is still being confirmed.'
+            ]);
+        }
+
+
+        $verifyData = $verifyResponse->json();
+
+        $transaction = data_get(
+            $verifyData,
+            'transaction_details.' . $txnid
+        );
+
+
+        if (!is_array($transaction)) {
+
+            return response()->json([
+                'success' => true,
+                'payment_status' => 'pending',
+                'message' => 'Payment is still being confirmed.'
+            ]);
+        }
+
+
+        /*
+    =====================================================
+    STATUS
+    =====================================================
+    */
+
+        $status = strtolower(
+            trim(
+                (string) (
+                    $transaction['status']
+                    ?? ''
+                )
+            )
+        );
+
+
+        /*
+    =====================================================
+    AMOUNT
+    =====================================================
+    */
+
+        $verifiedAmount = number_format(
+            (float) (
+                $transaction['amt']
+                ?? $transaction['transaction_amount']
+                ?? $transaction['net_amount_debit']
+                ?? 0
+            ),
+            2,
+            '.',
+            ''
+        );
+
+        $orderAmount = number_format(
+            (float) $order->grand_total,
+            2,
+            '.',
+            ''
+        );
+
+
+        /*
+    =====================================================
+    AMOUNT MUST MATCH
+    =====================================================
+    */
+
+        if ($verifiedAmount !== $orderAmount) {
+
+            \Log::warning(
+                'PAYU STATUS CHECK: AMOUNT MISMATCH',
+                [
+                    'txnid' => $txnid,
+                    'verified_amount' => $verifiedAmount,
+                    'order_amount' => $orderAmount,
+                ]
+            );
+
+            return response()->json([
+                'success' => false,
+                'payment_status' => 'pending',
+                'message' => 'Payment is still being confirmed.'
+            ]);
+        }
+
+
+        /*
+    =====================================================
+    SUCCESS
+    =====================================================
+    */
+
+        if ($status === 'success') {
+
+            $transactionId =
+                $transaction['mihpayid']
+                ?? null;
+
+            $bankReferenceId =
+                $transaction['bank_ref_num']
+                ?? $transaction['bank_ref_no']
+                ?? null;
+
+
+            $order->update([
+
+                'razorpay_payment_id' =>
+                $transactionId
+                    ? (string) $transactionId
+                    : null,
+
+                'razorpay_order_id' =>
+                $bankReferenceId
+                    ? (string) $bankReferenceId
+                    : null,
+
+                'razorpay_signature' => '',
+
+                'payment_status' => 'paid',
+
+                'status' => 'placed',
+            ]);
+
+
+            \Log::info(
+                'PAYU STATUS CHECK: PAYMENT SUCCESS',
+                [
+                    'order_id' => $order->id,
+                    'txnid' => $txnid,
+                    'mihpayid' => $transactionId,
+                    'bank_ref_num' => $bankReferenceId,
+                ]
+            );
+
+
+            return response()->json([
+                'success' => true,
+                'payment_status' => 'paid',
+                'order_status' => 'placed',
+                'message' => 'Payment confirmed successfully.'
+            ]);
+        }
+
+
+        /*
+    =====================================================
+    FAILED
+    =====================================================
+    */
+
+        if (
+            in_array(
+                $status,
+                [
+                    'failed',
+                    'failure',
+                    'dropped',
+                    'bounced',
+                    'cancelled',
+                    'cancel',
+                ],
+                true
+            )
+        ) {
+
+            $order->update([
+                'payment_status' => 'failed',
+                'status' => 'payment_failed',
+            ]);
+
+
+            return response()->json([
+                'success' => true,
+                'payment_status' => 'failed',
+                'order_status' => 'payment_failed',
+                'message' => 'Payment failed.'
+            ]);
+        }
+
+
+        /*
+    =====================================================
+    STILL PENDING / UNKNOWN
+    =====================================================
+    */
+
+        $order->update([
+            'payment_status' => 'pending',
+            'status' => 'payment_pending',
+        ]);
+
+
+        return response()->json([
+            'success' => true,
+            'payment_status' => 'pending',
+            'order_status' => 'payment_pending',
+            'message' => 'Payment is still being confirmed.'
+        ]);
+    }
     /**
      * Safe fallback for PayU surl/furl.
      *

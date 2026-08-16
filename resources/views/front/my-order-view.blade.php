@@ -52,6 +52,37 @@
         border: 1px solid #c9d7ff;
     }
 
+    .order-status.status-payment-pending,
+    .order-status.status-pending {
+        background: #fff8e6;
+        color: #9a6700;
+        border-color: #ead69a;
+    }
+
+    .order-status.status-payment-failed,
+    .order-status.status-failed {
+        background: #fff4f4;
+        color: #b42318;
+        border-color: #f0caca;
+    }
+
+    .payment-pending-notice {
+        margin-bottom: 7px;
+        padding: 10px 12px;
+        border: 1px solid #ead69a;
+        background: #fff8e6;
+        color: #6f5200;
+        font-size: 11px;
+        line-height: 1.45;
+    }
+
+    .payment-pending-notice strong {
+        display: block;
+        margin-bottom: 2px;
+        font-size: 12px;
+        font-weight: 800;
+    }
+
 
     /* CARD */
 
@@ -456,6 +487,19 @@ $canCancel = in_array($status, $cancelableStatuses);
                     </span>
 
                 </div>
+
+
+                @if(
+                strtolower($order->payment_status ?? '') === 'pending'
+                || $status === 'payment_pending'
+                )
+                <div class="payment-pending-notice">
+                    <strong>Payment Pending</strong>
+                    Your payment is still being confirmed.
+                    Please wait 10–15 minutes and do not place another order for this payment.
+                    We will update this order automatically when PayU confirms the final payment status.
+                </div>
+                @endif
 
 
                 {{-- =====================================================
@@ -990,7 +1034,7 @@ $canCancel = in_array($status, $cancelableStatuses);
                             <div class="detail-item">
 
                                 <span class="detail-label">
-                                    Bank Transaction ID
+                                    Bank Reference ID
                                 </span>
 
                                 <span class="detail-value">
@@ -1003,7 +1047,7 @@ $canCancel = in_array($status, $cancelableStatuses);
                             <div class="detail-item">
 
                                 <span class="detail-label">
-                                    Payu Payment ID
+                                    PayU Transaction ID
                                 </span>
 
                                 <span class="detail-value">
@@ -1078,5 +1122,105 @@ $canCancel = in_array($status, $cancelableStatuses);
     </section>
 
 </main>
+@if(
+strtolower($order->payment_status ?? '') === 'pending' ||
+$status === 'payment_pending'
+)
 
+<script>
+    (function() {
+
+        let attempts = 0;
+
+        const maxAttempts = 30;
+
+        const checkUrl =
+            "{{ route('payu.check.status', $order->id) }}";
+
+
+        function checkPaymentStatus() {
+
+            attempts++;
+
+
+            fetch(checkUrl, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': document
+                            .querySelector('meta[name="csrf-token"]')
+                            ?.getAttribute('content'),
+
+                        'Accept': 'application/json'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+
+                    if (
+                        data.payment_status === 'paid'
+                    ) {
+
+                        window.location.reload();
+
+                        return;
+                    }
+
+
+                    if (
+                        data.payment_status === 'failed'
+                    ) {
+
+                        window.location.reload();
+
+                        return;
+                    }
+
+
+                    /*
+                    Keep checking while payment is pending.
+                    */
+
+                    if (attempts < maxAttempts) {
+
+                        setTimeout(
+                            checkPaymentStatus,
+                            30000
+                        );
+                    }
+
+                })
+                .catch(() => {
+
+                    /*
+                    Temporary network error.
+                    Try again later while inside
+                    the 15 minute window.
+                    */
+
+                    if (attempts < maxAttempts) {
+
+                        setTimeout(
+                            checkPaymentStatus,
+                            30000
+                        );
+                    }
+
+                });
+        }
+
+
+        /*
+        Start after 30 seconds.
+        30 attempts × 30 seconds = 15 minutes.
+        */
+
+        setTimeout(
+            checkPaymentStatus,
+            30000
+        );
+
+    })();
+</script>
+
+@endif
 @endsection

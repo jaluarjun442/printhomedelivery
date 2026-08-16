@@ -43,6 +43,37 @@
     }
 
 
+    /* PAYMENT PENDING NOTICE */
+
+    .payment-pending-notice {
+        margin: 8px 14px 0;
+        padding: 8px 10px;
+        border: 1px solid #ead69a;
+        background: #fff8e6;
+        color: #6f5200;
+        font-size: 10px;
+        line-height: 1.4;
+    }
+
+    .payment-pending-notice strong {
+        display: block;
+        margin-bottom: 2px;
+        font-size: 10px;
+        font-weight: 800;
+    }
+
+    .payment-pending-notice span {
+        display: block;
+    }
+
+    @media (max-width: 767px) {
+        .payment-pending-notice {
+            margin-left: 10px;
+            margin-right: 10px;
+        }
+    }
+
+
     /* ORDER CARD */
 
     .order-card {
@@ -120,6 +151,20 @@
     }
 
     .status-cancelled {
+        background: #fff4f4;
+        color: #b42318;
+        border-color: #f0caca;
+    }
+
+    .status-payment-pending,
+    .status-pending {
+        background: #fff8e6;
+        color: #9a6700;
+        border-color: #ead69a;
+    }
+
+    .status-payment-failed,
+    .status-failed {
         background: #fff4f4;
         color: #b42318;
         border-color: #f0caca;
@@ -452,7 +497,7 @@
 
                                 <span class="order-info-value">
 
-                                    ₹{{ number_format($order->total_amount ?? $order->total ?? 0, 2) }}
+                                    ₹{{ number_format($order->grand_total ?? $order->total ?? 0, 2) }}
 
                                 </span>
 
