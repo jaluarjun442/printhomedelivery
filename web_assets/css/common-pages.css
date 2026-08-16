@@ -4688,3 +4688,134 @@ textarea.contact-form-control {
         font-size: 13px;
     }
 }
+
+.track-order-section {
+    background: #fff;
+    padding: 70px 0;
+}
+
+.track-order-wrapper {
+    max-width: 650px;
+    margin: 0 auto;
+}
+
+.track-order-header {
+    text-align: center;
+    margin-bottom: 32px;
+}
+
+.track-order-header h1 {
+    margin-bottom: 10px;
+    font-size: 36px;
+    font-weight: 700;
+    color: #111;
+}
+
+.track-order-header p {
+    margin: 0;
+    color: #666;
+    font-size: 15px;
+}
+
+.track-order-card {
+    background: #fff;
+    border: 1px solid #e5e5e5;
+    border-radius: 4px;
+    padding: 40px;
+    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.06);
+}
+
+.track-order-form-group {
+    margin-bottom: 24px;
+}
+
+.track-order-form-group label {
+    display: block;
+    margin-bottom: 8px;
+    color: #222;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.track-order-form-control {
+    width: 100%;
+    height: 48px;
+    padding: 10px 14px;
+    border: 1px solid #dcdcdc;
+    border-radius: 3px;
+    background: #fff;
+    color: #222;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+.track-order-form-control::placeholder {
+    color: #999;
+}
+
+.track-order-form-control:focus {
+    border-color: #2856db;
+    box-shadow: 0 0 0 2px rgba(40, 86, 219, 0.08);
+}
+
+.track-order-submit-btn {
+    width: 100%;
+    height: 48px;
+    border: 0;
+    border-radius: 3px;
+    background: #2856db;
+    color: #fff;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+.track-order-submit-btn:hover {
+    background: #1f47bd;
+    box-shadow: 0 4px 12px rgba(40, 86, 219, 0.2);
+}
+
+.track-order-alert {
+    margin-bottom: 24px;
+    padding: 12px 15px;
+    border: 1px solid #f1bcbc;
+    border-radius: 3px;
+    background: #fff5f5;
+    color: #c62828;
+    font-size: 14px;
+}
+
+
+/* =====================================================
+       MOBILE
+    ====================================================== */
+
+@media (max-width: 767px) {
+
+    .track-order-section {
+        padding: 45px 15px;
+    }
+
+    .track-order-header {
+        margin-bottom: 25px;
+    }
+
+    .track-order-header h1 {
+        font-size: 29px;
+    }
+
+    .track-order-card {
+        padding: 25px 20px;
+    }
+
+}
+.main-menu>ul>li>a {
+    padding: 30px 15px 25px !important;
+    font-size: .8125rem;
+    font-weight: 700;
+    line-height: 1;
+}

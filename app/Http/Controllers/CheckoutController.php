@@ -4139,7 +4139,7 @@ TEMPORARY FREE SHIPPING
         $mobile = $request->cookie('loggedin_number');
 
         if (!$mobile) {
-            return redirect()->route('upload');
+            return view('front.track-order');
         }
 
         $orders = Order::where('mobile', $mobile)
@@ -4218,5 +4218,44 @@ TEMPORARY FREE SHIPPING
         return redirect()
             ->route('my-orders.view', $order->id)
             ->with('success', 'Order cancelled successfully.');
+    }
+    public function trackOrderMobile(Request $request)
+    {
+        $request->validate([
+            'mobile' => 'required|string|max:20',
+            'cf-turnstile-response' => 'required',
+        ], [
+            'cf-turnstile-response.required' => 'Please complete the security verification.',
+        ]);
+
+        $turnstileResponse = $request->input('cf-turnstile-response');
+
+        $response = Http::asForm()->post(
+            'https://challenges.cloudflare.com/turnstile/v0/siteverify',
+            [
+                'secret' => env('TURNSTILE_SECRET_KEY'),
+                'response' => $turnstileResponse,
+                'remoteip' => $request->ip(),
+            ]
+        );
+
+        if (!$response->successful() || !$response->json('success')) {
+
+            return back()
+                ->withInput()
+                ->with('error', 'Security verification failed. Please try again.');
+        }
+
+        $mobile = trim($request->post('mobile'));
+
+        return redirect()
+            ->route('my-orders')
+            ->withCookie(
+                cookie(
+                    'loggedin_number',
+                    $mobile,
+                    60 * 24 * 30
+                )
+            );
     }
 }

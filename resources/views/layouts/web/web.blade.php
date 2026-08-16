@@ -155,16 +155,12 @@
                                         </ul>
 
                                     </li>
-                                    @if(request()->cookie('loggedin_number'))
-
                                     <li>
-                                        <a href=" {{ route('my-orders') }}">
+                                        <a href="{{ route('my-orders') }}">
                                             <i class="ti-package"></i>
-                                            My Orders
+                                            Track Order
                                         </a>
                                     </li>
-
-                                    @endif
                                     {{-- LOGOUT --}}
 
                                     @if(request()->cookie('loggedin_number'))

@@ -61,57 +61,57 @@
 
                 @if(session('success'))
 
-                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    <div class="alert alert-success alert-dismissible fade show" role="alert">
 
-                    {{ session('success') }}
+                        {{ session('success') }}
 
-                    <button
-                        type="button"
-                        class="btn-close"
-                        data-bs-dismiss="alert"
-                        aria-label="Close">
-                    </button>
+                        <button
+                            type="button"
+                            class="btn-close"
+                            data-bs-dismiss="alert"
+                            aria-label="Close">
+                        </button>
 
-                </div>
+                    </div>
 
                 @endif
 
 
                 @if(session('error'))
 
-                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
 
-                    {{ session('error') }}
+                        {{ session('error') }}
 
-                    <button
-                        type="button"
-                        class="btn-close"
-                        data-bs-dismiss="alert"
-                        aria-label="Close">
-                    </button>
+                        <button
+                            type="button"
+                            class="btn-close"
+                            data-bs-dismiss="alert"
+                            aria-label="Close">
+                        </button>
 
-                </div>
+                    </div>
 
                 @endif
 
 
                 @if($errors->any())
 
-                <div class="alert alert-danger">
+                    <div class="alert alert-danger">
 
-                    <strong>Please check the following:</strong>
+                        <strong>Please check the following:</strong>
 
-                    <ul class="mb-0 mt-2">
+                        <ul class="mb-0 mt-2">
 
-                        @foreach($errors->all() as $error)
+                            @foreach($errors->all() as $error)
 
-                        <li>{{ $error }}</li>
+                                <li>{{ $error }}</li>
 
-                        @endforeach
+                            @endforeach
 
-                    </ul>
+                        </ul>
 
-                </div>
+                    </div>
 
                 @endif
 
