@@ -4836,7 +4836,29 @@ textarea.contact-form-control {
 
 @media only screen and (max-width: 991px) {
     #header_menu img {
-        height: 40px !important;
-        width: 40%;
+        height: 45px !important;
+        width: 40% !important;
+    }
+
+    .main-menu>ul>li>a {
+        padding: 30px 10px 25px !important;
+        font-size: .7525rem;
+        font-weight: 600;
+        line-height: 1;
+    }
+}
+
+.desktop_logo {
+    width: 130px;
+    height: 50px;
+}
+
+@media only screen and (max-width: 1024px) {
+
+    .main-menu>ul>li>a {
+        padding: 30px 10px 25px !important;
+        font-size: .7525rem;
+        font-weight: 600;
+        line-height: 1;
     }
 }

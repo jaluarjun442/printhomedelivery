@@ -1209,76 +1209,277 @@
            ADD FILES
         ===================================================== */
 
-        function addFiles(files) {
+        async function addFiles(files) {
+
+            // New file select/drop thay tyare previous error remove
             clearError();
 
             if (!files || files.length === 0) {
                 return;
             }
 
-            if (selectedFiles.length + files.length > MAX_FILES) {
-                showError('You can upload a maximum of 50 files per order.');
-                return;
-            }
+            let incomingFiles = Array.from(files);
 
-            let newFiles = [];
+            /*
+             * Check duplicate first
+             */
+            incomingFiles = incomingFiles.filter(function(file) {
 
-            for (let i = 0; i < files.length; i++) {
-
-                const file = files[i];
                 const extension = getExtension(file.name);
 
                 if (allowedExtensions.indexOf(extension) === -1) {
                     showError('"' + file.name + '" is not a supported file type.');
-                    continue;
+                    return false;
                 }
 
                 const duplicate = selectedFiles.some(function(existingFile) {
+
                     return (
                         existingFile.name === file.name &&
                         existingFile.size === file.size &&
                         existingFile.lastModified === file.lastModified
                     );
+
                 });
 
-                if (duplicate) {
-                    continue;
-                }
+                return !duplicate;
 
-                newFiles.push(file);
+            });
+
+
+            if (incomingFiles.length === 0) {
+                return;
             }
 
+
+            /*
+             * Check each PDF BEFORE adding it to selectedFiles.
+             *
+             * Password protected PDF will never be added.
+             */
+            let newFiles = [];
+
+            for (let i = 0; i < incomingFiles.length; i++) {
+
+                const file = incomingFiles[i];
+
+                try {
+
+                    await validateUploadFile(file);
+
+                    // Only valid files reach here
+                    newFiles.push(file);
+
+                } catch (error) {
+
+                    if (error && error.code === 'PASSWORD_PROTECTED') {
+
+                        showError(
+                            'Can\'t upload password-protected file "' +
+                            file.name +
+                            '". Please remove the password and try again.'
+                        );
+
+                    } else {
+
+                        showError(
+                            '"' +
+                            file.name +
+                            '" could not be read. Please make sure the file is valid.'
+                        );
+
+                    }
+
+                }
+
+            }
+
+
+            /*
+             * No valid files
+             */
+            if (newFiles.length === 0) {
+                return;
+            }
+
+
+            /*
+             * Maximum file count
+             */
+            if (selectedFiles.length + newFiles.length > MAX_FILES) {
+
+                showError(
+                    'You can upload a maximum of ' +
+                    MAX_FILES +
+                    ' files per order.'
+                );
+
+                return;
+            }
+
+
+            /*
+             * Total size
+             */
             let newTotal = getTotalSize();
 
             $.each(newFiles, function(index, file) {
                 newTotal += file.size;
             });
 
+
             if (newTotal > MAX_TOTAL_SIZE) {
+
                 showError('Total file size cannot exceed 2 GB.');
+
                 return;
             }
 
-            if (newFiles.length === 0) {
-                return;
-            }
 
+            /*
+             * ONLY NOW add valid files.
+             *
+             * Password protected files are already filtered out.
+             */
             selectedFiles = selectedFiles.concat(newFiles);
 
             renderFiles(true);
 
-            /*
-             * Once the mobile has already been verified, any newly-added
-             * files are uploaded automatically. Previously uploaded files
-             * are ignored by startDocumentUpload().
-             */
-            if (sessionVerified && newFiles.length > 0 && !isUploading) {
-                setTimeout(function() {
-                    showUploadCaptchaAndStart();
-                }, 150);
-            }
-        }
 
+            /*
+             * Once mobile is verified, valid newly-added files
+             * are uploaded automatically.
+             */
+            if (
+                sessionVerified &&
+                newFiles.length > 0 &&
+                !isUploading
+            ) {
+
+                setTimeout(function() {
+
+                    showUploadCaptchaAndStart();
+
+                }, 150);
+
+            }
+
+        }
+        async function validateUploadFile(file) {
+
+            /*
+             * Images do not need PDF password checking.
+             */
+            if (
+                file.type !== 'application/pdf' &&
+                !/\.pdf$/i.test(file.name)
+            ) {
+
+                return true;
+            }
+
+
+            if (typeof window.pdfjsLib === 'undefined') {
+
+                throw new Error(
+                    'PDF page-count library is not available.'
+                );
+
+            }
+
+
+            const buffer = await file.arrayBuffer();
+
+
+            return new Promise(function(resolve, reject) {
+
+                let loadingTask = null;
+
+                try {
+
+                    loadingTask = window.pdfjsLib.getDocument({
+                        data: new Uint8Array(buffer)
+                    });
+
+
+                    /*
+                     * PDF.js calls this when the PDF requires a password.
+                     *
+                     * We DON'T show a password box.
+                     * We simply reject the file.
+                     */
+                    loadingTask.onPassword = function(updatePassword, reason) {
+
+                        if (loadingTask) {
+                            loadingTask.destroy();
+                        }
+
+                        const error = new Error(
+                            'Password protected PDF'
+                        );
+
+                        error.code = 'PASSWORD_PROTECTED';
+
+                        reject(error);
+
+                    };
+
+
+                    loadingTask.promise
+                        .then(function(pdf) {
+
+                            /*
+                             * PDF opened successfully.
+                             */
+                            if (pdf) {
+                                pdf.destroy();
+                            }
+
+                            resolve(true);
+
+                        })
+                        .catch(function(error) {
+
+                            /*
+                             * Extra protection:
+                             * PDF.js can also directly reject with
+                             * PasswordException.
+                             */
+                            if (
+                                error &&
+                                (
+                                    error.name === 'PasswordException' ||
+                                    error.code === 1 ||
+                                    error.code === 'NEED_PASSWORD'
+                                )
+                            ) {
+
+                                const passwordError = new Error(
+                                    'Password protected PDF'
+                                );
+
+                                passwordError.code =
+                                    'PASSWORD_PROTECTED';
+
+                                reject(passwordError);
+
+                                return;
+                            }
+
+
+                            reject(error);
+
+                        });
+
+                } catch (error) {
+
+                    reject(error);
+
+                }
+
+            });
+
+        }
         /* =====================================================
            RENDER FILES
         ===================================================== */

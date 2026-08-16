@@ -53,7 +53,7 @@
                     <div class="row small-gutters">
                         <div class="col-xl-2 col-lg-2 d-lg-flex align-items-center">
                             <div id="logo">
-                                <a href="{{ route('home') }}"><img src="{{ asset('uploads/logo') . '/' . store_data()['logo'] }}" alt="" width="100" height="35"></a>
+                                <a href="{{ route('home') }}"><img src="{{ asset('uploads/logo') . '/' . store_data()['logo'] }}" alt="" class="desktop_logo"></a>
                             </div>
                         </div>
                         <nav class="col-xl-8 col-lg-8">
