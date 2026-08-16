@@ -5,6 +5,7 @@
 <title>Print Ki Dukan | Online Printing & Home Delivery in India</title>
 <meta name="keywords" content="online printing, print documents online, home delivery printing, online document printing, print and delivery India">
 <meta name="description" content="Print your documents online with Print Ki Dukan and get high-quality prints delivered to your home or office. Upload your files, choose printing options, place your order and track delivery online.">
+<link rel="canonical" href="{{ url('/') }}">
 
 @endsection
 
@@ -66,7 +67,7 @@
 
                         <div class="text-primary fw-semibold">
                             <i class="bi bi-patch-check-fill"></i>
-                            Verified Business
+                            Trusted Printing Service
                         </div>
 
                     </div>
@@ -97,13 +98,7 @@
 
                     <div class="d-flex flex-wrap gap-4 mt-4">
 
-                        <div class="text-success">
 
-                            <i class="bi bi-check-lg"></i>
-
-                            Cash on Delivery
-
-                        </div>
 
                         <div class="text-success">
 
@@ -133,7 +128,7 @@
                         class="img-fluid home-hero-image"
                         width="522"
                         height="576"
-                        alt="Print Home Delivery">
+                        alt="Online document printing and home delivery">
                 </div>
 
             </div>
@@ -460,7 +455,7 @@
 
                                 <div class="mb-3">
 
-                                    <span class="display-2 fw-bold fw-bold">
+                                    <span class="display-2 fw-bold">
                                         ₹1
                                     </span>
 
@@ -942,7 +937,7 @@
 
     </section>
 
-    <section class="tet-center py-5" style="background:#f4eee0;">
+    <section class="text-center py-5" style="background:#f4eee0;">
 
         <div class="container">
 
