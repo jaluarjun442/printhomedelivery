@@ -220,11 +220,8 @@
 
                         <div id="fileList"></div>
 
-                        <div class="text-end mt-2">
-                            <small class="text-muted">
-                                Total Pages:
-                                <strong id="totalPages">0 pages</strong>
-                            </small>
+                        <div class="total-pages d-none text-end" id="totalPagesWrapper">
+                            Total Pages: <span id="totalPages">0 pages</span>
                         </div>
                     </div>
 
@@ -317,6 +314,18 @@
 <!-- =========================================================
      MOBILE / OTP VERIFICATION MODAL
 ========================================================= -->
+
+<div id="uploadCaptchaModal" class="upload-verification-overlay d-none">
+    <div class="upload-verification-modal" style="max-width:420px;">
+        <div class="verification-header">
+            <h4><i class="bi bi-shield-check me-2"></i>Security Verification</h4>
+        </div>
+        <div class="verification-body text-center">
+            <p class="text-secondary mb-3">Please complete the verification before uploading your files.</p>
+            <div id="fileUploadTurnstile" class="d-flex justify-content-center"></div>
+        </div>
+    </div>
+</div>
 
 <div id="verificationModal" class="upload-verification-overlay d-none">
 
@@ -481,7 +490,7 @@
            Move modals directly under <body> so sticky header /
            transformed parent containers can never appear above them.
         ===================================================== */
-        $('#previousFilesModal, #verificationModal').appendTo('body');
+        $('#previousFilesModal, #verificationModal, #uploadCaptchaModal').appendTo('body');
 
         function lockModalScroll() {
             $('body').css('overflow', 'hidden');
@@ -1265,7 +1274,7 @@
              */
             if (sessionVerified && newFiles.length > 0 && !isUploading) {
                 setTimeout(function() {
-                    startDocumentUpload();
+                    showUploadCaptchaAndStart();
                 }, 150);
             }
         }
@@ -1613,7 +1622,7 @@
             if (pending.length > 0) {
 
                 if (sessionVerified) {
-                    startDocumentUpload();
+                    showUploadCaptchaAndStart();
                     return;
                 }
 
@@ -1628,7 +1637,7 @@
                         if (response && response.verified) {
                             verifiedMobile = response.mobile || '';
                             sessionVerified = true;
-                            startDocumentUpload();
+                            showUploadCaptchaAndStart();
                             return;
                         }
 
@@ -1830,7 +1839,7 @@
                              * the verification response cookie.
                              */
                             setTimeout(function() {
-                                startDocumentUpload();
+                                showUploadCaptchaAndStart();
                             }, 150);
                         },
                         error: function(xhr) {
@@ -1957,7 +1966,7 @@
                      */
 
                     setTimeout(function() {
-                        startDocumentUpload();
+                        showUploadCaptchaAndStart();
                     }, 150);
                 },
                 error: function(xhr) {
@@ -2070,9 +2079,45 @@
 
 
         /* =====================================================
+           FILE UPLOAD TURNSTILE
+        ===================================================== */
+        let fileUploadTurnstileWidgetId = null;
+
+        function showUploadCaptchaAndStart() {
+            if (isUploading || !getPendingFiles().length) return;
+
+            $('#uploadCaptchaModal').removeClass('d-none');
+            lockModalScroll();
+
+            if (window.turnstile) {
+                if (fileUploadTurnstileWidgetId === null) {
+                    fileUploadTurnstileWidgetId = window.turnstile.render('#fileUploadTurnstile', {
+                        sitekey: "{{ env('TURNSTILE_SITE_KEY') }}",
+                        theme: 'light',
+                        callback: function(token) {
+                            $('#uploadCaptchaModal').addClass('d-none');
+                            unlockModalScroll();
+                            startDocumentUpload(token);
+                        },
+                        'expired-callback': function() {
+                            showError('Captcha expired. Please verify again.');
+                        },
+                        'error-callback': function() {
+                            showError('Captcha verification failed. Please try again.');
+                        }
+                    });
+                } else {
+                    window.turnstile.reset(fileUploadTurnstileWidgetId);
+                }
+            } else {
+                setTimeout(showUploadCaptchaAndStart, 300);
+            }
+        }
+
+        /* =====================================================
            START UPLOAD
         ===================================================== */
-        function startDocumentUpload() {
+        function startDocumentUpload(turnstileToken) {
 
             if (isUploading) {
                 return;
@@ -2225,6 +2270,7 @@
                             data: {
                                 filename: file.name,
                                 mime_type: file.type || 'application/pdf',
+                                turnstile_token: turnstileToken || '',
                                 _token: $('meta[name="csrf-token"]').attr('content')
                             },
                             headers: {
@@ -2375,7 +2421,7 @@
                                                     dbResponse.document.pages,
                                                     10
                                                 ) || 1;
-
+                                            renderFiles(false);
                                             file.uploadStatus = 'uploaded';
 
                                             completed++;
@@ -2746,24 +2792,62 @@
 
             $fileCount.text(selectedFiles.length);
 
+            /*
+            |--------------------------------------------------------------------------
+            | Total pages only after upload is completed
+            |--------------------------------------------------------------------------
+            */
+
+            const uploadedFiles = selectedFiles.filter(function(file) {
+
+                return (
+                    file.uploadStatus === 'uploaded' &&
+                    file.uploaded_document_id
+                );
+
+            });
+
+            if (uploadedFiles.length === 0) {
+
+                $('#totalPagesWrapper').addClass('d-none');
+
+                $totalPages.text('0 pages');
+
+                return;
+            }
+
             let totalPages = 0;
 
-            selectedFiles.forEach(function(file) {
+            uploadedFiles.forEach(function(file) {
 
                 const pages = parseInt(
                     file.pages,
                     10
                 );
 
-                totalPages += pages > 0 ? pages : 1;
+                if (pages > 0) {
+                    totalPages += pages;
+                }
+
             });
 
-            $totalPages.text(
-                totalPages +
-                (totalPages === 1 ? ' page' : ' pages')
-            );
-        }
+            if (totalPages > 0) {
 
+                $('#totalPagesWrapper')
+                    .removeClass('d-none');
+
+                $totalPages.text(
+                    totalPages +
+                    (totalPages === 1 ? ' page' : ' pages')
+                );
+
+            } else {
+
+                $('#totalPagesWrapper')
+                    .addClass('d-none');
+
+            }
+        }
 
         function showError(message) {
             $uploadError

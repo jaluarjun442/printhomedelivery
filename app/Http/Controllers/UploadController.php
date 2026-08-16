@@ -248,7 +248,40 @@ class UploadController extends Controller
         $request->validate([
             'filename' => 'required|string|max:255',
             'mime_type' => 'required|string|max:150',
+            'turnstile_token' => 'required|string',
         ]);
+
+        try {
+            $turnstileResponse = \Illuminate\Support\Facades\Http::asForm()
+                ->post(
+                    'https://challenges.cloudflare.com/turnstile/v0/siteverify',
+                    [
+                        'secret' => env('TURNSTILE_SECRET_KEY'),
+                        'response' => $request->input('turnstile_token'),
+                        'remoteip' => $request->ip(),
+                    ]
+                );
+
+            if (
+                !$turnstileResponse->successful() ||
+                !$turnstileResponse->json('success')
+            ) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Security verification failed. Please try again.'
+                ], 422);
+            }
+        } catch (\Throwable $e) {
+            \Log::error('Cloudflare Turnstile verification failed', [
+                'mobile' => $mobile,
+                'error' => $e->getMessage()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Unable to verify security check. Please try again.'
+            ], 422);
+        }
 
         $originalName = $request->input('filename');
         $mimeType = $request->input('mime_type');
@@ -301,7 +334,7 @@ class UploadController extends Controller
                 $extension;
         } while (Storage::disk('r2')->exists($filename));
 
-        $client = new S3Client([
+        $client = new \Aws\S3\S3Client([
             'version' => 'latest',
             'region' => 'auto',
             'endpoint' => env('R2_ENDPOINT'),
@@ -317,14 +350,12 @@ class UploadController extends Controller
             'ContentType' => $mimeType,
         ]);
 
-        $presignedRequest =
-            $client->createPresignedRequest(
-                $command,
-                '+15 minutes'
-            );
+        $presignedRequest = $client->createPresignedRequest(
+            $command,
+            '+15 minutes'
+        );
 
-        $uploadUrl =
-            (string) $presignedRequest->getUri();
+        $uploadUrl = (string) $presignedRequest->getUri();
 
         $publicUrl =
             rtrim(env('R2_PUBLIC_URL'), '/') .
@@ -363,11 +394,6 @@ class UploadController extends Controller
         $filename = $request->input('filename');
         $originalName = $request->input('original_name');
         $mimeType = $request->input('mime_type');
-
-        /*
-         * Browser-calculated PDF page count.
-         * This prevents Laravel from downloading the complete R2 PDF again.
-         */
         $clientPages = $request->input('pages');
 
         if (
@@ -386,22 +412,11 @@ class UploadController extends Controller
             '/' .
             $filename;
 
-        /*
-         * If the completion request is repeated, do not create
-         * another print_documents row.
-         */
-        $existing = PrintDocument::where(
-            'mobile',
-            $mobile
-        )
-            ->where(
-                'stored_path',
-                $publicUrl
-            )
+        $existing = PrintDocument::where('mobile', $mobile)
+            ->where('stored_path', $publicUrl)
             ->first();
 
         if ($existing) {
-
             $currentIds = session(
                 'upload_selected_document_ids',
                 []
@@ -411,9 +426,7 @@ class UploadController extends Controller
 
             session([
                 'upload_selected_document_ids' =>
-                array_values(
-                    array_unique($currentIds)
-                )
+                array_values(array_unique($currentIds))
             ]);
 
             return response()->json([
@@ -433,59 +446,36 @@ class UploadController extends Controller
         if (!Storage::disk('r2')->exists($filename)) {
             return response()->json([
                 'success' => false,
-                'message' =>
-                'File was not uploaded to Cloudflare R2.'
+                'message' => 'File was not uploaded to Cloudflare R2.'
             ], 422);
         }
 
-        $fileSize =
-            Storage::disk('r2')->getSize($filename);
+        $fileSize = Storage::disk('r2')->getSize($filename);
 
-        /*
-         * FAST PATH:
-         *
-         * The browser calculates PDF page count locally using PDF.js
-         * while the file is being uploaded to R2.
-         *
-         * So Laravel does NOT download the 100MB PDF from R2 again.
-         */
         $pages = max(1, (int) $clientPages);
 
-        /*
-         * Safe fallback for old clients that do not send pages.
-         */
         if (!$clientPages) {
-
             $pages = 1;
 
             if (
                 strtolower(
-                    pathinfo(
-                        $filename,
-                        PATHINFO_EXTENSION
-                    )
+                    pathinfo($filename, PATHINFO_EXTENSION)
                 ) === 'pdf'
             ) {
-
-                /*
-                 * Stream the R2 object to disk instead of using get().
-                 * This avoids loading the whole PDF into PHP memory.
-                 */
                 $temporaryPath =
                     storage_path(
                         'app/r2_' .
-                        uniqid('', true) .
-                        '.pdf'
+                            uniqid('', true) .
+                            '.pdf'
                     );
 
                 $readStream = null;
                 $writeStream = null;
 
                 try {
-
                     $readStream =
                         Storage::disk('r2')
-                            ->readStream($filename);
+                        ->readStream($filename);
 
                     if (!$readStream) {
                         throw new \RuntimeException(
@@ -494,10 +484,7 @@ class UploadController extends Controller
                     }
 
                     $writeStream =
-                        fopen(
-                            $temporaryPath,
-                            'wb'
-                        );
+                        fopen($temporaryPath, 'wb');
 
                     if (!$writeStream) {
                         throw new \RuntimeException(
@@ -516,22 +503,15 @@ class UploadController extends Controller
                     fclose($readStream);
                     $readStream = null;
 
-                    $pages =
-                        $this->getPdfPageCount(
-                            $temporaryPath
-                        );
-
+                    $pages = $this->getPdfPageCount(
+                        $temporaryPath
+                    );
                 } catch (\Throwable $e) {
-
-                    if (
-                        is_resource($writeStream)
-                    ) {
+                    if (is_resource($writeStream)) {
                         fclose($writeStream);
                     }
 
-                    if (
-                        is_resource($readStream)
-                    ) {
+                    if (is_resource($readStream)) {
                         fclose($readStream);
                     }
 
@@ -544,9 +524,7 @@ class UploadController extends Controller
                     );
 
                     $pages = 1;
-
                 } finally {
-
                     if (file_exists($temporaryPath)) {
                         @unlink($temporaryPath);
                     }
@@ -573,9 +551,7 @@ class UploadController extends Controller
 
         session([
             'upload_selected_document_ids' =>
-            array_values(
-                array_unique($currentIds)
-            )
+            array_values(array_unique($currentIds))
         ]);
 
         return response()->json([
