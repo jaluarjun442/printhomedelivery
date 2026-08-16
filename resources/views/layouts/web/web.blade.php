@@ -314,8 +314,17 @@ $store_data = Store::where('id', 1)->first();
                         <div class="collapse dont-collapse-sm" id="collapse_4">
                             <div id="newsletter">
                                 <div class="form-group">
-                                    <input type="email" name="email_newsletter" id="email_newsletter" class="form-control" placeholder="Your email">
-                                    <button type="submit" id="submit-newsletter"><i class="ti-angle-double-right"></i></button>
+                                    <input type="email"
+                                        name="email_newsletter"
+                                        id="email_newsletter"
+                                        class="form-control"
+                                        placeholder="Your email">
+
+                                    <button type="submit"
+                                        id="submit-newsletter"
+                                        aria-label="Subscribe to newsletter">
+                                        <i class="ti-angle-double-right" aria-hidden="true"></i>
+                                    </button>
                                 </div>
                             </div>
 
