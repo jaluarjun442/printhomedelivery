@@ -129,7 +129,7 @@
 
                 <div class="col-lg-6 text-center d-none d-lg-block">
 
-                    <img src="https://solo.in/cdn/shop/files/executive-note-book-100-pages-2-color-printing-358332.webp?v=1742021622&width=1080"
+                    <img src="{{ asset('img/pkd_banner_t.png') }}"
                         class="img-fluid home-hero-image">
 
                 </div>
