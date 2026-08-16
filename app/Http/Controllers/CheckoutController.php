@@ -4100,14 +4100,14 @@ TEMPORARY FREE SHIPPING
 =====================================================
 */
 
-        foreach ($selectedCouriers as &$courier) {
+        // foreach ($selectedCouriers as &$courier) {
 
-            $courier['shipping_charges'] = 0;
-            $courier['gst'] = 0;
-            $courier['total_charges'] = 0;
-        }
+        //     $courier['shipping_charges'] = 0;
+        //     $courier['gst'] = 0;
+        //     $courier['total_charges'] = 0;
+        // }
 
-        unset($courier);
+        // unset($courier);
 
         /*
     =====================================================
