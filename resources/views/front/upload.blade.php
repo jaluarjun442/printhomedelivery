@@ -9,8 +9,8 @@
 @endsection
 
 @section('content')
-<main>
-    <section class="document-upload-section py-5">
+<main class="document-upload-section">
+    <section class=" py-5">
         <div class="container">
 
             <!-- Header -->
@@ -310,6 +310,586 @@
 
         </div>
     </section>
+    {{-- =====================================================
+    HOW ONLINE DOCUMENT PRINTING WORKS
+===================================================== --}}
+
+    <section class="py-5 border-top">
+
+        <div class="container">
+
+            <div class="row justify-content-center">
+
+                <div class="col-lg-9 text-center">
+
+                    <span class="text-uppercase small fw-bold text-primary">
+                        Simple Online Printing Process
+                    </span>
+
+                    <h2 class="fw-bold mt-2 mb-3">
+                        Upload Your Documents and Get Them Printed
+                    </h2>
+
+                    <p class="text-secondary fs-5 mb-0">
+                        Print Ki Dukan makes document printing simple and
+                        convenient. Upload your PDF or supported document from
+                        your phone or computer, select your preferred printing
+                        options, complete your order and get your printed
+                        documents delivered to your doorstep.
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <div class="row g-4 mt-4">
+
+                <div class="col-md-4">
+
+                    <div class="card border-0 shadow-sm h-100">
+
+                        <div class="card-body p-4 text-center">
+
+                            <div class="mb-3">
+                                <i class="bi bi-cloud-arrow-up text-primary fs-1"></i>
+                            </div>
+
+                            <h3 class="h5 fw-bold">
+                                1. Upload Your File
+                            </h3>
+
+                            <p class="text-secondary mb-0">
+                                Select your PDF or supported document and upload
+                                it securely through our online printing platform.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div class="col-md-4">
+
+                    <div class="card border-0 shadow-sm h-100">
+
+                        <div class="card-body p-4 text-center">
+
+                            <div class="mb-3">
+                                <i class="bi bi-sliders text-primary fs-1"></i>
+                            </div>
+
+                            <h3 class="h5 fw-bold">
+                                2. Choose Print Options
+                            </h3>
+
+                            <p class="text-secondary mb-0">
+                                Select black and white or color printing,
+                                single or double-sided printing, copies,
+                                paper and available binding options.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div class="col-md-4">
+
+                    <div class="card border-0 shadow-sm h-100">
+
+                        <div class="card-body p-4 text-center">
+
+                            <div class="mb-3">
+                                <i class="bi bi-box-seam text-primary fs-1"></i>
+                            </div>
+
+                            <h3 class="h5 fw-bold">
+                                3. We Print &amp; Deliver
+                            </h3>
+
+                            <p class="text-secondary mb-0">
+                                Once your order is confirmed, your documents are
+                                printed, packed and prepared for delivery to
+                                your selected address.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+    {{-- =====================================================
+    DOCUMENT TYPES
+===================================================== --}}
+
+    <section class="py-5">
+
+        <div class="container">
+
+            <div class="row align-items-center g-5">
+
+                <div class="col-lg-6">
+
+                    <span class="text-uppercase small fw-bold text-primary">
+                        Print Your Study Material
+                    </span>
+
+                    <h2 class="fw-bold mt-2 mb-3">
+                        Print Notes, Assignments, Projects &amp; More
+                    </h2>
+
+                    <p class="text-secondary">
+                        Whether you need a few pages or a complete document,
+                        you can upload your files online and choose the printing
+                        options according to your requirement.
+                    </p>
+
+                    <p class="text-secondary mb-0">
+                        Print Ki Dukan is designed for students, professionals
+                        and anyone who needs convenient online document printing
+                        without visiting a local print shop.
+                    </p>
+
+                </div>
+
+
+                <div class="col-lg-6">
+
+                    <div class="card border-0 shadow-sm">
+
+                        <div class="card-body p-4 p-md-5">
+
+                            <h3 class="h4 fw-bold mb-4">
+                                Popular Documents to Print
+                            </h3>
+
+                            <div class="row g-3">
+
+                                <div class="col-6">
+                                    <div class="border p-3 h-100">
+                                        <i class="bi bi-journal-text text-primary me-2"></i>
+                                        Study Notes
+                                    </div>
+                                </div>
+
+                                <div class="col-6">
+                                    <div class="border p-3 h-100">
+                                        <i class="bi bi-file-earmark-text text-primary me-2"></i>
+                                        Assignments
+                                    </div>
+                                </div>
+
+                                <div class="col-6">
+                                    <div class="border p-3 h-100">
+                                        <i class="bi bi-mortarboard text-primary me-2"></i>
+                                        Study Material
+                                    </div>
+                                </div>
+
+                                <div class="col-6">
+                                    <div class="border p-3 h-100">
+                                        <i class="bi bi-folder text-primary me-2"></i>
+                                        Projects
+                                    </div>
+                                </div>
+
+                                <div class="col-6">
+                                    <div class="border p-3 h-100">
+                                        <i class="bi bi-book text-primary me-2"></i>
+                                        Books &amp; PDFs
+                                    </div>
+                                </div>
+
+                                <div class="col-6">
+                                    <div class="border p-3 h-100">
+                                        <i class="bi bi-file-earmark-pdf text-primary me-2"></i>
+                                        Documents
+                                    </div>
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+    {{-- =====================================================
+    UPLOAD PAGE FAQ
+===================================================== --}}
+
+    <section class="py-5 border-top">
+
+        <div class="container">
+
+            <div class="row justify-content-center">
+
+                <div class="col-lg-9">
+
+                    <div class="text-center mb-5">
+
+                        <span class="text-uppercase small fw-bold text-primary">
+                            Frequently Asked Questions
+                        </span>
+
+                        <h2 class="fw-bold mt-2 mb-3">
+                            Online Document Printing FAQs
+                        </h2>
+
+                        <p class="text-secondary mb-0">
+                            Common questions about uploading files and ordering
+                            printed documents from Print Ki Dukan.
+                        </p>
+
+                    </div>
+
+
+                    <div class="accordion" id="uploadFaq">
+
+
+                        <div class="accordion-item">
+
+                            <h3 class="accordion-header">
+
+                                <button
+                                    class="accordion-button fw-semibold"
+                                    type="button"
+                                    data-bs-toggle="collapse"
+                                    data-bs-target="#uploadFaqOne">
+
+                                    How can I upload my documents for printing?
+
+                                </button>
+
+                            </h3>
+
+                            <div
+                                id="uploadFaqOne"
+                                class="accordion-collapse collapse show"
+                                data-bs-parent="#uploadFaq">
+
+                                <div class="accordion-body text-secondary">
+
+                                    Select or drag and drop your document into
+                                    the upload area above. After your file is
+                                    uploaded, you can continue with your preferred
+                                    printing options and place your order online.
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="accordion-item">
+
+                            <h3 class="accordion-header">
+
+                                <button
+                                    class="accordion-button collapsed fw-semibold"
+                                    type="button"
+                                    data-bs-toggle="collapse"
+                                    data-bs-target="#uploadFaqTwo">
+
+                                    What type of files can I upload?
+
+                                </button>
+
+                            </h3>
+
+                            <div
+                                id="uploadFaqTwo"
+                                class="accordion-collapse collapse"
+                                data-bs-parent="#uploadFaq">
+
+                                <div class="accordion-body text-secondary">
+
+                                    Print Ki Dukan supports PDF and other file
+                                    formats available in the upload interface.
+                                    Please check the upload area for the currently
+                                    supported file types and size limits.
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="accordion-item">
+
+                            <h3 class="accordion-header">
+
+                                <button
+                                    class="accordion-button collapsed fw-semibold"
+                                    type="button"
+                                    data-bs-toggle="collapse"
+                                    data-bs-target="#uploadFaqThree">
+
+                                    Can I print my PDF in black and white?
+
+                                </button>
+
+                            </h3>
+
+                            <div
+                                id="uploadFaqThree"
+                                class="accordion-collapse collapse"
+                                data-bs-parent="#uploadFaq">
+
+                                <div class="accordion-body text-secondary">
+
+                                    Yes. You can choose black and white printing
+                                    while selecting the printing options for
+                                    your uploaded document.
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="accordion-item">
+
+                            <h3 class="accordion-header">
+
+                                <button
+                                    class="accordion-button collapsed fw-semibold"
+                                    type="button"
+                                    data-bs-toggle="collapse"
+                                    data-bs-target="#uploadFaqFour">
+
+                                    Can I order double-sided printing?
+
+                                </button>
+
+                            </h3>
+
+                            <div
+                                id="uploadFaqFour"
+                                class="accordion-collapse collapse"
+                                data-bs-parent="#uploadFaq">
+
+                                <div class="accordion-body text-secondary">
+
+                                    Yes. Double-sided printing can be selected
+                                    when the option is available for your
+                                    printing order.
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="accordion-item">
+
+                            <h3 class="accordion-header">
+
+                                <button
+                                    class="accordion-button collapsed fw-semibold"
+                                    type="button"
+                                    data-bs-toggle="collapse"
+                                    data-bs-target="#uploadFaqFive">
+
+                                    Can I print notes and assignments online?
+
+                                </button>
+
+                            </h3>
+
+                            <div
+                                id="uploadFaqFive"
+                                class="accordion-collapse collapse"
+                                data-bs-parent="#uploadFaq">
+
+                                <div class="accordion-body text-secondary">
+
+                                    Yes. You can upload study notes, assignments,
+                                    project documents, PDFs and other supported
+                                    documents and order printed copies online.
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="accordion-item">
+
+                            <h3 class="accordion-header">
+
+                                <button
+                                    class="accordion-button collapsed fw-semibold"
+                                    type="button"
+                                    data-bs-toggle="collapse"
+                                    data-bs-target="#uploadFaqSix">
+
+                                    Do you deliver the printed documents?
+
+                                </button>
+
+                            </h3>
+
+                            <div
+                                id="uploadFaqSix"
+                                class="accordion-collapse collapse"
+                                data-bs-parent="#uploadFaq">
+
+                                <div class="accordion-body text-secondary">
+
+                                    Yes. After your order is confirmed, the
+                                    printed documents are prepared and packed
+                                    for delivery to the address provided with
+                                    your order.
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="accordion-item">
+
+                            <h3 class="accordion-header">
+
+                                <button
+                                    class="accordion-button collapsed fw-semibold"
+                                    type="button"
+                                    data-bs-toggle="collapse"
+                                    data-bs-target="#uploadFaqSeven">
+
+                                    Can I print a large number of pages?
+
+                                </button>
+
+                            </h3>
+
+                            <div
+                                id="uploadFaqSeven"
+                                class="accordion-collapse collapse"
+                                data-bs-parent="#uploadFaq">
+
+                                <div class="accordion-body text-secondary">
+
+                                    Yes. You can upload documents according to
+                                    the file and order limits shown on the upload
+                                    page. For larger documents or multiple files,
+                                    the available upload limits will be displayed
+                                    before you continue.
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+    <script type="application/ld+json">
+        {
+            !!json_encode([
+                '@context' => 'https://schema.org',
+                '@type' => 'FAQPage',
+                'mainEntity' => [
+
+                    [
+                        '@type' => 'Question',
+                        'name' => 'How can I upload my documents for printing?',
+                        'acceptedAnswer' => [
+                            '@type' => 'Answer',
+                            'text' => 'Select or drag and drop your document into the upload area. After your file is uploaded, you can continue with your preferred printing options and place your order online.'
+                        ]
+                    ],
+
+                    [
+                        '@type' => 'Question',
+                        'name' => 'What type of files can I upload?',
+                        'acceptedAnswer' => [
+                            '@type' => 'Answer',
+                            'text' => 'Print Ki Dukan supports PDF and other file formats available in the upload interface. Check the upload area for the currently supported file types and size limits.'
+                        ]
+                    ],
+
+                    [
+                        '@type' => 'Question',
+                        'name' => 'Can I print my PDF in black and white?',
+                        'acceptedAnswer' => [
+                            '@type' => 'Answer',
+                            'text' => 'Yes. You can choose black and white printing while selecting the printing options for your uploaded document.'
+                        ]
+                    ],
+
+                    [
+                        '@type' => 'Question',
+                        'name' => 'Can I order double-sided printing?',
+                        'acceptedAnswer' => [
+                            '@type' => 'Answer',
+                            'text' => 'Yes. Double-sided printing can be selected when the option is available for your printing order.'
+                        ]
+                    ],
+
+                    [
+                        '@type' => 'Question',
+                        'name' => 'Can I print notes and assignments online?',
+                        'acceptedAnswer' => [
+                            '@type' => 'Answer',
+                            'text' => 'Yes. You can upload study notes, assignments, project documents, PDFs and other supported documents and order printed copies online.'
+                        ]
+                    ],
+
+                    [
+                        '@type' => 'Question',
+                        'name' => 'Do you deliver the printed documents?',
+                        'acceptedAnswer' => [
+                            '@type' => 'Answer',
+                            'text' => 'Yes. After your order is confirmed, the printed documents are prepared and packed for delivery to the address provided with your order.'
+                        ]
+                    ],
+
+                    [
+                        '@type' => 'Question',
+                        'name' => 'Can I print a large number of pages?',
+                        'acceptedAnswer' => [
+                            '@type' => 'Answer',
+                            'text' => 'Yes. You can upload documents according to the file and order limits shown on the upload page.'
+                        ]
+                    ]
+
+                ]
+            ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) !!
+        }
+    </script>
 </main>
 
 <!-- =========================================================

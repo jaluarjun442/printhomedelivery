@@ -98,6 +98,9 @@
                         <a class="nav-link" href="{{ route('admin.contact') }}">
                             Contacts
                         </a>
+                        <a class="nav-link" href="{{ route('admin.print_documents') }}">
+                            Print Documents
+                        </a>
                         <a class="nav-link" href="{{ route('admin.blog') }}">
                             Blogs
                         </a>

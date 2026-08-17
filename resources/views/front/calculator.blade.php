@@ -63,7 +63,7 @@ if ($bindingParent) {
 
 ?>
 <div class="elemento_stick" id="stick_here"></div>
-<main>
+<main class="print-calculator-section">
     <section class="print-calculator-section py-4">
 
         <div class="container">
@@ -543,6 +543,7 @@ if ($bindingParent) {
             </div>
 
     </section>
+
     <div class="text-center container margin_50_35">
         <section class="py-5">
 
@@ -783,7 +784,620 @@ if ($bindingParent) {
 
         </section>
     </div>
+    {{-- =====================================================
+    HOW PRINTING COST IS CALCULATED
+===================================================== --}}
 
+    <section class="py-5 border-top">
+
+        <div class="container">
+
+            <div class="row justify-content-center">
+
+                <div class="col-lg-9 text-center">
+
+                    <h2 class="fw-bold mb-3">
+                        Calculate Your Printing Cost Online
+                    </h2>
+
+                    <p class="text-secondary fs-5 mb-0">
+                        Use the Print Ki Dukan printing price calculator to get an
+                        instant estimate for your documents, notes, assignments,
+                        projects and books. Enter the number of pages, select
+                        black &amp; white or color printing, choose your paper and
+                        binding options, and add your delivery pincode to see the
+                        estimated total cost.
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <div class="row g-4 mt-4">
+
+                <div class="col-md-4">
+
+                    <div class="card border-0 shadow-sm h-100">
+
+                        <div class="card-body p-4 text-center">
+
+                            <div class="mb-3">
+                                <i class="bi bi-file-earmark-text text-primary fs-1"></i>
+                            </div>
+
+                            <h3 class="h5 fw-bold">
+                                Enter Your Pages
+                            </h3>
+
+                            <p class="text-secondary mb-0">
+                                Enter the total number of pages and copies you
+                                want to print to calculate your printing cost.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div class="col-md-4">
+
+                    <div class="card border-0 shadow-sm h-100">
+
+                        <div class="card-body p-4 text-center">
+
+                            <div class="mb-3">
+                                <i class="bi bi-printer text-primary fs-1"></i>
+                            </div>
+
+                            <h3 class="h5 fw-bold">
+                                Select Printing Options
+                            </h3>
+
+                            <p class="text-secondary mb-0">
+                                Choose black and white or color printing,
+                                paper quality, double-sided printing and
+                                binding according to your requirement.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div class="col-md-4">
+
+                    <div class="card border-0 shadow-sm h-100">
+
+                        <div class="card-body p-4 text-center">
+
+                            <div class="mb-3">
+                                <i class="bi bi-truck text-primary fs-1"></i>
+                            </div>
+
+                            <h3 class="h5 fw-bold">
+                                Get Your Estimated Total
+                            </h3>
+
+                            <p class="text-secondary mb-0">
+                                Enter your delivery pincode to calculate the
+                                estimated printing and shipping cost before
+                                placing your order.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+    {{-- =====================================================
+    ONLINE DOCUMENT PRINTING
+===================================================== --}}
+
+    <section class="py-5">
+
+        <div class="container">
+
+            <div class="row align-items-center g-5">
+
+                <div class="col-lg-6">
+
+                    <span class="text-uppercase small fw-bold text-primary">
+                        Print Ki Dukan
+                    </span>
+
+                    <h2 class="fw-bold mt-2 mb-3">
+                        Affordable Online Printing for Students &amp; Documents
+                    </h2>
+
+                    <p class="text-secondary">
+                        Need to print notes, assignments, study material,
+                        projects or books? Print Ki Dukan makes online document
+                        printing simple. Upload your PDF, select your printing
+                        requirements and get your printed documents delivered
+                        to your doorstep.
+                    </p>
+
+                    <p class="text-secondary">
+                        Our online printing calculator helps you understand the
+                        estimated printing cost before placing an order. You can
+                        compare different printing options and choose the setup
+                        that works best for your requirements.
+                    </p>
+
+                    <a href="{{ route('upload') }}"
+                        class="btn btn-primary rounded-0 px-4 py-3 fw-semibold">
+
+                        Print Your Documents
+
+                        <i class="bi bi-arrow-right ms-2"></i>
+
+                    </a>
+
+                </div>
+
+
+                <div class="col-lg-6">
+
+                    <div class="card border-0 shadow-sm">
+
+                        <div class="card-body p-4 p-md-5">
+
+                            <h3 class="h4 fw-bold mb-4">
+                                What Can You Print?
+                            </h3>
+
+                            <div class="row g-3">
+
+                                <div class="col-6">
+                                    <div class="border p-3 h-100">
+                                        <i class="bi bi-journal-text text-primary me-2"></i>
+                                        Study Notes
+                                    </div>
+                                </div>
+
+                                <div class="col-6">
+                                    <div class="border p-3 h-100">
+                                        <i class="bi bi-file-earmark-text text-primary me-2"></i>
+                                        Assignments
+                                    </div>
+                                </div>
+
+                                <div class="col-6">
+                                    <div class="border p-3 h-100">
+                                        <i class="bi bi-book text-primary me-2"></i>
+                                        Books &amp; PDFs
+                                    </div>
+                                </div>
+
+                                <div class="col-6">
+                                    <div class="border p-3 h-100">
+                                        <i class="bi bi-folder2-open text-primary me-2"></i>
+                                        Projects
+                                    </div>
+                                </div>
+
+                                <div class="col-6">
+                                    <div class="border p-3 h-100">
+                                        <i class="bi bi-mortarboard text-primary me-2"></i>
+                                        Thesis &amp; Research
+                                    </div>
+                                </div>
+
+                                <div class="col-6">
+                                    <div class="border p-3 h-100">
+                                        <i class="bi bi-file-earmark-pdf text-primary me-2"></i>
+                                        PDF Documents
+                                    </div>
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+    {{-- =====================================================
+    FAQ
+===================================================== --}}
+
+    <section class="py-5 border-top">
+
+        <div class="container">
+
+            <div class="row justify-content-center">
+
+                <div class="col-lg-9">
+
+                    <div class="text-center mb-5">
+
+                        <span class="text-uppercase small fw-bold text-primary">
+                            Frequently Asked Questions
+                        </span>
+
+                        <h2 class="fw-bold mt-2 mb-3">
+                            Printing Price Calculator FAQs
+                        </h2>
+
+                        <p class="text-secondary mb-0">
+                            Find answers to common questions about printing
+                            prices, pages, copies, paper, binding and delivery.
+                        </p>
+
+                    </div>
+
+
+                    <div class="accordion" id="printingFaq">
+
+
+                        {{-- FAQ 1 --}}
+
+                        <div class="accordion-item">
+
+                            <h3 class="accordion-header">
+
+                                <button
+                                    class="accordion-button fw-semibold"
+                                    type="button"
+                                    data-bs-toggle="collapse"
+                                    data-bs-target="#faqOne">
+
+                                    How does the printing price calculator work?
+
+                                </button>
+
+                            </h3>
+
+                            <div
+                                id="faqOne"
+                                class="accordion-collapse collapse show"
+                                data-bs-parent="#printingFaq">
+
+                                <div class="accordion-body text-secondary">
+
+                                    Enter your total pages, number of copies,
+                                    printing type, paper option, binding and
+                                    delivery pincode. The calculator uses these
+                                    details to provide an estimated printing and
+                                    delivery cost.
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+
+                        {{-- FAQ 2 --}}
+
+                        <div class="accordion-item">
+
+                            <h3 class="accordion-header">
+
+                                <button
+                                    class="accordion-button collapsed fw-semibold"
+                                    type="button"
+                                    data-bs-toggle="collapse"
+                                    data-bs-target="#faqTwo">
+
+                                    Can I calculate black and white printing cost?
+
+                                </button>
+
+                            </h3>
+
+                            <div
+                                id="faqTwo"
+                                class="accordion-collapse collapse"
+                                data-bs-parent="#printingFaq">
+
+                                <div class="accordion-body text-secondary">
+
+                                    Yes. You can select black and white printing
+                                    in the calculator and enter the number of
+                                    pages and copies to get an estimated printing
+                                    price.
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+
+                        {{-- FAQ 3 --}}
+
+                        <div class="accordion-item">
+
+                            <h3 class="accordion-header">
+
+                                <button
+                                    class="accordion-button collapsed fw-semibold"
+                                    type="button"
+                                    data-bs-toggle="collapse"
+                                    data-bs-target="#faqThree">
+
+                                    Can I calculate color printing cost?
+
+                                </button>
+
+                            </h3>
+
+                            <div
+                                id="faqThree"
+                                class="accordion-collapse collapse"
+                                data-bs-parent="#printingFaq">
+
+                                <div class="accordion-body text-secondary">
+
+                                    Yes. Select Color printing from the calculator
+                                    and enter your page count and copies. The
+                                    calculator will show the applicable estimated
+                                    printing cost.
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+
+                        {{-- FAQ 4 --}}
+
+                        <div class="accordion-item">
+
+                            <h3 class="accordion-header">
+
+                                <button
+                                    class="accordion-button collapsed fw-semibold"
+                                    type="button"
+                                    data-bs-toggle="collapse"
+                                    data-bs-target="#faqFour">
+
+                                    Does the calculator include delivery charges?
+
+                                </button>
+
+                            </h3>
+
+                            <div
+                                id="faqFour"
+                                class="accordion-collapse collapse"
+                                data-bs-parent="#printingFaq">
+
+                                <div class="accordion-body text-secondary">
+
+                                    Yes. Enter your delivery pincode to get an
+                                    estimated shipping charge along with the
+                                    printing cost. The final delivery charge may
+                                    depend on the actual shipment details and
+                                    available delivery service.
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+
+                        {{-- FAQ 5 --}}
+
+                        <div class="accordion-item">
+
+                            <h3 class="accordion-header">
+
+                                <button
+                                    class="accordion-button collapsed fw-semibold"
+                                    type="button"
+                                    data-bs-toggle="collapse"
+                                    data-bs-target="#faqFive">
+
+                                    Can I print notes and assignments online?
+
+                                </button>
+
+                            </h3>
+
+                            <div
+                                id="faqFive"
+                                class="accordion-collapse collapse"
+                                data-bs-parent="#printingFaq">
+
+                                <div class="accordion-body text-secondary">
+
+                                    Yes. You can use Print Ki Dukan for printing
+                                    study notes, assignments, projects, PDFs,
+                                    books and other documents. Upload your file,
+                                    select your preferred printing options and
+                                    continue with your order.
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+
+                        {{-- FAQ 6 --}}
+
+                        <div class="accordion-item">
+
+                            <h3 class="accordion-header">
+
+                                <button
+                                    class="accordion-button collapsed fw-semibold"
+                                    type="button"
+                                    data-bs-toggle="collapse"
+                                    data-bs-target="#faqSix">
+
+                                    Can I choose double-sided printing?
+
+                                </button>
+
+                            </h3>
+
+                            <div
+                                id="faqSix"
+                                class="accordion-collapse collapse"
+                                data-bs-parent="#printingFaq">
+
+                                <div class="accordion-body text-secondary">
+
+                                    Yes. The calculator includes a two-sided
+                                    printing option. You can turn it on or off
+                                    depending on how you want your documents
+                                    printed.
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+
+                        {{-- FAQ 7 --}}
+
+                        <div class="accordion-item">
+
+                            <h3 class="accordion-header">
+
+                                <button
+                                    class="accordion-button collapsed fw-semibold"
+                                    type="button"
+                                    data-bs-toggle="collapse"
+                                    data-bs-target="#faqSeven">
+
+                                    Can I add binding to my printed documents?
+
+                                </button>
+
+                            </h3>
+
+                            <div
+                                id="faqSeven"
+                                class="accordion-collapse collapse"
+                                data-bs-parent="#printingFaq">
+
+                                <div class="accordion-body text-secondary">
+
+                                    Yes. Available binding options are shown
+                                    directly in the calculator. Select the
+                                    binding option you need and its applicable
+                                    charge will be included in the estimate.
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    {{-- =====================================================
+    FAQ SCHEMA
+===================================================== --}}
+
+    <script type="application/ld+json">
+        {
+            !!json_encode([
+                '@context' => 'https://schema.org',
+                '@type' => 'FAQPage',
+                'mainEntity' => [
+
+                    [
+                        '@type' => 'Question',
+                        'name' => 'How does the printing price calculator work?',
+                        'acceptedAnswer' => [
+                            '@type' => 'Answer',
+                            'text' => 'Enter your total pages, number of copies, printing type, paper option, binding and delivery pincode. The calculator uses these details to provide an estimated printing and delivery cost.'
+                        ]
+                    ],
+
+                    [
+                        '@type' => 'Question',
+                        'name' => 'Can I calculate black and white printing cost?',
+                        'acceptedAnswer' => [
+                            '@type' => 'Answer',
+                            'text' => 'Yes. You can select black and white printing in the calculator and enter the number of pages and copies to get an estimated printing price.'
+                        ]
+                    ],
+
+                    [
+                        '@type' => 'Question',
+                        'name' => 'Can I calculate color printing cost?',
+                        'acceptedAnswer' => [
+                            '@type' => 'Answer',
+                            'text' => 'Yes. Select Color printing from the calculator and enter your page count and copies. The calculator will show the applicable estimated printing cost.'
+                        ]
+                    ],
+
+                    [
+                        '@type' => 'Question',
+                        'name' => 'Does the calculator include delivery charges?',
+                        'acceptedAnswer' => [
+                            '@type' => 'Answer',
+                            'text' => 'Yes. Enter your delivery pincode to get an estimated shipping charge along with the printing cost.'
+                        ]
+                    ],
+
+                    [
+                        '@type' => 'Question',
+                        'name' => 'Can I print notes and assignments online?',
+                        'acceptedAnswer' => [
+                            '@type' => 'Answer',
+                            'text' => 'Yes. Print Ki Dukan can be used for printing study notes, assignments, projects, PDFs, books and other documents.'
+                        ]
+                    ],
+
+                    [
+                        '@type' => 'Question',
+                        'name' => 'Can I choose double-sided printing?',
+                        'acceptedAnswer' => [
+                            '@type' => 'Answer',
+                            'text' => 'Yes. The calculator includes a two-sided printing option that can be turned on or off according to your requirement.'
+                        ]
+                    ],
+
+                    [
+                        '@type' => 'Question',
+                        'name' => 'Can I add binding to my printed documents?',
+                        'acceptedAnswer' => [
+                            '@type' => 'Answer',
+                            'text' => 'Yes. Available binding options are shown directly in the calculator and the applicable charge is included in the estimate.'
+                        ]
+                    ]
+
+                ]
+            ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) !!
+        }
+    </script>
 </main>
 <!-- /main -->
 @endsection

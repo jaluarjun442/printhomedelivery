@@ -139,6 +139,10 @@ Route::group(['prefix' => 'admin', 'middleware' => 'auth'], function () {
     Route::get('/contact/{id}', [AdminController::class, 'contact_view'])->name('admin.contact.view');
     Route::post('/contact/{id}/read', [AdminController::class, 'contact_read'])->name('admin.contact.read');
 
+    Route::get('/print_documents', [AdminController::class, 'print_documents'])->name('admin.print_documents');
+    Route::get('/get_print_documents', [AdminController::class, 'get_print_documents'])->name('admin.get_print_documents');
+    Route::delete('/delete_print_document/{id}', [AdminController::class, 'delete_print_document'])->name('admin.delete_print_document');
+
     Route::get('/add_product_widget/{product_id}', [AdminController::class, 'add_product_widget'])->name('admin.add_product_widget');
     Route::post('/save_product_widget', [AdminController::class, 'save_product_widget'])->name('admin.save_product_widget');
 });

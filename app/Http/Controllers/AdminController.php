@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\File;
 use App\Models\Blogs;
 use App\Models\Contact;
+use App\Models\PrintDocument;
 
 class AdminController extends Controller
 {
@@ -866,5 +867,190 @@ class AdminController extends Controller
         return redirect()
             ->route('admin.contact.view', $id)
             ->with('success', 'Message marked as read.');
+    }
+    public function print_documents()
+    {
+        return view('admin/print_documents/index');
+    }
+
+
+    public function get_print_documents(Request $request)
+    {
+        $data = PrintDocument::orderBy('id', 'desc');
+
+        return DataTables::of($data)
+
+            ->addIndexColumn()
+
+            ->editColumn('original_name', function ($row) {
+
+                $fileName = $row->original_name ?? '';
+
+                if ($row->mime_type === 'application/pdf') {
+
+                    return '
+                    <div class="d-flex align-items-center">
+                        <i class="bi bi-file-earmark-pdf text-danger mr-2"
+                           style="font-size:24px;"></i>
+                        <span>' . e($fileName) . '</span>
+                    </div>
+                ';
+                }
+
+                if (str_starts_with($row->mime_type ?? '', 'image/')) {
+
+                    return '
+                    <div class="d-flex align-items-center">
+                        <i class="bi bi-file-earmark-image text-primary mr-2"
+                           style="font-size:24px;"></i>
+                        <span>' . e($fileName) . '</span>
+                    </div>
+                ';
+                }
+
+                return e($fileName);
+            })
+
+            ->editColumn('file_size', function ($row) {
+
+                $size = (int) $row->file_size;
+
+                if ($size >= 1024 * 1024) {
+
+                    return number_format(
+                        $size / (1024 * 1024),
+                        2
+                    ) . ' MB';
+                }
+
+                if ($size >= 1024) {
+
+                    return number_format(
+                        $size / 1024,
+                        2
+                    ) . ' KB';
+                }
+
+                return $size . ' B';
+            })
+
+            ->editColumn('status', function ($row) {
+
+                if ($row->status === 'uploaded') {
+
+                    return '
+                    <span class="badge badge-success">
+                        Uploaded
+                    </span>
+                ';
+                }
+
+                return '
+                <span class="badge badge-secondary">
+                    ' . e($row->status) . '
+                </span>
+            ';
+            })
+
+            ->editColumn('created_at', function ($row) {
+
+                return $row->created_at
+                    ? $row->created_at->format('d M Y H:i')
+                    : '';
+            })
+
+            ->addColumn('action', function ($row) {
+
+                return '
+                <button
+                    type="button"
+                    class="btn btn-danger btn-sm delete-document"
+                    data-id="' . $row->id . '">
+
+                    <i class="bi bi-trash"></i>
+                    Delete
+
+                </button>
+            ';
+            })
+
+            ->rawColumns([
+                'original_name',
+                'status',
+                'action'
+            ])
+
+            ->make(true);
+    }
+    public function delete_print_document($id)
+    {
+        try {
+
+            $document = PrintDocument::find($id);
+
+            if (!$document) {
+
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Document not found.'
+                ], 404);
+            }
+
+
+            /*
+        =====================================================
+        DELETE FILE FROM CLOUDFLARE R2
+        =====================================================
+        */
+
+            if (!empty($document->stored_path)) {
+
+                $urlPath = parse_url(
+                    $document->stored_path,
+                    PHP_URL_PATH
+                );
+
+                $objectKey = ltrim(
+                    $urlPath ?? '',
+                    '/'
+                );
+
+
+                if (!empty($objectKey)) {
+
+                    Storage::disk('r2')
+                        ->delete($objectKey);
+                }
+            }
+
+
+            /*
+        =====================================================
+        DELETE DATABASE RECORD
+        =====================================================
+        */
+
+            $document->delete();
+
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Document deleted successfully.'
+            ]);
+        } catch (\Exception $e) {
+
+            \Log::error(
+                'Print document delete error',
+                [
+                    'id' => $id,
+                    'error' => $e->getMessage()
+                ]
+            );
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Unable to delete document.'
+            ], 500);
+        }
     }
 }
