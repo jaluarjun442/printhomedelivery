@@ -6,11 +6,11 @@
 $metaTitle = $blog->meta_title ?: $blog->title;
 
 $metaDescription = $blog->meta_description
-    ?: $blog->excerpt
-    ?: \Illuminate\Support\Str::limit(
-        trim(strip_tags($blog->content)),
-        155
-    );
+?: $blog->excerpt
+?: \Illuminate\Support\Str::limit(
+trim(strip_tags($blog->content)),
+155
+);
 
 $ogTitle = $blog->og_title ?: $metaTitle;
 
@@ -19,21 +19,21 @@ $ogDescription = $blog->og_description ?: $metaDescription;
 $ogImage = $blog->og_image ?: $blog->image;
 
 $ogImageUrl = $ogImage
-    ? asset('uploads/blog/' . $ogImage)
-    : asset('web_assets/images/logo.png');
+? asset('uploads/blog/' . $ogImage)
+: asset('web_assets/images/logo.png');
 
 $canonicalUrl = route('blog', [
-    'id' => $blog->id,
-    'slug' => $blog->slug
+'id' => $blog->id,
+'slug' => $blog->slug
 ]);
 
 $datePublished = $blog->published_at
-    ? $blog->published_at->toIso8601String()
-    : $blog->created_at->toIso8601String();
+? $blog->published_at->toIso8601String()
+: $blog->created_at->toIso8601String();
 
 $dateModified = $blog->updated_at
-    ? $blog->updated_at->toIso8601String()
-    : $datePublished;
+? $blog->updated_at->toIso8601String()
+: $datePublished;
 
 @endphp
 
@@ -129,30 +129,32 @@ $dateModified = $blog->updated_at
 ====================================================== --}}
 
 <script type="application/ld+json">
-{!! json_encode([
-    '@context' => 'https://schema.org',
-    '@type' => 'BreadcrumbList',
-    'itemListElement' => [
-        [
-            '@type' => 'ListItem',
-            'position' => 1,
-            'name' => 'Home',
-            'item' => url('/')
-        ],
-        [
-            '@type' => 'ListItem',
-            'position' => 2,
-            'name' => 'Blogs',
-            'item' => route('blogs')
-        ],
-        [
-            '@type' => 'ListItem',
-            'position' => 3,
-            'name' => $blog->title,
-            'item' => $canonicalUrl
-        ]
-    ]
-], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) !!}
+    {
+        !!json_encode([
+            '@context' => 'https://schema.org',
+            '@type' => 'BreadcrumbList',
+            'itemListElement' => [
+                [
+                    '@type' => 'ListItem',
+                    'position' => 1,
+                    'name' => 'Home',
+                    'item' => url('/')
+                ],
+                [
+                    '@type' => 'ListItem',
+                    'position' => 2,
+                    'name' => 'Blogs',
+                    'item' => route('blogs')
+                ],
+                [
+                    '@type' => 'ListItem',
+                    'position' => 3,
+                    'name' => $blog - > title,
+                    'item' => $canonicalUrl
+                ]
+            ]
+        ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) !!
+    }
 </script>
 
 
@@ -161,51 +163,53 @@ $dateModified = $blog->updated_at
 ====================================================== --}}
 
 <script type="application/ld+json">
-{!! json_encode([
-    '@context' => 'https://schema.org',
-    '@type' => 'BlogPosting',
+    {
+        !!json_encode([
+            '@context' => 'https://schema.org',
+            '@type' => 'BlogPosting',
 
-    'mainEntityOfPage' => [
-        '@type' => 'WebPage',
-        '@id' => $canonicalUrl
-    ],
+            'mainEntityOfPage' => [
+                '@type' => 'WebPage',
+                '@id' => $canonicalUrl
+            ],
 
-    'headline' => $blog->title,
+            'headline' => $blog - > title,
 
-    'description' => $metaDescription,
+            'description' => $metaDescription,
 
-    'image' => [
-        $ogImageUrl
-    ],
+            'image' => [
+                $ogImageUrl
+            ],
 
-    'datePublished' => $datePublished,
+            'datePublished' => $datePublished,
 
-    'dateModified' => $dateModified,
+            'dateModified' => $dateModified,
 
-    'author' => [
-        '@type' => 'Organization',
-        'name' => 'Print Ki Dukan',
-        'url' => url('/')
-    ],
+            'author' => [
+                '@type' => 'Organization',
+                'name' => 'Print Ki Dukan',
+                'url' => url('/')
+            ],
 
-    'publisher' => [
-        '@type' => 'Organization',
-        'name' => 'Print Ki Dukan',
-        'url' => url('/'),
-        'logo' => [
-            '@type' => 'ImageObject',
-            'url' => asset('web_assets/images/logo.png')
-        ]
-    ],
+            'publisher' => [
+                '@type' => 'Organization',
+                'name' => 'Print Ki Dukan',
+                'url' => url('/'),
+                'logo' => [
+                    '@type' => 'ImageObject',
+                    'url' => asset('web_assets/images/logo.png')
+                ]
+            ],
 
-    'isPartOf' => [
-        '@type' => 'Blog',
-        'name' => 'Print Ki Dukan Blog',
-        'url' => route('blogs')
-    ],
+            'isPartOf' => [
+                '@type' => 'Blog',
+                'name' => 'Print Ki Dukan Blog',
+                'url' => route('blogs')
+            ],
 
-    'inLanguage' => 'en-IN'
-], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) !!}
+            'inLanguage' => 'en-IN'
+        ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) !!
+    }
 </script>
 
 @endsection
@@ -314,9 +318,10 @@ $dateModified = $blog->updated_at
                             src="{{ asset('uploads/blog/' . $blog->image) }}"
                             alt="{{ $blog->title }}"
                             class="img-fluid w-100"
-                            width="1200"
-                            height="630"
-                            fetchpriority="high">
+                            width="669"
+                            height="353"
+                            fetchpriority="high"
+                            decoding="async">
 
                     </figure>
 
