@@ -36,7 +36,15 @@ $store_data = Store::where('id', 1)->first();
 
     <link href="{{ asset('web_assets/css/listing.css') }}" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-
+    <script type="application/ld+json">
+        {
+            "@context": "https://schema.org",
+            "@type": "WebSite",
+            "name": "Print Ki Dukan",
+            "alternateName": "PrintKiDukan",
+            "url": "https://printkidukan.com/"
+        }
+    </script>
     <?php echo $store_data['header_script']; ?>
     @yield('custom_header')
 </head>
