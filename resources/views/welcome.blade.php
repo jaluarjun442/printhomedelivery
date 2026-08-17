@@ -1,7 +1,7 @@
 @extends('layouts.web.web')
 @section('custom_header')
 <link href="{{ asset('web_assets/css/listing.css') }}" rel="stylesheet">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+<link href="{{ asset('web_assets/css/bootstrap-icons.min.css') }}" rel="stylesheet">
 <title>Print Ki Dukan | Online Printing & Home Delivery in India</title>
 <meta name="keywords" content="online printing, print documents online, home delivery printing, online document printing, print and delivery India">
 <meta name="description" content="Print your documents online with Print Ki Dukan and get high-quality prints delivered to your home or office. Upload your files, choose printing options, place your order and track delivery online.">
@@ -124,11 +124,14 @@
 
                 <div class="col-lg-6 text-center d-none d-lg-block">
 
-                    <img src="{{ asset('img/pkd_banner_t.webp') }}"
+                    <img src="https://printkidukan.com/img/pkd_banner_t.webp"
                         class="img-fluid home-hero-image"
                         width="522"
                         height="576"
-                        alt="Online document printing and home delivery">
+                        alt="Online document printing and home delivery"
+                        fetchpriority="high"
+                        loading="eager"
+                        decoding="async">
                 </div>
 
             </div>
