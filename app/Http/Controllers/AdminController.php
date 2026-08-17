@@ -533,19 +533,13 @@ class AdminController extends Controller
 
             $file = $request->file('image');
 
-            $image =
-                rand(1111111111, 9999999999) .
-                '_' .
-                rand(1111111111, 9999999999) .
-                '.' .
-                $file->getClientOriginalExtension();
+            $image = $file->getClientOriginalName();
 
             $file->move(
                 'uploads/blog/',
                 $image
             );
         }
-
 
         /*
     |--------------------------------------------------------------------------
@@ -705,12 +699,7 @@ class AdminController extends Controller
             $file =
                 $request->file('image');
 
-            $image =
-                rand(1111111111, 9999999999) .
-                '_' .
-                rand(1111111111, 9999999999) .
-                '.' .
-                $file->getClientOriginalExtension();
+            $image = $file->getClientOriginalName();
 
             $file->move(
                 'uploads/blog/',
