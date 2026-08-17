@@ -126,6 +126,11 @@ $store_data = Store::where('id', 1)->first();
                                             Contact Us
                                         </a>
                                     </li>
+                                    <li>
+                                        <a href="{{ route('blogs') }}">
+                                            Blogs
+                                        </a>
+                                    </li>
                                     <!-- <li class="more-menu">
 
                                         <a href="javascript:void(0);" class="more-toggle">
