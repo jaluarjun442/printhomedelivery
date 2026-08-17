@@ -1,7 +1,5 @@
 @extends('layouts.web.web')
 @section('custom_header')
-<link href="{{ asset('web_assets/css/listing.css') }}" rel="stylesheet">
-<link href="{{ asset('web_assets/css/bootstrap-icons.min.css') }}" rel="stylesheet">
 <title>Print Ki Dukan | Online Printing & Home Delivery in India</title>
 <meta name="keywords" content="online printing, print documents online, home delivery printing, online document printing, print and delivery India">
 <meta name="description" content="Print your documents online with Print Ki Dukan and get high-quality prints delivered to your home or office. Upload your files, choose printing options, place your order and track delivery online.">
