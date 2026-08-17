@@ -510,7 +510,7 @@ class FrontController extends Controller
                                 '22',
 
                                 'height' =>
-                                '5',
+                                '3',
                             ]
 
                         ],
