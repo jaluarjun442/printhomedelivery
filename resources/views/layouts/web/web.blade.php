@@ -126,7 +126,7 @@ $store_data = Store::where('id', 1)->first();
                                             Contact Us
                                         </a>
                                     </li>
-                                    <li class="more-menu">
+                                    <!-- <li class="more-menu">
 
                                         <a href="javascript:void(0);" class="more-toggle">
                                             Pages <i class="fa fa-angle-down"></i>
@@ -165,7 +165,7 @@ $store_data = Store::where('id', 1)->first();
 
                                         </ul>
 
-                                    </li>
+                                    </li> -->
                                     <li>
                                         <a href="{{ route('my-orders') }}">
                                             <i class="ti-package"></i>
