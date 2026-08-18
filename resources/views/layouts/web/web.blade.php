@@ -35,7 +35,7 @@ $store_data = Store::where('id', 1)->first();
     <link href="{{ asset('web_assets/css/common-pages.css') }}" rel="stylesheet">
 
     <link href="{{ asset('web_assets/css/listing.css') }}" rel="stylesheet">
-    <link href="{{ asset('web_assets/css/bootstrap-icons.min.css') }}" rel="stylesheet">
+    <!-- <link href="{{ asset('web_assets/css/bootstrap-icons.min.css') }}" rel="stylesheet"> -->
     <script type="application/ld+json">
         {
             "@context": "https://schema.org",
