@@ -238,6 +238,10 @@ class UploadController extends Controller
     {
         $mobile = $request->cookie('loggedin_number');
 
+        /*
+         * Upload URLs can only be issued after mobile verification.
+         * The updated Blade no longer performs a second CAPTCHA here.
+         */
         if (!$mobile) {
             return response()->json([
                 'success' => false,
@@ -245,43 +249,17 @@ class UploadController extends Controller
             ], 401);
         }
 
+        /*
+         * File-upload Turnstile was removed from the updated upload.blade.
+         *
+         * Mobile verification is still protected by Turnstile in sendOtp().
+         * At this stage we only require a valid logged-in/verified mobile
+         * cookie before issuing the temporary R2 upload URL.
+         */
         $request->validate([
             'filename' => 'required|string|max:255',
             'mime_type' => 'required|string|max:150',
-            'turnstile_token' => 'required|string',
         ]);
-
-        try {
-            $turnstileResponse = \Illuminate\Support\Facades\Http::asForm()
-                ->post(
-                    'https://challenges.cloudflare.com/turnstile/v0/siteverify',
-                    [
-                        'secret' => env('TURNSTILE_SECRET_KEY'),
-                        'response' => $request->input('turnstile_token'),
-                        'remoteip' => $request->ip(),
-                    ]
-                );
-
-            if (
-                !$turnstileResponse->successful() ||
-                !$turnstileResponse->json('success')
-            ) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Security verification failed. Please try again.'
-                ], 422);
-            }
-        } catch (\Throwable $e) {
-            \Log::error('Cloudflare Turnstile verification failed', [
-                'mobile' => $mobile,
-                'error' => $e->getMessage()
-            ]);
-
-            return response()->json([
-                'success' => false,
-                'message' => 'Unable to verify security check. Please try again.'
-            ], 422);
-        }
 
         $originalName = $request->input('filename');
         $mimeType = $request->input('mime_type');
