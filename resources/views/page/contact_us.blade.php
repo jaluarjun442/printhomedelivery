@@ -111,7 +111,30 @@
 
                 @endif
 
+                {{-- =====================================================
+    INTERNATIONAL ORDERS
+====================================================== --}}
 
+                <div class="contact-card">
+
+                    <h2>
+                        <i class="bi bi-globe2"></i>
+                        International Orders
+                    </h2>
+
+                    <p>
+                        We also accept orders from outside India. International orders
+                        are currently processed <strong>manually</strong>.
+                    </p>
+
+                    <p style="margin-bottom:0;">
+                        Please <strong>contact us</strong> with your document details,
+                        printing requirements, and delivery country. Our team will
+                        confirm the available printing options, shipping charges,
+                        and payment details.
+                    </p>
+
+                </div>
 
                 {{-- =====================================================
                     CONTACT INFORMATION
