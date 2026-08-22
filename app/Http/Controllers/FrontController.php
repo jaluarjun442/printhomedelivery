@@ -75,7 +75,7 @@ class FrontController extends Controller
     {
         $data = [];
         $blogs = Blogs::latest('id')
-            ->take(3)
+            ->take(6)
             ->get();
         return view('welcome', compact('data', 'blogs'));
     }
