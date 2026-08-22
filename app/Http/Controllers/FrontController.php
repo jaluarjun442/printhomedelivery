@@ -74,9 +74,16 @@ class FrontController extends Controller
     public function index(Request $request)
     {
         $data = [];
-        $blogs = Blogs::latest('id')
-            ->take(6)
-            ->get();
+
+        $blogs = Blogs::where('status', 1)
+            ->where(function ($query) {
+                $query->whereNull('published_at')
+                    ->orWhere('published_at', '<=', now());
+            })
+            ->orderBy('published_at', 'desc')
+            ->orderBy('id', 'desc')
+            ->paginate(6);
+
         return view('welcome', compact('data', 'blogs'));
     }
     public function page($page)
