@@ -73,14 +73,11 @@ class FrontController extends Controller
     }
     public function index(Request $request)
     {
-        $data = Products::orderBy('id', 'desc')
-            ->latest()
-            ->paginate(12);;
-        $category_data = Category::where('parent_category_id', null)->get();
-        if ($request->ajax()) {
-            return view('products_data', compact('data'))->render();
-        }
-        return view('welcome', compact('data', 'category_data'));
+        $data = [];
+        $blogs = Blogs::latest('id')
+            ->take(3)
+            ->get();
+        return view('welcome', compact('data', 'blogs'));
     }
     public function page($page)
     {

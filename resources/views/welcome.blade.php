@@ -1286,6 +1286,168 @@
         </div>
 
     </section>
+    {{-- =====================================================
+        LATEST BLOGS
+    ====================================================== --}}
+
+    <section class="py-5">
+
+        <div class="container">
+
+            <div class="text-center mb-5">
+
+                <h2 class="display-6 fw-bold mb-3">
+                    From Our
+                    <span class="px-2 text-primary fst-italic highlight-text">
+                        Blog
+                    </span>
+                </h2>
+
+                <p class="text-secondary fs-5 mt-3">
+                    Helpful printing tips, guides, and useful information
+                    for students and everyday printing.
+                </p>
+
+            </div>
+
+
+            <div class="row g-4">
+
+                @forelse($blogs as $blog)
+
+                <div class="col-lg-4 col-md-6">
+
+                    <article class="card h-100 border-0 shadow-sm">
+
+                        @if($blog->image)
+
+                        <a href="{{ route('blog', [
+                            'id' => $blog->id,
+                            'slug' => $blog->slug
+                        ]) }}">
+
+                            <img
+                                src="{{ asset('uploads/blog/' . $blog->image) }}"
+                                class="card-img-top blog-list-image"
+                                alt="{{ $blog->title }}"
+                                width="1200"
+                                height="630"
+                                loading="lazy">
+
+                        </a>
+
+                        @endif
+
+
+                        <div class="card-body p-4 d-flex flex-column">
+
+                            @if($blog->published_at)
+
+                            <div class="text-muted small mb-2">
+
+                                {{ $blog->published_at->format('d M Y') }}
+
+                            </div>
+
+                            @endif
+
+
+                            <h3 class="h4 fw-bold mb-3">
+
+                                <a
+                                    href="{{ route('blog', [
+                                        'id' => $blog->id,
+                                        'slug' => $blog->slug
+                                    ]) }}"
+                                    class="text-dark text-decoration-none">
+
+                                    {{ $blog->title }}
+
+                                </a>
+
+                            </h3>
+
+
+                            @if($blog->excerpt)
+
+                            <p class="text-secondary mb-4">
+
+                                {{ \Illuminate\Support\Str::limit(
+                                    strip_tags($blog->excerpt),
+                                    150
+                                ) }}
+
+                            </p>
+
+                            @else
+
+                            <p class="text-secondary mb-4">
+
+                                {{ \Illuminate\Support\Str::limit(
+                                    strip_tags($blog->content),
+                                    150
+                                ) }}
+
+                            </p>
+
+                            @endif
+
+
+                            <div class="mt-auto">
+
+                                <a
+                                    href="{{ route('blog', [
+                                        'id' => $blog->id,
+                                        'slug' => $blog->slug
+                                    ]) }}"
+                                    class="fw-semibold text-primary text-decoration-none">
+
+                                    Read More
+                                    <i class="bi bi-arrow-right ms-1"></i>
+
+                                </a>
+
+                            </div>
+
+                        </div>
+
+                    </article>
+
+                </div>
+
+                @empty
+
+                <div class="col-12">
+
+                    <p class="text-center text-secondary mb-0">
+                        No blog posts available yet.
+                    </p>
+
+                </div>
+
+                @endforelse
+
+            </div>
+
+
+            {{-- VIEW ALL BLOGS --}}
+
+            <div class="text-center mt-5">
+
+                <a
+                    href="{{ url('/blogs') }}"
+                    class="btn btn-outline-dark btn-lg px-5 py-3 rounded-0">
+
+                    View All Blogs
+                    <i class="bi bi-arrow-right ms-2"></i>
+
+                </a>
+
+            </div>
+
+        </div>
+
+    </section>
     <div id="stick_here"></div>
 </main>
 <!-- /main -->
